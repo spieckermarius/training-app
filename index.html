@@ -283,12 +283,21 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card tappable" onclick="showPRModal()">
       <div class="split">
         <div class="split-half">
-          <div class="stat-label">Tempo 5 km</div>
-          <div class="stat-value" id="tempo-pr">–</div>
-          <div class="stat-delta delta-good" id="tempo-date">–</div>
+          <div class="stat-label">Bestzeiten ♛ · Antippen für alle</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+            <div>
+              <div style="font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">5 km</div>
+              <div class="stat-value" id="pr-5k">–</div>
+            </div>
+            <div>
+              <div style="font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Halbmarathon</div>
+              <div style="font-size:16px;font-weight:700;" id="pr-hm">2:46 h</div>
+              <div style="font-size:10px;color:var(--text2);margin-top:1px;" id="pr-hm-date">28.06.2026</div>
+            </div>
+          </div>
         </div>
         <div class="split-div"></div>
         <div class="split-half">
@@ -449,12 +458,26 @@ function renderDashboard(activities) {
     </div>`;
   }).join('');
 
-  const tempoRuns=runs.filter(r=>r.distance<6500&&r.distance>4500&&r.average_heartrate>160);
-  if (tempoRuns.length) {
-    const best=tempoRuns.reduce((a,b)=>(a.distance/a.moving_time)>(b.distance/b.moving_time)?a:b);
-    document.getElementById('tempo-pr').innerHTML=`${fmtPace(best.distance,best.moving_time)}<small>/km</small> <span class="pr-crown">♛</span>`;
-    document.getElementById('tempo-date').textContent=`5 km · ${fmtDate(best.start_date_local)}`;
+  // Bestzeiten berechnen
+  const pr5k = runs.filter(r=>r.distance>=4800&&r.distance<=5500&&r.average_heartrate>155)
+    .reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a, null);
+  const pr10k = runs.filter(r=>r.distance>=9500&&r.distance<=11000&&r.average_heartrate>150)
+    .reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a, null);
+  const prHM = runs.filter(r=>r.distance>=19000&&r.distance<=23000)
+    .reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a, null);
+
+  if (pr5k) {
+    document.getElementById('pr-5k').innerHTML=`${fmtPace(pr5k.distance,pr5k.moving_time)}<small>/km</small> <span class="pr-crown">♛</span>`;
   }
+  if (prHM) {
+    const t=prHM.moving_time;
+    document.getElementById('pr-hm').innerHTML=`${Math.floor(t/3600)}:${String(Math.floor((t%3600)/60)).padStart(2,'0')} h <span class="pr-crown">♛</span>`;
+    document.getElementById('pr-hm-date').textContent=fmtDate(prHM.start_date_local)+'2026';
+  }
+
+  window._pr5k = pr5k;
+  window._pr10k = pr10k;
+  window._prHM = prHM;
 
   const easyRuns=runs.filter(r=>r.distance>5000&&r.average_heartrate&&r.average_heartrate<160)
     .sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
@@ -493,6 +516,39 @@ function renderDashboard(activities) {
   document.getElementById('step3-sub').textContent=`Diese Woche ${weekKm.toFixed(1)} km von 35 km`;
   document.getElementById('last-updated').textContent=
     new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
+}
+
+function showPRModal() {
+  document.getElementById('modal-title').textContent = 'Bestzeiten ♛';
+
+  function prRow(label, run, isTime=false) {
+    if (!run) return `<div class="modal-stat">
+      <span class="modal-stat-label">${label}</span>
+      <span class="modal-stat-value" style="color:var(--text3)">Noch keine</span>
+    </div>`;
+    const t = run.moving_time;
+    const display = isTime
+      ? `${Math.floor(t/3600)}:${String(Math.floor((t%3600)/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')} h`
+      : `${fmtPace(run.distance, run.moving_time)}/km`;
+    const km = (run.distance/1000).toFixed(1);
+    return `<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:4px;padding:16px 0;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">${label}</span>
+        <span style="color:var(--yellow);font-size:14px;">♛</span>
+      </div>
+      <div style="font-size:26px;font-weight:800;color:var(--text);">${display}</div>
+      <div style="font-size:11px;color:var(--text2);">${km} km · ${fmtDate(run.start_date_local)}2026 · Ø ${Math.round(run.average_heartrate||0)} bpm</div>
+    </div>`;
+  }
+
+  document.getElementById('modal-body').innerHTML =
+    prRow('5 km', window._pr5k) +
+    `<div style="height:1px;background:var(--border)"></div>` +
+    prRow('10 km', window._pr10k) +
+    `<div style="height:1px;background:var(--border)"></div>` +
+    prRow('Halbmarathon', window._prHM, true);
+
+  document.getElementById('modal').classList.add('open');
 }
 
 function showRunDetail(idx) {
