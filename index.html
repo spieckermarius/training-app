@@ -159,11 +159,11 @@
   .prog-sessions { font-size: 10px; color: var(--text3); margin-top: 3px; font-weight: 500; }
 
   /* ── KW BARS ── */
-  .kw-bars { display: flex; align-items: flex-end; gap: 6px; height: 60px; margin-top: 8px; }
+  .kw-bars { display: flex; align-items: flex-end; gap: 6px; height: 70px; margin-top: 8px; }
   .kw-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; height: 100%; }
   .kw-bar-wrap { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; width: 100%; }
-  .kw-bar { width: 18px; min-height: 2px; border-radius: 3px 3px 0 0; }
-  .kw-km { font-size: 8px; font-weight: 600; color: var(--text3); margin-bottom: 3px; white-space: nowrap; }
+  .kw-bar { width: 26px; min-height: 18px; border-radius: 4px 4px 0 0; position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 2px 0; }
+  .kw-bar-label { font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.85); line-height: 1.1; text-align: center; }
   .kw-label-text { font-size: 8px; color: var(--text3); margin-top: 3px; }
 
   /* ── TREND ── */
@@ -299,6 +299,11 @@
             <span class="stat-value trend-good" id="hr-now">–</span>
           </div>
           <div class="stat-delta delta-good" id="hr-goal">Ziel &lt;135 bpm</div>
+          <div id="pace-compare" style="margin-top:8px;display:none;">
+            <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:4px;">Pace bei diesem HR</div>
+            <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-bottom:2px;"></div>
+            <div id="pace-curr-row" style="font-size:10px;font-weight:600;color:var(--green);"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -431,14 +436,16 @@ function renderDashboard(activities) {
   const currentKW=isoWeek(now);
   document.getElementById('kw-bars').innerHTML = kwKeys.map(kw=>{
     const km=weekMap[kw]||0;
-    const h=Math.round(km/maxKm*50);
+    const h=Math.max(18, Math.round(km/maxKm*58));
     const isCurr=kw===currentKW;
+    const bg=isCurr?'var(--orange)':'var(--bg3)';
     return `<div class="kw-col">
       <div class="kw-bar-wrap">
-        <div class="kw-km" style="${isCurr?'color:var(--orange);font-weight:700;':''}">${km.toFixed(1)}</div>
-        <div class="kw-bar" style="height:${h}px;background:${isCurr?'var(--orange)':'var(--bg3)'}"></div>
+        <div class="kw-bar" style="height:${h}px;background:${bg};width:100%;">
+          <div class="kw-bar-label">${km.toFixed(1)}<br>km</div>
+        </div>
       </div>
-      <div class="kw-label-text">${isCurr?'KW'+kw+'↗':'KW'+kw}</div>
+      <div class="kw-label-text" style="${isCurr?'color:var(--orange);font-weight:700;':''}">${isCurr?'KW'+kw+'↗':'KW'+kw}</div>
     </div>`;
   }).join('');
 
@@ -457,6 +464,14 @@ function renderDashboard(activities) {
     document.getElementById('hr-now').textContent=Math.round(curr.average_heartrate)+' bpm';
     const diff=Math.round(prev.average_heartrate)-Math.round(curr.average_heartrate);
     document.getElementById('hr-goal').textContent=diff>0?`−${diff} bpm · Ziel <135 bpm`:`+${Math.abs(diff)} bpm · Ziel <135 bpm`;
+    // Pace-Vergleich
+    const prevPace=fmtPace(prev.distance, prev.moving_time);
+    const currPace=fmtPace(curr.distance, curr.moving_time);
+    document.getElementById('pace-prev-row').textContent=
+      `${fmtDate(prev.start_date_local)} ${prevPace}/km bei ${Math.round(prev.average_heartrate)} bpm`;
+    document.getElementById('pace-curr-row').textContent=
+      `${fmtDate(curr.start_date_local)} ${currPace}/km bei ${Math.round(curr.average_heartrate)} bpm ↑`;
+    document.getElementById('pace-compare').style.display='block';
   }
 
   const last6=runs.slice(0,6);
