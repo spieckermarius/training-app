@@ -337,15 +337,16 @@
       <div class="split">
         <div class="split-half">
           <div class="stat-label">Bestzeiten ♛ · Antippen für alle</div>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
             <div>
               <div style="font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">5 km</div>
-              <div class="stat-value" id="pr-5k">–</div>
+              <div style="font-size:16px;font-weight:700;color:var(--text);" id="pr-5k-time">–</div>
+              <div style="font-size:10px;color:var(--text2);margin-top:1px;" id="pr-5k-pace">–</div>
             </div>
             <div>
               <div style="font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Halbmarathon</div>
-              <div style="font-size:16px;font-weight:700;" id="pr-hm">2:46 h</div>
-              <div style="font-size:10px;color:var(--text2);margin-top:1px;" id="pr-hm-date">28.06.2026</div>
+              <div style="font-size:16px;font-weight:700;color:var(--text);" id="pr-hm">–</div>
+              <div style="font-size:10px;color:var(--text2);margin-top:1px;" id="pr-hm-pace">–</div>
             </div>
           </div>
         </div>
@@ -509,6 +510,12 @@ function renderDashboard(activities) {
   }).join('');
 
   // Bestzeiten berechnen
+  function fmtTime(s) {
+    const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+    return h>0 ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')} h`
+               : `${m}:${String(sec).padStart(2,'0')} min`;
+  }
+
   const pr5k = runs.filter(r=>r.distance>=4800&&r.distance<=5500&&r.average_heartrate>155)
     .reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a, null);
   const pr10k = runs.filter(r=>r.distance>=9500&&r.distance<=11000&&r.average_heartrate>150)
@@ -517,17 +524,22 @@ function renderDashboard(activities) {
     .reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a, null);
 
   if (pr5k) {
-    document.getElementById('pr-5k').innerHTML=`${fmtPace(pr5k.distance,pr5k.moving_time)}<small>/km</small> <span class="pr-crown">♛</span>`;
+    document.getElementById('pr-5k-time').innerHTML =
+      `${fmtTime(pr5k.moving_time)} <span class="pr-crown">♛</span>`;
+    document.getElementById('pr-5k-pace').textContent =
+      `${fmtPace(pr5k.distance, pr5k.moving_time)}/km · ${fmtDate(pr5k.start_date_local)}`;
   }
   if (prHM) {
-    const t=prHM.moving_time;
-    document.getElementById('pr-hm').innerHTML=`${Math.floor(t/3600)}:${String(Math.floor((t%3600)/60)).padStart(2,'0')} h <span class="pr-crown">♛</span>`;
-    document.getElementById('pr-hm-date').textContent=fmtDate(prHM.start_date_local)+'2026';
+    document.getElementById('pr-hm').innerHTML =
+      `${fmtTime(prHM.moving_time)} <span class="pr-crown">♛</span>`;
+    document.getElementById('pr-hm-pace').textContent =
+      `${fmtPace(prHM.distance, prHM.moving_time)}/km · ${fmtDate(prHM.start_date_local)}`;
   }
 
   window._pr5k = pr5k;
   window._pr10k = pr10k;
   window._prHM = prHM;
+  window._fmtTime = fmtTime;
 
   const easyRuns=runs.filter(r=>r.distance>5000&&r.average_heartrate&&r.average_heartrate<160)
     .sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
@@ -629,33 +641,29 @@ function renderDashboard(activities) {
 
 function showPRModal() {
   document.getElementById('modal-title').textContent = 'Bestzeiten ♛';
+  const fmtTime = window._fmtTime;
 
-  function prRow(label, run, isTime=false) {
-    if (!run) return `<div class="modal-stat">
+  function prRow(label, run) {
+    if (!run) return `<div class="modal-stat" style="padding:16px 0;">
       <span class="modal-stat-label">${label}</span>
       <span class="modal-stat-value" style="color:var(--text3)">Noch keine</span>
     </div>`;
-    const t = run.moving_time;
-    const display = isTime
-      ? `${Math.floor(t/3600)}:${String(Math.floor((t%3600)/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')} h`
-      : `${fmtPace(run.distance, run.moving_time)}/km`;
     const km = (run.distance/1000).toFixed(1);
-    return `<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:4px;padding:16px 0;">
-      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+    return `<div style="padding:16px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <span style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">${label}</span>
         <span style="color:var(--yellow);font-size:14px;">♛</span>
       </div>
-      <div style="font-size:26px;font-weight:800;color:var(--text);">${display}</div>
+      <div style="font-size:28px;font-weight:800;color:var(--text);margin-bottom:4px;">${fmtTime(run.moving_time)}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--orange);margin-bottom:6px;">${fmtPace(run.distance, run.moving_time)}/km</div>
       <div style="font-size:11px;color:var(--text2);">${km} km · ${fmtDate(run.start_date_local)}2026 · Ø ${Math.round(run.average_heartrate||0)} bpm</div>
     </div>`;
   }
 
   document.getElementById('modal-body').innerHTML =
     prRow('5 km', window._pr5k) +
-    `<div style="height:1px;background:var(--border)"></div>` +
     prRow('10 km', window._pr10k) +
-    `<div style="height:1px;background:var(--border)"></div>` +
-    prRow('Halbmarathon', window._prHM, true);
+    prRow('Halbmarathon', window._prHM).replace('border-bottom:1px solid var(--border)','');
 
   document.getElementById('modal').classList.add('open');
 }
