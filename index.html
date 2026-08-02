@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Trainingsstand">
+<meta name="theme-color" content="#F4F1EA">
+<title>Trainingsstand</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: #F4F1EA;
+    color: #1A1A18;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mono { font-family: "SF Mono", "Roboto Mono", "Courier New", monospace; letter-spacing: 0.06em; }
+
+  /* LOGIN */
+  #login-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  #login-screen h1 { font-size: 48px; font-weight: 800; line-height: 1; margin-bottom: 16px; }
+  #login-screen h1 span { color: #D85A30; }
+  #login-screen p { font-size: 15px; color: #5F5E5A; margin-bottom: 40px; max-width: 280px; }
+  .strava-btn {
+    display: flex; align-items: center; gap: 12px;
+    background: #FC4C02; color: white;
+    border: none; border-radius: 4px;
+    padding: 16px 28px; font-size: 16px; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+  }
+  .strava-btn:active { opacity: 0.85; }
+
+  /* LOADING */
+  #loading-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 16px;
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid #D3D1C7;
+    border-top-color: #D85A30;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* MAIN APP */
+  #app { display: none; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 40px; }
+
+  .top-bar { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .tag {
+    display: inline-block; background: #1A1A18; color: #FAEEDA;
+    font-size: 11px; padding: 6px 12px; margin: 10px 0 14px;
+  }
+  h1 { font-size: 44px; font-weight: 800; line-height: 1.02; letter-spacing: -0.01em; margin-bottom: 14px; }
+  h1 .black { color: #1A1A18; }
+  h1 .orange { color: #D85A30; }
+  .hr-bold { height: 3px; background: #1A1A18; margin-bottom: 18px; }
+  .section-label { font-size: 11px; color: #5F5E5A; margin-bottom: 8px; }
+
+  /* WEEK GRID */
+  .top-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; align-items: start; margin-bottom: 24px; }
+  .week-grid { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 6px; }
+  .day {
+    background: #FFFFFF; border: 1.5px solid #1A1A18;
+    padding: 12px 6px; text-align: center;
+    min-height: 80px; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .day.rest { border-style: dashed; border-color: #B4B2A9; }
+  .day.tempo { background: #1A1A18; }
+  .day.tempo .d-name { color: #FAEEDA; }
+  .day.tempo .d-sub { color: #D3D1C7; }
+  .day.tempo .d-label { color: #B4B2A9; }
+  .day.long { background: #D85A30; }
+  .day.long .d-name { color: #FFFFFF; }
+  .day.long .d-sub { color: #FAECE7; }
+  .day.long .d-label { color: #FAECE7; }
+  .d-label { font-size: 10px; color: #5F5E5A; }
+  .d-name { font-size: 11px; font-weight: 600; margin-top: 6px; }
+  .d-sub { font-size: 10px; color: #888780; margin-top: 2px; }
+
+  /* STAT CARDS */
+  .stat-grid { display: grid; grid-template-rows: auto auto; gap: 10px; }
+  .stat-card { background: #FFFFFF; border: 1.5px solid #1A1A18; padding: 12px 14px; }
+  .stat-card.dark { background: #1A1A18; }
+  .split-card { display: flex; align-items: stretch; padding: 12px 0; }
+  .split-half { flex: 1; padding: 0 14px; min-width: 0; }
+  .split-divider { width: 1.5px; background: #1A1A18; flex-shrink: 0; }
+  .split-divider.light { background: #444441; }
+  .stat-label { font-size: 11px; color: #5F5E5A; margin-bottom: 5px; }
+  .dark .stat-label { color: #B4B2A9; }
+  .stat-value { font-size: 22px; font-weight: 800; }
+  .stat-value small { font-size: 12px; font-weight: 400; color: #5F5E5A; }
+  .stat-delta { font-size: 11px; margin-top: 4px; }
+  .delta-good { color: #3B6D11; }
+  .delta-warn { color: #993C1D; }
+  .pr-crown { font-size: 16px; color: #BA7517; }
+  .check-done { color: #97C459; }
+
+  /* PROGRESS */
+  .prog-km { font-size: 22px; font-weight: 800; color: #FFFFFF; }
+  .prog-km small { font-size: 12px; font-weight: 400; color: #B4B2A9; }
+  .prog-bar-track { background: #444441; height: 6px; margin: 8px 0; }
+  .prog-bar-fill { background: #D85A30; height: 6px; transition: width 0.6s ease; }
+  .prog-label { font-size: 11px; color: #B4B2A9; margin-bottom: 5px; }
+  .prog-sessions { font-size: 11px; color: #D3D1C7; margin-top: 4px; }
+
+  /* KW BARS */
+  .kw-bars { display: flex; align-items: flex-end; gap: 8px; margin-top: 10px; height: 80px; }
+  .kw-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; height: 100%; }
+  .kw-bar-wrap { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; width: 100%; }
+  .kw-bar { width: 24px; min-height: 2px; }
+  .kw-km { font-size: 10px; font-weight: 600; color: #B4B2A9; margin-bottom: 4px; white-space: nowrap; }
+  .kw-label-text { font-size: 9px; color: #888780; margin-top: 5px; }
+
+  /* TREND ROW */
+  .trend-row { display: flex; align-items: baseline; gap: 6px; }
+  .trend-prev { font-size: 13px; font-weight: 400; color: #888780; text-decoration: line-through; text-decoration-color: #B4B2A9; }
+  .trend-arrow { font-size: 12px; color: #888780; }
+  .trend-good { color: #3B6D11; }
+
+  /* BOTTOM GRID */
+  .bottom-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; align-items: start; }
+
+  /* HR TABLE */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #FFFFFF; border: 1.5px solid #1A1A18; }
+  thead td { font-size: 10px; color: #5F5E5A; padding: 8px 12px; border-bottom: 1.5px solid #1A1A18; }
+  tbody tr { border-bottom: 1px solid #D3D1C7; cursor: pointer; transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover, tbody tr:active { background: #F0EDE6; }
+  tbody td { font-size: 13px; padding: 9px 12px; }
+  .pill { font-size: 10px; padding: 3px 7px; display: inline-block; white-space: nowrap; }
+  .pill-high { background: #FCEBEB; color: #791F1F; }
+  .pill-mid { background: #FAEEDA; color: #633806; }
+  .pill-pr { background: #1A1A18; color: #FAEEDA; }
+  .pill-best { background: #E1F5EE; color: #085041; }
+
+  /* STEPS */
+  .steps { border-top: 3px solid #1A1A18; border-bottom: 3px solid #1A1A18; }
+  .step { display: flex; align-items: center; gap: 12px; padding: 11px 14px; background: #FFFFFF; border-bottom: 1.5px solid #1A1A18; }
+  .step:last-child { border-bottom: none; background: #1A1A18; }
+  .step.amber { background: #FAEEDA; }
+  .step-num { font-size: 20px; font-weight: 800; width: 26px; flex-shrink: 0; }
+  .step:last-child .step-num { color: #FAEEDA; }
+  .step-title { font-size: 13px; font-weight: 600; }
+  .step:last-child .step-title { color: #FFFFFF; }
+  .step-sub { font-size: 11px; color: #5F5E5A; margin-top: 2px; }
+  .step:last-child .step-sub { color: #D3D1C7; }
+  .step-status { font-size: 10px; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+  .step.amber .step-sub { color: #633806; }
+
+  /* FOOTER */
+  footer { display: flex; justify-content: space-between; font-size: 10px; color: #888780; margin-top: 16px; }
+
+  /* LOGOUT BTN */
+  .logout-btn {
+    background: none; border: 1px solid #D3D1C7; color: #888780;
+    font-size: 10px; padding: 4px 8px; cursor: pointer; font-family: inherit;
+  }
+  .logout-btn:active { background: #E8E5DE; }
+
+  /* DETAIL MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(26,26,24,0.7); z-index: 100;
+    align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #F4F1EA; width: 100%; max-width: 600px;
+    border-top: 3px solid #D85A30;
+    padding: 24px 20px 40px;
+    max-height: 80vh; overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .modal-title { font-size: 18px; font-weight: 700; }
+  .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #5F5E5A; padding: 4px 8px; }
+  .modal-stat { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #D3D1C7; font-size: 14px; }
+  .modal-stat:last-child { border-bottom: none; }
+  .modal-stat-label { color: #5F5E5A; }
+  .modal-stat-value { font-weight: 600; }
+
+  /* PULL TO REFRESH indicator */
+  .refresh-hint { text-align: center; font-size: 11px; color: #B4B2A9; padding: 8px 0 0; }
+
+  @media (max-width: 700px) {
+    .top-grid, .bottom-grid { grid-template-columns: 1fr; gap: 16px; }
+    h1 { font-size: 36px; }
+    .week-grid { gap: 4px; }
+    .d-name { font-size: 10px; }
+    .d-sub { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="mono" style="font-size:11px;color:#5F5E5A;margin-bottom:24px;">MARIUS SPIECKER &middot; GLADBECK</div>
+  <h1><span class="black">TRAININGS</span><span style="color:#D85A30;">STAND.</span></h1>
+  <p>Verbinde dein Strava-Konto für Live-Trainingsdaten.</p>
+  <a id="strava-login-btn" class="strava-btn" href="#">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+    Mit Strava verbinden
+  </a>
+</div>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <div class="mono" style="font-size:11px;color:#5F5E5A;">DATEN WERDEN GELADEN...</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="wrap">
+    <div class="top-bar">
+      <div class="mono" style="font-size:11px;color:#5F5E5A;" id="athlete-name">MARIUS SPIECKER &middot; GLADBECK</div>
+      <button class="logout-btn mono" onclick="logout()">ABMELDEN</button>
+    </div>
+
+    <div class="tag mono">// ZIEL: HALBMARATHON 2:20&ndash;2:30H &middot; DANACH MARATHON Q4 2026</div>
+    <h1><span class="black">TRAININGS</span><span class="orange">STAND.</span></h1>
+    <div class="hr-bold"></div>
+
+    <div class="top-grid">
+      <div>
+        <div class="section-label mono">WOCHENPLAN</div>
+        <div class="week-grid">
+          <div class="day"><div class="d-label mono">MO</div><div><div class="d-name">Push+Easy</div><div class="d-sub">7&ndash;10 km</div></div></div>
+          <div class="day"><div class="d-label mono">DI</div><div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div></div>
+          <div class="day tempo"><div class="d-label mono">MI</div><div><div class="d-name">Tempo</div><div class="d-sub">5&ndash;6 km</div></div></div>
+          <div class="day"><div class="d-label mono">DO</div><div><div class="d-name">Push+Beine</div><div class="d-sub">Kraft</div></div></div>
+          <div class="day"><div class="d-label mono">FR</div><div><div class="d-name">Pull+Easy</div><div class="d-sub">7&ndash;10 km</div></div></div>
+          <div class="day rest"><div class="d-label mono">SA</div><div><div class="d-name" style="color:#888780;">Rest</div><div class="d-sub">&nbsp;</div></div></div>
+          <div class="day long"><div class="d-label mono">SO</div><div><div class="d-name">Long Run</div><div class="d-sub">15&ndash;21 km</div></div></div>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <!-- Wochenvolumen + Trend -->
+        <div class="stat-card dark split-card">
+          <div class="split-half">
+            <div class="prog-label mono">WOCHENVOLUMEN</div>
+            <div class="prog-km" id="week-km">0<small> / 35 km</small></div>
+            <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
+            <div class="prog-sessions mono" id="week-sessions">0/4 TRAININGS</div>
+          </div>
+          <div class="split-divider light"></div>
+          <div class="split-half">
+            <div class="prog-label mono">WOCHENTREND</div>
+            <div class="kw-bars" id="kw-bars">
+              <!-- dynamisch befüllt -->
+            </div>
+          </div>
+        </div>
+        <!-- Tempo + Grundlage -->
+        <div class="stat-card split-card">
+          <div class="split-half">
+            <div class="stat-label mono">TEMPO 5KM</div>
+            <div class="stat-value" id="tempo-pr">–</div>
+            <div class="stat-delta delta-good" id="tempo-date">–</div>
+          </div>
+          <div class="split-divider"></div>
+          <div class="split-half">
+            <div class="stat-label mono">GRUNDLAGE Ø HR</div>
+            <div class="trend-row">
+              <span class="trend-prev" id="hr-prev">–</span>
+              <span class="trend-arrow">&rarr;</span>
+              <span class="stat-value trend-good" id="hr-now">–</span>
+            </div>
+            <div class="stat-delta delta-good" id="hr-goal">Ziel &lt;135 bpm</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <div>
+        <div class="section-label mono">LETZTE LÄUFE &middot; TIPPEN FÜR DETAILS</div>
+        <table>
+          <thead><tr>
+            <td class="mono">DATUM</td>
+            <td class="mono">TYP</td>
+            <td class="mono">Ø HR</td>
+            <td class="mono">PACE</td>
+            <td class="mono">STATUS</td>
+          </tr></thead>
+          <tbody id="runs-table">
+            <tr><td colspan="5" style="text-align:center;padding:20px;color:#888780;">Lädt...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="section-label mono">WEG ZUM ZIEL</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div style="flex:1;">
+              <div class="step-title">Grundlagenausdauer verbessern</div>
+              <div class="step-sub" id="step1-sub">HR bei Easy Runs &lt;135 bpm</div>
+            </div>
+            <div class="step-status mono" style="color:#993C1D;">LÄUFT</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div style="flex:1;">
+              <div class="step-title">Long Run &middot; alle 2 Wochen</div>
+              <div class="step-sub">Ziel 18&ndash;21 km</div>
+            </div>
+            <div class="step-status mono" style="color:#3B6D11;">AKTIV</div>
+          </div>
+          <div class="step amber">
+            <div class="step-num">3</div>
+            <div style="flex:1;">
+              <div class="step-title">35 km/Woche stabil</div>
+              <div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div>
+            </div>
+            <div class="step-status mono" style="color:#633806;">AUFBAU</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div style="flex:1;">
+              <div class="step-title">Halbmarathon offiziell</div>
+              <div class="step-sub">Ziel 2:20&ndash;2:30h</div>
+            </div>
+            <div class="step-status mono" style="color:#D85A30;">ZIEL</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mono">
+      <div>QUELLE: STRAVA LIVE</div>
+      <div id="last-updated">–</div>
+    </footer>
+    <div class="refresh-hint mono">↓ Seite neu laden für aktuelle Daten</div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Lauf</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ─── KONFIGURATION ───────────────────────────────────────
+const CLIENT_ID = '269194';
+const REDIRECT_URI = window.location.origin + window.location.pathname;
+const API = '/.netlify/functions/strava';
+
+// ─── AUTH ────────────────────────────────────────────────
+document.getElementById('strava-login-btn').href =
+  `https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=activity:read_all,read`;
+
+async function callAPI(body) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+async function getValidToken() {
+  let tokens = JSON.parse(localStorage.getItem('strava_tokens') || 'null');
+  if (!tokens) return null;
+  if (Date.now() / 1000 > tokens.expires_at - 300) {
+    const fresh = await callAPI({ action: 'refresh', refresh_token: tokens.refresh_token });
+    if (fresh.access_token) {
+      tokens = { ...tokens, ...fresh };
+      localStorage.setItem('strava_tokens', JSON.stringify(tokens));
+    }
+  }
+  return tokens.access_token;
+}
+
+function logout() {
+  localStorage.removeItem('strava_tokens');
+  window.location.href = REDIRECT_URI;
+}
+
+// ─── HELPERS ─────────────────────────────────────────────
+function fmtPace(meters, seconds) {
+  const s = seconds / (meters / 1000);
+  return `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}/km`;
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return `${d.getDate().toString().padStart(2,'0')}.${(d.getMonth()+1).toString().padStart(2,'0')}.`;
+}
+
+function weekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function isoWeek(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 3 - (d.getDay()||7) + 1);
+  const w = new Date(d.getFullYear(), 0, 4);
+  return Math.round(((d - w) / 86400000 + (w.getDay()||7) - 1) / 7) + 1;
+}
+
+function hrPill(hr, type) {
+  if (!hr) return '';
+  if (type === 'pr') return `<span class="pill pill-pr">&#9819; PR</span>`;
+  if (hr < 137) return `<span class="pill pill-best">BESTWERT</span>`;
+  if (hr < 143) return `<span class="pill pill-mid">GRENZWERTIG</span>`;
+  return `<span class="pill pill-high">ZU HOCH</span>`;
+}
+
+// ─── RENDER ──────────────────────────────────────────────
+function renderDashboard(activities) {
+  const runs = activities.filter(a => a.sport_type === 'Run' || a.type === 'Run');
+
+  // Aktuelle KW
+  const now = new Date();
+  const wsNow = weekStart(now);
+  const thisWeekRuns = runs.filter(r => new Date(r.start_date_local) >= wsNow);
+  const weekKm = thisWeekRuns.reduce((s, r) => s + r.distance / 1000, 0);
+  const sessions = thisWeekRuns.length;
+  const weekPct = Math.min(100, weekKm / 35 * 100);
+
+  document.getElementById('week-km').innerHTML =
+    `${weekKm.toFixed(1)}<small> / 35 km</small>${sessions >= 4 ? ' <span class="check-done">✓</span>' : ''}`;
+  document.getElementById('week-bar').style.width = weekPct + '%';
+  document.getElementById('week-sessions').textContent =
+    `${sessions}/4 TRAININGS${sessions >= 4 ? ' ✓' : ''}`;
+
+  // KW-Balken (letzte 4 abgeschlossene KW + aktuelle)
+  const weekMap = {};
+  runs.forEach(r => {
+    const kw = isoWeek(r.start_date_local);
+    weekMap[kw] = (weekMap[kw] || 0) + r.distance / 1000;
+  });
+  const kwKeys = Object.keys(weekMap).map(Number).sort().slice(-4);
+  const maxKm = Math.max(...kwKeys.map(k => weekMap[k]), 1);
+  const currentKW = isoWeek(now);
+  const barsHtml = kwKeys.map(kw => {
+    const km = weekMap[kw] || 0;
+    const h = Math.round(km / maxKm * 65);
+    const isCurrent = kw === currentKW;
+    const style = isCurrent
+      ? `height:${h}px;background:#D85A30;border:1px dashed #FAEEDA;`
+      : `height:${h}px;background:#777572;`;
+    const label = isCurrent ? `KW${kw}↗` : `KW${kw}`;
+    return `<div class="kw-col">
+      <div class="kw-bar-wrap">
+        <div class="kw-km" style="${isCurrent ? 'color:#FAEEDA;font-weight:700;' : ''}">${km.toFixed(1)}</div>
+        <div class="kw-bar" style="${style}"></div>
+      </div>
+      <div class="kw-label-text mono" style="${isCurrent ? 'color:#888780;' : ''}">${label}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('kw-bars').innerHTML = barsHtml;
+
+  // Tempo PR (5km)
+  const tempoRuns = runs.filter(r => r.distance < 6500 && r.distance > 4500 && r.average_heartrate > 160);
+  if (tempoRuns.length) {
+    const best = tempoRuns.reduce((a, b) =>
+      (a.distance / a.moving_time) > (b.distance / b.moving_time) ? a : b);
+    document.getElementById('tempo-pr').innerHTML =
+      `${fmtPace(best.distance, best.moving_time)} <span class="pr-crown">♛</span>`;
+    document.getElementById('tempo-date').textContent = `5 km · ${fmtDate(best.start_date_local)}`;
+  }
+
+  // Grundlage HR Trend (Easy Runs)
+  const easyRuns = runs.filter(r => r.distance > 5000 && r.average_heartrate && r.average_heartrate < 160)
+    .sort((a,b) => new Date(a.start_date_local) - new Date(b.start_date_local));
+  if (easyRuns.length >= 2) {
+    const prev = easyRuns[easyRuns.length - 2];
+    const curr = easyRuns[easyRuns.length - 1];
+    document.getElementById('hr-prev').textContent = Math.round(prev.average_heartrate);
+    document.getElementById('hr-now').textContent = Math.round(curr.average_heartrate) + ' bpm';
+    const diff = Math.round(prev.average_heartrate) - Math.round(curr.average_heartrate);
+    document.getElementById('hr-goal').textContent =
+      diff > 0 ? `−${diff} bpm · Ziel <135 bpm` : `+${Math.abs(diff)} bpm · Ziel <135 bpm`;
+  }
+
+  // Letzte 6 Läufe Tabelle
+  const last6 = runs.slice(0, 6);
+  const tbody = last6.map((r, i) => {
+    const isPR = r.pr_count > 0;
+    const hr = r.average_heartrate ? Math.round(r.average_heartrate) : '–';
+    const pace = fmtPace(r.distance, r.moving_time);
+    const km = (r.distance / 1000).toFixed(1);
+    const pill = r.average_heartrate ? hrPill(r.average_heartrate, isPR ? 'pr' : '') : '';
+    return `<tr onclick="showDetail(${i})" data-idx="${i}">
+      <td>${fmtDate(r.start_date_local)}</td>
+      <td>${km}km</td>
+      <td><b>${hr}</b></td>
+      <td>${pace}</td>
+      <td>${pill}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('runs-table').innerHTML = tbody || '<tr><td colspan="5" style="text-align:center;padding:20px;color:#888780;">Keine Läufe</td></tr>';
+
+  // Step 1 Sub
+  const latestEasy = easyRuns[easyRuns.length - 1];
+  if (latestEasy) {
+    document.getElementById('step1-sub').textContent =
+      `Aktuell ${Math.round(latestEasy.average_heartrate)} bpm · Ziel <135 bpm`;
+  }
+
+  // Step 3 Sub
+  document.getElementById('step3-sub').textContent =
+    `Diese Woche ${weekKm.toFixed(1)} km von 35 km`;
+
+  // Footer
+  document.getElementById('last-updated').textContent =
+    'AKTUALISIERT: ' + new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+
+  // Aktivitäten für Modal speichern
+  window._activities = runs;
+}
+
+// ─── MODAL ───────────────────────────────────────────────
+function showDetail(idx) {
+  const r = window._activities[idx];
+  if (!r) return;
+  const km = (r.distance / 1000).toFixed(1);
+  const pace = fmtPace(r.distance, r.moving_time);
+  const mins = Math.floor(r.moving_time / 60);
+  const time = `${Math.floor(mins/60)}:${String(mins%60).padStart(2,'0')} h`;
+  document.getElementById('modal-title').textContent = `${fmtDate(r.start_date_local)} · ${r.name}`;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-stat"><span class="modal-stat-label">Distanz</span><span class="modal-stat-value">${km} km</span></div>
+    <div class="modal-stat"><span class="modal-stat-label">Zeit</span><span class="modal-stat-value">${time}</span></div>
+    <div class="modal-stat"><span class="modal-stat-label">Pace</span><span class="modal-stat-value">${pace}</span></div>
+    ${r.average_heartrate ? `<div class="modal-stat"><span class="modal-stat-label">Ø Herzfrequenz</span><span class="modal-stat-value">${Math.round(r.average_heartrate)} bpm</span></div>` : ''}
+    ${r.max_heartrate ? `<div class="modal-stat"><span class="modal-stat-label">Max Herzfrequenz</span><span class="modal-stat-value">${Math.round(r.max_heartrate)} bpm</span></div>` : ''}
+    ${r.total_elevation_gain ? `<div class="modal-stat"><span class="modal-stat-label">Höhenmeter</span><span class="modal-stat-value">${Math.round(r.total_elevation_gain)} m</span></div>` : ''}
+    ${r.pr_count ? `<div class="modal-stat"><span class="modal-stat-label">PRs</span><span class="modal-stat-value" style="color:#D85A30;">♛ ${r.pr_count} neue Bestzeiten</span></div>` : ''}
+    ${r.total_photo_count ? `<div class="modal-stat"><span class="modal-stat-label">Fotos</span><span class="modal-stat-value">${r.total_photo_count}</span></div>` : ''}
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+
+  // OAuth Callback
+  if (code) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('loading-screen').style.display = 'flex';
+    window.history.replaceState({}, '', REDIRECT_URI);
+
+    const tokens = await callAPI({ action: 'exchange', code });
+    if (tokens.access_token) {
+      localStorage.setItem('strava_tokens', JSON.stringify(tokens));
+    } else {
+      alert('Login fehlgeschlagen. Bitte erneut versuchen.');
+      window.location.href = REDIRECT_URI;
+      return;
+    }
+  }
+
+  const token = await getValidToken();
+
+  if (!token) {
+    document.getElementById('login-screen').style.display = 'flex';
+    return;
+  }
+
+  // Daten laden
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('loading-screen').style.display = 'flex';
+
+  try {
+    const [athlete, activities] = await Promise.all([
+      callAPI({ action: 'athlete', access_token: token }),
+      callAPI({ action: 'activities', access_token: token })
+    ]);
+
+    if (athlete.firstname) {
+      document.getElementById('athlete-name').textContent =
+        `${athlete.firstname.toUpperCase()} ${athlete.lastname.toUpperCase()} · GLADBECK`;
+    }
+
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    renderDashboard(activities);
+
+  } catch (err) {
+    alert('Fehler beim Laden der Daten. Bitte Seite neu laden.');
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
