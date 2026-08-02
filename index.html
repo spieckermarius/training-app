@@ -228,6 +228,13 @@
 
   .tappable { cursor: pointer; }
   .tappable:active { opacity: 0.85; }
+
+  /* SWIPE CARD */
+  .swipe-card { overflow: hidden; touch-action: pan-y; }
+  .swipe-slide { width: 100%; }
+  .swipe-dots { display: flex; justify-content: center; gap: 6px; padding: 10px 0 12px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bg3); transition: background 0.2s; }
+  .dot.active { background: var(--orange); width: 16px; border-radius: 3px; }
 </style>
 </head>
 <body>
@@ -266,22 +273,65 @@
       <div class="day long"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">15–21</div></div>
     </div>
 
-    <div class="section-label">Diese Woche</div>
-    <div class="card tappable" onclick="showWeekModal()">
-      <div class="split">
-        <div class="split-half">
-          <div class="stat-label">Wochenvolumen</div>
-          <div class="prog-km" id="week-km">0<small> / 35 km</small></div>
-          <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
-          <div class="prog-sessions" id="week-sessions">0/4 Trainings</div>
-        </div>
-        <div class="split-div"></div>
-        <div class="split-half">
-          <div class="stat-label">Wochentrend</div>
-          <div class="kw-bars" id="kw-bars"></div>
+    <div class="section-label" id="vol-label">Diese Woche</div>
+    <div class="swipe-card card" id="vol-card">
+      <!-- Slide 0: Woche -->
+      <div class="swipe-slide" id="slide-week">
+        <div class="split" style="cursor:pointer;" onclick="showWeekModal()">
+          <div class="split-half">
+            <div class="stat-label">Wochenvolumen</div>
+            <div class="prog-km" id="week-km">0<small> / 35 km</small></div>
+            <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
+            <div class="prog-sessions" id="week-sessions">0/4 Trainings</div>
+          </div>
+          <div class="split-div"></div>
+          <div class="split-half">
+            <div class="stat-label">Wochentrend</div>
+            <div class="kw-bars" id="kw-bars"></div>
+          </div>
         </div>
       </div>
+      <!-- Slide 1: Monat -->
+      <div class="swipe-slide" id="slide-month" style="display:none;">
+        <div class="split">
+          <div class="split-half">
+            <div class="stat-label">Monatsvolumen</div>
+            <div class="prog-km" id="month-km">0<small> km</small></div>
+            <div class="prog-bar-track"><div class="prog-bar-fill" id="month-bar" style="width:0%"></div></div>
+            <div class="prog-sessions" id="month-label-text">–</div>
+          </div>
+          <div class="split-div"></div>
+          <div class="split-half">
+            <div class="stat-label">Monatstrend</div>
+            <div class="kw-bars" id="month-bars"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Slide 2: Jahr -->
+      <div class="swipe-slide" id="slide-year" style="display:none;">
+        <div class="split">
+          <div class="split-half">
+            <div class="stat-label">Jahresvolumen</div>
+            <div class="prog-km" id="year-km">0<small> km</small></div>
+            <div class="prog-bar-track"><div class="prog-bar-fill" id="year-bar" style="width:0%"></div></div>
+            <div class="prog-sessions" id="year-runs">– Läufe</div>
+          </div>
+          <div class="split-div"></div>
+          <div class="split-half">
+            <div class="stat-label">Trend (Monate)</div>
+            <div class="kw-bars" id="year-bars"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Dots -->
+      <div class="swipe-dots">
+        <div class="dot active" id="dot-0"></div>
+        <div class="dot" id="dot-1"></div>
+        <div class="dot" id="dot-2"></div>
+      </div>
     </div>
+
+    <div class="section-label">Fortschritt</div>
 
     <div class="card tappable" onclick="showPRModal()">
       <div class="split">
@@ -513,7 +563,66 @@ function renderDashboard(activities) {
     const lat=easyRuns[easyRuns.length-1];
     document.getElementById('step1-sub').textContent=`Aktuell ${Math.round(lat.average_heartrate)} bpm · Ziel <135 bpm`;
   }
+  // ── Monat ──
+  const nowMonth = now.getMonth(), nowYear = now.getFullYear();
+  const monthRuns = runs.filter(r => {
+    const d = new Date(r.start_date_local);
+    return d.getMonth()===nowMonth && d.getFullYear()===nowYear;
+  });
+  const monthKm = monthRuns.reduce((s,r)=>s+r.distance/1000,0);
+  document.getElementById('month-km').innerHTML = `${monthKm.toFixed(1)}<small> km</small>`;
+  document.getElementById('month-bar').style.width = Math.min(100, monthKm/140*100)+'%'; // 140km Monatsziel
+  document.getElementById('month-label-text').textContent = `${monthRuns.length} Läufe · Ziel ~140 km`;
+
+  // Monat-Trend: letzte 4 Kalenderwochen des Monats
+  const weekMap2={};
+  monthRuns.forEach(r=>{ const kw=isoWeek(r.start_date_local); weekMap2[kw]=(weekMap2[kw]||0)+r.distance/1000; });
+  const kwKeys2=Object.keys(weekMap2).map(Number).sort().slice(-4);
+  const maxKm2=Math.max(...kwKeys2.map(k=>weekMap2[k]),1);
+  document.getElementById('month-bars').innerHTML = kwKeys2.map(kw=>{
+    const km=weekMap2[kw]||0;
+    const h=Math.max(18,Math.round(km/maxKm2*58));
+    const isCurr=kw===isoWeek(now);
+    return `<div class="kw-col">
+      <div class="kw-bar-wrap">
+        <div class="kw-bar" style="height:${h}px;background:${isCurr?'var(--orange)':'var(--bg3)'};width:100%;">
+          <div class="kw-bar-label">${km.toFixed(1)}<br>km</div>
+        </div>
+      </div>
+      <div class="kw-label-text" style="${isCurr?'color:var(--orange);font-weight:700;':''}">KW${kw}</div>
+    </div>`;
+  }).join('');
+
+  // ── Jahr ──
+  const yearRuns = runs.filter(r=>new Date(r.start_date_local).getFullYear()===nowYear);
+  const yearKm = yearRuns.reduce((s,r)=>s+r.distance/1000,0);
+  document.getElementById('year-km').innerHTML = `${Math.round(yearKm)}<small> km</small>`;
+  document.getElementById('year-bar').style.width = Math.min(100, yearKm/1500*100)+'%'; // 1500km Jahresziel
+  document.getElementById('year-runs').textContent = `${yearRuns.length} Läufe · Ziel ~1500 km`;
+
+  // Jahr-Trend: letzte 4 Monate
+  const monthNames = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const monthMap={};
+  yearRuns.forEach(r=>{ const m=new Date(r.start_date_local).getMonth(); monthMap[m]=(monthMap[m]||0)+r.distance/1000; });
+  const recentMonths = [...Array(4)].map((_,i)=>((nowMonth-3+i+12)%12)).filter(m=>monthMap[m]!==undefined||m<=nowMonth);
+  const maxMonthKm = Math.max(...recentMonths.map(m=>monthMap[m]||0),1);
+  document.getElementById('year-bars').innerHTML = recentMonths.map(m=>{
+    const km=monthMap[m]||0;
+    const h=Math.max(18,Math.round(km/maxMonthKm*58));
+    const isCurr=m===nowMonth;
+    return `<div class="kw-col">
+      <div class="kw-bar-wrap">
+        <div class="kw-bar" style="height:${h}px;background:${isCurr?'var(--orange)':'var(--bg3)'};width:100%;">
+          <div class="kw-bar-label">${km>0?Math.round(km)+'<br>km':''}</div>
+        </div>
+      </div>
+      <div class="kw-label-text" style="${isCurr?'color:var(--orange);font-weight:700;':''}">${monthNames[m]}</div>
+    </div>`;
+  }).join('');
+
   document.getElementById('step3-sub').textContent=`Diese Woche ${weekKm.toFixed(1)} km von 35 km`;
+  document.getElementById('last-updated').textContent=
+    new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
   document.getElementById('last-updated').textContent=
     new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
 }
@@ -569,6 +678,31 @@ function showRunDetail(idx) {
   document.getElementById('modal').classList.add('open');
 }
 
+function initSwipe() {
+  const card = document.getElementById('vol-card');
+  const slides = ['week','month','year'];
+  const labels = ['Diese Woche','Diesen Monat','Dieses Jahr'];
+  let current = 0;
+  let startX = 0;
+
+  function goTo(idx) {
+    slides.forEach((s,i) => {
+      document.getElementById('slide-'+s).style.display = i===idx?'block':'none';
+      document.getElementById('dot-'+i).className = 'dot'+(i===idx?' active':'');
+    });
+    document.getElementById('vol-label').textContent = labels[idx];
+    current = idx;
+  }
+
+  card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+  card.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) < 40) return;
+    if (dx < 0 && current < 2) goTo(current+1);
+    if (dx > 0 && current > 0) goTo(current-1);
+  }, {passive:true});
+}
+
 function showWeekModal() {
   document.getElementById('modal-title').textContent='Diese Woche';
   document.getElementById('modal-body').innerHTML=_thisWeekRuns.length
@@ -604,6 +738,7 @@ async function init() {
     document.getElementById('loading-screen').style.display='none';
     document.getElementById('app').style.display='block';
     renderDashboard(activities);
+    initSwipe();
   } catch(err) {
     alert('Fehler beim Laden. Bitte neu laden.');
     document.getElementById('loading-screen').style.display='none';
