@@ -201,6 +201,58 @@
   /* ── FOOTER ── */
   footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 16px; font-weight: 500; }
 
+  /* ── CLAUDE FAB ── */
+  .claude-fab {
+    position: fixed; bottom: 28px; right: 20px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, #D97757, #C96442);
+    border: none; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(217,119,87,0.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 90; transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .claude-fab:active { transform: scale(0.93); box-shadow: 0 2px 10px rgba(217,119,87,0.3); }
+  .claude-fab svg { width: 28px; height: 28px; }
+
+  /* Analyse Modal */
+  .analyse-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 100;
+    align-items: flex-end; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .analyse-overlay.open { display: flex; }
+  .analyse-modal {
+    background: var(--bg2); width: 100%; max-width: 680px;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px 48px;
+    animation: slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+  }
+  .analyse-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .analyse-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .analyse-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #D97757, #C96442);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .analyse-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .analyse-subtitle { font-size: 11px; color: var(--text3); margin-bottom: 16px; margin-left: 42px; }
+  .analyse-run-info {
+    background: var(--bg3); border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 16px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .analyse-run-stat { font-size: 11px; color: var(--text2); }
+  .analyse-run-stat strong { color: var(--text); font-weight: 700; display: block; font-size: 13px; }
+  .analyse-body { min-height: 80px; }
+  .analyse-loading { display: flex; align-items: center; gap: 10px; color: var(--text2); font-size: 13px; }
+  .analyse-line {
+    font-size: 14px; color: var(--text); padding: 8px 0;
+    border-bottom: 1px solid var(--border); line-height: 1.4;
+  }
+  .analyse-line:last-child { border-bottom: none; }
+  .analyse-error { color: var(--red); font-size: 13px; }
+
   /* ── MODAL ── */
   .modal-overlay {
     display: none; position: fixed; inset: 0;
@@ -415,6 +467,37 @@
     </div>
 
     <footer>Strava Live · <span id="last-updated">–</span></footer>
+  </div>
+</div>
+
+<!-- CLAUDE FAB -->
+<button class="claude-fab" onclick="openAnalyse()" id="claude-fab" style="display:none;" title="Lauf analysieren">
+  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="48" fill="rgba(255,255,255,0.15)"/>
+    <text x="50" y="67" text-anchor="middle" font-size="52" font-family="serif" fill="white">C</text>
+  </svg>
+</button>
+
+<!-- ANALYSE MODAL -->
+<div class="analyse-overlay" id="analyse-overlay" onclick="closeAnalyse(event)">
+  <div class="analyse-modal">
+    <div class="analyse-handle"></div>
+    <div class="analyse-header">
+      <div class="analyse-avatar">
+        <svg viewBox="0 0 100 100" width="18" height="18" fill="none">
+          <text x="50" y="70" text-anchor="middle" font-size="60" font-family="serif" fill="white">C</text>
+        </svg>
+      </div>
+      <div class="analyse-title">Laufanalyse</div>
+    </div>
+    <div class="analyse-subtitle" id="analyse-subtitle">Letzter Lauf</div>
+    <div class="analyse-run-info" id="analyse-run-info"></div>
+    <div class="analyse-body" id="analyse-body">
+      <div class="analyse-loading">
+        <div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>
+        Claude analysiert deinen Lauf…
+      </div>
+    </div>
   </div>
 </div>
 
@@ -686,6 +769,67 @@ function showRunDetail(idx) {
   document.getElementById('modal').classList.add('open');
 }
 
+function getPlannedType(run) {
+  const day = new Date(run.start_date_local).getDay();
+  if (day===3) return 'Tempolauf (Mi) · Ziel 5-6km, 170-185 bpm';
+  if (day===5) return 'Easy Run (Fr) · Ziel 7-10km, <140 bpm';
+  if (day===0) return 'Long Run (So) · Ziel 15-21km, <145 bpm';
+  if (day===1) return 'Easy Run (Mo) · Ziel 7-10km, <140 bpm';
+  return 'Kein Lauftag geplant';
+}
+
+async function openAnalyse() {
+  if (!window._activities||!window._activities.length) return;
+  const run = window._activities[0];
+  const prev = window._activities[1];
+  const dist = (run.distance/1000).toFixed(1);
+  const pace = fmtPace(run.distance, run.moving_time);
+  const fmtTime = window._fmtTime || (s => {
+    const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+    return h>0?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')} h`:`${m}:${String(sec).padStart(2,'0')} min`;
+  });
+  const time = fmtTime(run.moving_time);
+  const daysSince = prev ? Math.round((new Date(run.start_date_local)-new Date(prev.start_date_local))/86400000) : '?';
+
+  document.getElementById('analyse-subtitle').textContent = `${fmtDate(run.start_date_local)} · ${run.name}`;
+  document.getElementById('analyse-run-info').innerHTML = `
+    <div class="analyse-run-stat"><strong>${dist} km</strong>Distanz</div>
+    <div class="analyse-run-stat"><strong>${time}</strong>Zeit</div>
+    <div class="analyse-run-stat"><strong>${pace}/km</strong>Pace</div>
+    <div class="analyse-run-stat"><strong>${Math.round(run.average_heartrate||0)} bpm</strong>Ø HR</div>
+    ${run.pr_count>0?`<div class="analyse-run-stat"><strong style="color:var(--yellow)">♛ ${run.pr_count}</strong>PRs</div>`:''}
+  `;
+  document.getElementById('analyse-body').innerHTML =
+    `<div class="analyse-loading"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>Claude analysiert…</div>`;
+  document.getElementById('analyse-overlay').classList.add('open');
+
+  try {
+    const res = await callAPI({
+      action: 'analyse',
+      run: {
+        date: fmtDate(run.start_date_local),
+        plannedType: getPlannedType(run),
+        distance: dist, time, pace,
+        avgHR: Math.round(run.average_heartrate||0),
+        maxHR: Math.round(run.max_heartrate||0),
+        daysSinceLast: daysSince,
+        prCount: run.pr_count||0,
+      }
+    });
+    const lines = (res.analysis||'').split('\n').filter(l=>l.trim());
+    document.getElementById('analyse-body').innerHTML =
+      lines.map(l=>`<div class="analyse-line">${l}</div>`).join('');
+  } catch(e) {
+    document.getElementById('analyse-body').innerHTML =
+      `<div class="analyse-error">Fehler beim Laden der Analyse.</div>`;
+  }
+}
+
+function closeAnalyse(e) {
+  if (!e||e.target===document.getElementById('analyse-overlay'))
+    document.getElementById('analyse-overlay').classList.remove('open');
+}
+
 function initSwipe() {
   const card = document.getElementById('vol-card');
   const slides = ['week','month','year'];
@@ -747,6 +891,7 @@ async function init() {
     document.getElementById('app').style.display='block';
     renderDashboard(activities);
     initSwipe();
+    document.getElementById('claude-fab').style.display = 'flex';
   } catch(err) {
     alert('Fehler beim Laden. Bitte neu laden.');
     document.getElementById('loading-screen').style.display='none';
