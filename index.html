@@ -903,8 +903,12 @@ async function init() {
     renderDashboard(activities);
     initSwipe();
     const fab = document.getElementById('claude-fab');
-    fab.style.opacity = '1';
-    fab.style.pointerEvents = 'auto';
+    fab.removeAttribute('style');
+    fab.style.cssText = 'opacity:1; pointer-events:auto;';
+    fab.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      openAnalyse();
+    }, {passive: false});
   } catch(err) {
     alert('Fehler beim Laden. Bitte neu laden.');
     document.getElementById('loading-screen').style.display='none';
