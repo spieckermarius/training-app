@@ -203,21 +203,24 @@
 
   /* ── CLAUDE FAB ── */
   .claude-fab {
-    position: fixed; bottom: 28px; right: 20px;
-    width: 52px; height: 52px; border-radius: 50%;
+    position: fixed; bottom: 32px; right: 24px;
+    width: 62px; height: 62px; border-radius: 50%;
     background: linear-gradient(135deg, #D97757, #C96442);
     border: none; cursor: pointer;
-    box-shadow: 0 4px 20px rgba(217,119,87,0.45);
+    box-shadow: 0 4px 24px rgba(217,119,87,0.5);
     display: flex; align-items: center; justify-content: center;
-    z-index: 90; transition: transform 0.15s, box-shadow 0.15s;
+    z-index: 200;
+    transition: transform 0.15s, box-shadow 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
-  .claude-fab:active { transform: scale(0.93); box-shadow: 0 2px 10px rgba(217,119,87,0.3); }
-  .claude-fab svg { width: 28px; height: 28px; }
+  .claude-fab:active { transform: scale(0.92); box-shadow: 0 2px 12px rgba(217,119,87,0.3); }
+  .claude-fab svg { width: 34px; height: 34px; pointer-events: none; }
 
   /* Analyse Modal */
   .analyse-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6); z-index: 100;
+    background: rgba(0,0,0,0.6); z-index: 300;
     align-items: flex-end; justify-content: center;
     backdrop-filter: blur(4px);
   }
@@ -471,7 +474,7 @@
 </div>
 
 <!-- CLAUDE FAB -->
-<button class="claude-fab" onclick="openAnalyse()" id="claude-fab" style="display:none;" title="Lauf analysieren">
+<button class="claude-fab" onclick="openAnalyse()" id="claude-fab" style="opacity:0;pointer-events:none;" title="Lauf analysieren">
   <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="50" cy="50" r="48" fill="rgba(255,255,255,0.15)"/>
     <text x="50" y="67" text-anchor="middle" font-size="52" font-family="serif" fill="white">C</text>
@@ -891,7 +894,9 @@ async function init() {
     document.getElementById('app').style.display='block';
     renderDashboard(activities);
     initSwipe();
-    document.getElementById('claude-fab').style.display = 'flex';
+    const fab = document.getElementById('claude-fab');
+    fab.style.opacity = '1';
+    fab.style.pointerEvents = 'auto';
   } catch(err) {
     alert('Fehler beim Laden. Bitte neu laden.');
     document.getElementById('loading-screen').style.display='none';
