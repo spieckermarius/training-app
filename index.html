@@ -224,7 +224,7 @@
     align-items: flex-end; justify-content: center;
     backdrop-filter: blur(4px);
   }
-  .analyse-overlay.open { display: flex; }
+  .analyse-overlay.open { display: flex !important; }
   .analyse-modal {
     background: var(--bg2); width: 100%; max-width: 680px;
     border-radius: 20px 20px 0 0;
@@ -263,7 +263,7 @@
     align-items: flex-end; justify-content: center;
     backdrop-filter: blur(4px);
   }
-  .modal-overlay.open { display: flex; }
+  .modal-overlay.open { display: flex !important; }
   .modal {
     background: var(--bg2); width: 100%; max-width: 680px;
     border-radius: 20px 20px 0 0;
@@ -482,7 +482,7 @@
 </button>
 
 <!-- ANALYSE MODAL -->
-<div class="analyse-overlay" id="analyse-overlay" onclick="closeAnalyse(event)">
+<div class="analyse-overlay" id="analyse-overlay" style="display:none;" onclick="closeAnalyse(event)">
   <div class="analyse-modal">
     <div class="analyse-handle"></div>
     <div class="analyse-header">
@@ -504,7 +504,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+<div class="modal-overlay" id="modal" style="display:none;" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
@@ -751,7 +751,7 @@ function showPRModal() {
     prRow('10 km', window._pr10k) +
     prRow('Halbmarathon', window._prHM).replace('border-bottom:1px solid var(--border)','');
 
-  document.getElementById('modal').classList.add('open');
+  const m=document.getElementById('modal'); m.style.display='flex'; m.classList.add('open');
 }
 
 function showRunDetail(idx) {
@@ -769,7 +769,7 @@ function showRunDetail(idx) {
   ].filter(Boolean).map(([l,v])=>
     `<div class="modal-stat"><span class="modal-stat-label">${l}</span><span class="modal-stat-value">${v}</span></div>`
   ).join('');
-  document.getElementById('modal').classList.add('open');
+  const m=document.getElementById('modal'); m.style.display='flex'; m.classList.add('open');
 }
 
 function getPlannedType(run) {
@@ -804,7 +804,9 @@ async function openAnalyse() {
   `;
   document.getElementById('analyse-body').innerHTML =
     `<div class="analyse-loading"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>Claude analysiert…</div>`;
-  document.getElementById('analyse-overlay').classList.add('open');
+  const overlay = document.getElementById('analyse-overlay');
+  overlay.style.display = 'flex';
+  overlay.classList.add('open');
 
   try {
     const res = await callAPI({
@@ -829,8 +831,11 @@ async function openAnalyse() {
 }
 
 function closeAnalyse(e) {
-  if (!e||e.target===document.getElementById('analyse-overlay'))
-    document.getElementById('analyse-overlay').classList.remove('open');
+  if (!e||e.target===document.getElementById('analyse-overlay')) {
+    const overlay = document.getElementById('analyse-overlay');
+    overlay.style.display = 'none';
+    overlay.classList.remove('open');
+  }
 }
 
 function initSwipe() {
@@ -866,11 +871,14 @@ function showWeekModal() {
         <span class="modal-stat-label">${(r.distance/1000).toFixed(1)} km · ${fmtPace(r.distance,r.moving_time)}/km${r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':''}</span>
       </div>`).join('')
     : '<div style="padding:20px;text-align:center;color:var(--text3)">Noch keine Läufe diese Woche</div>';
-  document.getElementById('modal').classList.add('open');
+  const m=document.getElementById('modal'); m.style.display='flex'; m.classList.add('open');
 }
 
 function closeModal(e) {
-  if (!e||e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open');
+  if (!e||e.target===document.getElementById('modal')) {
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('modal').classList.remove('open');
+  }
 }
 
 async function init() {
