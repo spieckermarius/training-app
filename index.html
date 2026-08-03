@@ -201,7 +201,6 @@
   /* ── FOOTER ── */
   footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 16px; font-weight: 500; }
 
-  /* ── CLAUDE FAB ── */
   .claude-fab {
     position: fixed; bottom: 32px; right: 24px;
     width: 62px; height: 62px; border-radius: 50%;
@@ -210,11 +209,17 @@
     box-shadow: 0 4px 24px rgba(217,119,87,0.5);
     display: flex; align-items: center; justify-content: center;
     z-index: 200;
-    transition: transform 0.15s, box-shadow 0.15s;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.3s;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    opacity: 0;
+    pointer-events: none;
   }
-  .claude-fab:active { transform: scale(0.92); box-shadow: 0 2px 12px rgba(217,119,87,0.3); }
+  .claude-fab.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .claude-fab:active { transform: scale(0.88); box-shadow: 0 2px 12px rgba(217,119,87,0.3); }
   .claude-fab svg { width: 34px; height: 34px; pointer-events: none; }
 
   /* Analyse Modal */
@@ -281,15 +286,40 @@
   .modal-stat-label { color: var(--text2); font-weight: 400; }
   .modal-stat-value { font-weight: 600; color: var(--text); }
 
-  .tappable { cursor: pointer; }
-  .tappable:active { opacity: 0.85; }
+  /* ── TOUCH FEEDBACK ── */
+  .tappable {
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .tappable:active {
+    transform: scale(0.97);
+    opacity: 0.88;
+  }
 
-  /* SWIPE CARD */
+  /* Tabellenzeilen */
+  tbody tr {
+    transition: background 0.1s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  tbody tr:active {
+    background: var(--bg3) !important;
+    transform: scale(0.99);
+  }
+
+  /* Swipe Card */
   .swipe-card { overflow: hidden; touch-action: pan-y; }
   .swipe-slide { width: 100%; }
   .swipe-dots { display: flex; justify-content: center; gap: 6px; padding: 10px 0 12px; }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bg3); transition: background 0.2s; }
   .dot.active { background: var(--orange); width: 16px; border-radius: 3px; }
+
+  /* Step rows */
+  .step {
+    transition: opacity 0.1s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
 </style>
 </head>
 <body>
@@ -474,7 +504,7 @@
 </div>
 
 <!-- CLAUDE FAB -->
-<button class="claude-fab" onclick="openAnalyse()" id="claude-fab" style="opacity:0;pointer-events:none;" title="Lauf analysieren">
+<button class="claude-fab" id="claude-fab" title="Lauf analysieren">
   <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="50" cy="50" r="48" fill="rgba(255,255,255,0.15)"/>
     <text x="50" y="67" text-anchor="middle" font-size="52" font-family="serif" fill="white">C</text>
@@ -903,10 +933,11 @@ async function init() {
     renderDashboard(activities);
     initSwipe();
     const fab = document.getElementById('claude-fab');
-    fab.removeAttribute('style');
-    fab.style.cssText = 'opacity:1; pointer-events:auto;';
+    fab.classList.add('visible');
+    fab.addEventListener('click', openAnalyse);
     fab.addEventListener('touchend', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       openAnalyse();
     }, {passive: false});
   } catch(err) {
