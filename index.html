@@ -853,12 +853,19 @@ async function openAnalyse() {
         prCount: run.pr_count||0,
       }
     });
-    const lines = (res.analysis||'').split('\n').filter(l=>l.trim());
-    document.getElementById('analyse-body').innerHTML =
-      lines.map(l=>`<div class="analyse-line">${l}</div>`).join('');
+    console.log('Analyse Response:', JSON.stringify(res));
+    if (res.analysis) {
+      const lines = res.analysis.split('\n').filter(l=>l.trim());
+      document.getElementById('analyse-body').innerHTML =
+        lines.map(l=>`<div class="analyse-line">${l}</div>`).join('');
+    } else {
+      document.getElementById('analyse-body').innerHTML =
+        `<div class="analyse-error">Fehler: ${JSON.stringify(res)}</div>`;
+    }
   } catch(e) {
+    console.error('Analyse Fehler:', e);
     document.getElementById('analyse-body').innerHTML =
-      `<div class="analyse-error">Fehler beim Laden der Analyse.</div>`;
+      `<div class="analyse-error">Fehler: ${e.message}</div>`;
   }
 }
 
