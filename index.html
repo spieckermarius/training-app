@@ -427,7 +427,8 @@
 
     <div class="section-label">Fortschritt</div>
 
-    <div class="card tappable" onclick="showPRModal()">
+    <!-- Bestzeiten Kachel -->
+    <div class="card tappable" onclick="showPRModal()" style="margin-bottom:8px;">
       <div class="split">
         <div class="split-half">
           <div class="stat-label">Bestzeiten ♛ · Antippen für alle</div>
@@ -445,24 +446,41 @@
           </div>
         </div>
         <div class="split-div"></div>
+        <div class="split-half" style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;">
+          <div style="font-size:28px;">🏆</div>
+          <div style="font-size:10px;color:var(--text3);text-align:center;">5km · 10km · Halbmarathon</div>
+          <div style="font-size:10px;color:var(--orange);font-weight:600;">Antippen →</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grundlage Kachel -->
+    <div class="card tappable" onclick="showGrundlageModal()">
+      <div class="split">
         <div class="split-half">
-          <div class="stat-label">Grundlage Ø HR</div>
-          <div class="trend-row">
+          <div class="stat-label">Grundlage Ø HR · Antippen für Trend</div>
+          <div class="trend-row" style="margin-top:4px;">
             <span class="trend-prev" id="hr-prev">–</span>
             <span class="trend-arrow">→</span>
             <span class="stat-value trend-good" id="hr-now">–</span>
           </div>
           <div class="stat-delta delta-good" id="hr-goal">Ziel &lt;135 bpm</div>
-          <div id="pace-compare" style="margin-top:8px;display:none;">
-            <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:4px;">Pace bei diesem HR</div>
-            <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-bottom:2px;"></div>
-            <div id="pace-curr-row" style="font-size:10px;font-weight:600;color:var(--green);"></div>
-          </div>
+        </div>
+        <div class="split-div"></div>
+        <div class="split-half">
+          <div class="stat-label">Pace bei Ø HR</div>
+          <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-top:4px;margin-bottom:2px;"></div>
+          <div id="pace-curr-row" style="font-size:10px;font-weight:600;color:var(--green);"></div>
+          <div style="font-size:10px;color:var(--orange);font-weight:600;margin-top:6px;">Trend →</div>
         </div>
       </div>
     </div>
 
-    <div class="section-label">Letzte Läufe · Antippen für Details</div>
+    <!-- Letzte Läufe ausklappbar -->
+    <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Letzte Läufe · Antippen für Details</span>
+      <button onclick="toggleRuns()" id="runs-toggle-btn" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;">Alle anzeigen</button>
+    </div>
     <table>
       <thead><tr>
         <td>Datum</td><td>km</td><td>HR</td><td>Pace</td><td>Status</td>
@@ -685,17 +703,24 @@ function renderDashboard(activities) {
     document.getElementById('pace-compare').style.display='block';
   }
 
-  const last6=runs.slice(0,6);
-  document.getElementById('runs-table').innerHTML=last6.map((r,i)=>{
-    const hr=r.average_heartrate?Math.round(r.average_heartrate):'–';
-    return `<tr onclick="showRunDetail(${i})">
-      <td>${fmtDate(r.start_date_local)}</td>
-      <td>${(r.distance/1000).toFixed(1)}</td>
-      <td><b>${hr}</b></td>
-      <td>${fmtPace(r.distance,r.moving_time)}</td>
-      <td>${r.average_heartrate?hrPill(r.average_heartrate,r.pr_count>0):''}</td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text3)">Keine Läufe</td></tr>';
+  window._renderRunsTable = function() {
+    const count = window._showAllRuns ? 6 : 3;
+    const last = _activities.slice(0, count);
+    document.getElementById('runs-table').innerHTML = last.map((r,i) => {
+      const hr = r.average_heartrate ? Math.round(r.average_heartrate) : '–';
+      return '<tr onclick="showRunDetail(' + i + ')">'
+        + '<td>' + fmtDate(r.start_date_local) + '</td>'
+        + '<td>' + (r.distance/1000).toFixed(1) + '</td>'
+        + '<td><b>' + hr + '</b></td>'
+        + '<td>' + fmtPace(r.distance,r.moving_time) + '</td>'
+        + '<td>' + (r.average_heartrate ? hrPill(r.average_heartrate, r.pr_count>0) : '') + '</td>'
+        + '</tr>';
+    }).join('') || '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text3)">Keine Läufe</td></tr>';
+    const btn = document.getElementById('runs-toggle-btn');
+    if (btn) btn.textContent = window._showAllRuns ? 'Weniger' : 'Alle anzeigen';
+  };
+  window._showAllRuns = false;
+  window._renderRunsTable();
 
   if (easyRuns.length) {
     const lat=easyRuns[easyRuns.length-1];
@@ -763,6 +788,57 @@ function renderDashboard(activities) {
     new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
   document.getElementById('last-updated').textContent=
     new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
+}
+
+function toggleRuns() {
+  window._showAllRuns = !window._showAllRuns;
+  window._renderRunsTable();
+}
+
+function showGrundlageModal() {
+  document.getElementById('modal-title').textContent = 'Grundlagen-Trend';
+  const easyRuns = (window._activities || [])
+    .filter(r => r.distance > 5000 && r.average_heartrate && r.average_heartrate < 160)
+    .sort((a,b) => new Date(a.start_date_local) - new Date(b.start_date_local))
+    .slice(-8);
+
+  if (!easyRuns.length) {
+    document.getElementById('modal-body').innerHTML =
+      '<div style="padding:20px;text-align:center;color:var(--text3)">Keine Easy Runs gefunden</div>';
+  } else {
+    let html = '<div style="margin-bottom:12px;font-size:12px;color:var(--text2)">Ø HR bei Easy/Long Runs · Ziel &lt;135 bpm</div>';
+    easyRuns.forEach(r => {
+      const hr = Math.round(r.average_heartrate);
+      const pace = fmtPace(r.distance, r.moving_time);
+      const km = (r.distance/1000).toFixed(1);
+      const color = hr <= 135 ? 'var(--green)' : hr <= 143 ? 'var(--orange)' : 'var(--red)';
+      const pct = Math.min(100, Math.max(0, (160 - hr) / (160 - 120) * 100));
+      html += '<div style="margin-bottom:14px;">';
+      html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">';
+      html += '<span style="font-size:12px;color:var(--text2)">' + fmtDate(r.start_date_local) + ' · ' + km + 'km · ' + pace + '/km</span>';
+      html += '<span style="font-size:13px;font-weight:700;color:' + color + '">' + hr + ' bpm</span>';
+      html += '</div>';
+      html += '<div style="background:var(--bg3);height:6px;border-radius:3px;">';
+      html += '<div style="background:' + color + ';height:6px;border-radius:3px;width:' + pct + '%;transition:width 0.4s"></div>';
+      html += '</div></div>';
+    });
+    // Trend-Aussage
+    if (easyRuns.length >= 2) {
+      const first = easyRuns[0].average_heartrate;
+      const last = easyRuns[easyRuns.length-1].average_heartrate;
+      const diff = Math.round(first - last);
+      const trend = diff > 0
+        ? '📉 HR sinkt — Grundlage verbessert sich! (' + diff + ' bpm weniger als beim ersten Lauf)'
+        : diff < 0
+        ? '📈 HR steigt — mehr lockere Läufe einplanen'
+        : '➡️ HR stabil — weiter dranbleiben';
+      html += '<div style="background:var(--bg3);border-radius:10px;padding:12px;font-size:12px;color:var(--text);margin-top:4px;">' + trend + '</div>';
+    }
+    document.getElementById('modal-body').innerHTML = html;
+  }
+  const m = document.getElementById('modal');
+  m.style.display = 'flex';
+  m.classList.add('open');
 }
 
 function showPRModal() {
