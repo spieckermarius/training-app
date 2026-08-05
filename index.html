@@ -1078,6 +1078,14 @@ async function init() {
   document.getElementById('app').style.display='none';
   try {
     const activities=await callAPI({action:'activities',access_token:token});
+    console.log('Activities Response:', typeof activities, Array.isArray(activities), activities?.length);
+    if (!Array.isArray(activities)) {
+      document.getElementById('loading-screen').style.display='none';
+      document.getElementById('login-screen').style.display='flex';
+      localStorage.removeItem('strava_tokens');
+      alert('Session abgelaufen. Bitte neu einloggen.');
+      return;
+    }
     document.getElementById('loading-screen').style.display='none';
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
