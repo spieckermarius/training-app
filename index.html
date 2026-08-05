@@ -51,9 +51,27 @@
 
   /* ── LOGIN ── */
   #login-screen {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    min-height: 100vh; padding: 40px 24px; text-align: center;
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: var(--bg);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  #loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: var(--bg);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
   }
   #login-screen h1 {
     font-size: 42px; font-weight: 800; line-height: 1;
@@ -69,11 +87,6 @@
   .strava-btn:active { opacity: 0.8; }
 
   /* ── LOADING ── */
-  #loading-screen {
-    display: none; flex-direction: column;
-    align-items: center; justify-content: center;
-    min-height: 100vh; gap: 16px;
-  }
   .spinner {
     width: 36px; height: 36px;
     border: 3px solid var(--bg3); border-top-color: var(--orange);
