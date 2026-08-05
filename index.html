@@ -616,6 +616,29 @@ function hrPill(hr, isPR) {
 }
 
 let _activities=[], _thisWeekRuns=[];
+let _showAllRuns = false;
+
+function renderRunsTable() {
+  const count = _showAllRuns ? 6 : 3;
+  const last = _activities.slice(0, count);
+  document.getElementById('runs-table').innerHTML = last.map((r,i) => {
+    const hr = r.average_heartrate ? Math.round(r.average_heartrate) : '–';
+    return '<tr onclick="showRunDetail(' + i + ')">'
+      + '<td>' + fmtDate(r.start_date_local) + '</td>'
+      + '<td>' + (r.distance/1000).toFixed(1) + '</td>'
+      + '<td><b>' + hr + '</b></td>'
+      + '<td>' + fmtPace(r.distance,r.moving_time) + '</td>'
+      + '<td>' + (r.average_heartrate ? hrPill(r.average_heartrate, r.pr_count>0) : '') + '</td>'
+      + '</tr>';
+  }).join('') || '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text3)">Keine Läufe</td></tr>';
+  const btn = document.getElementById('runs-toggle-btn');
+  if (btn) btn.textContent = _showAllRuns ? 'Weniger' : 'Alle anzeigen';
+}
+
+function toggleRuns() {
+  _showAllRuns = !_showAllRuns;
+  renderRunsTable();
+}
 
 function renderDashboard(activities) {
   const runs = activities.filter(a => a.sport_type==='Run'||a.type==='Run');
@@ -703,24 +726,7 @@ function renderDashboard(activities) {
     document.getElementById('pace-compare').style.display='block';
   }
 
-  window._renderRunsTable = function() {
-    const count = window._showAllRuns ? 6 : 3;
-    const last = _activities.slice(0, count);
-    document.getElementById('runs-table').innerHTML = last.map((r,i) => {
-      const hr = r.average_heartrate ? Math.round(r.average_heartrate) : '–';
-      return '<tr onclick="showRunDetail(' + i + ')">'
-        + '<td>' + fmtDate(r.start_date_local) + '</td>'
-        + '<td>' + (r.distance/1000).toFixed(1) + '</td>'
-        + '<td><b>' + hr + '</b></td>'
-        + '<td>' + fmtPace(r.distance,r.moving_time) + '</td>'
-        + '<td>' + (r.average_heartrate ? hrPill(r.average_heartrate, r.pr_count>0) : '') + '</td>'
-        + '</tr>';
-    }).join('') || '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text3)">Keine Läufe</td></tr>';
-    const btn = document.getElementById('runs-toggle-btn');
-    if (btn) btn.textContent = window._showAllRuns ? 'Weniger' : 'Alle anzeigen';
-  };
-  window._showAllRuns = false;
-  window._renderRunsTable();
+  renderRunsTable();
 
   if (easyRuns.length) {
     const lat=easyRuns[easyRuns.length-1];
@@ -788,11 +794,6 @@ function renderDashboard(activities) {
     new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
   document.getElementById('last-updated').textContent=
     new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
-}
-
-function toggleRuns() {
-  window._showAllRuns = !window._showAllRuns;
-  window._renderRunsTable();
 }
 
 function showGrundlageModal() {
