@@ -874,7 +874,10 @@ function initSwipe() {
   const slides = ['week','month','year'];
   const labels = ['Diese Woche','Diesen Monat','Dieses Jahr'];
   let current = 0;
-  let startX = 0, startY = 0;
+  let startX = 0;
+  let startY = 0;
+
+  function goTo(idx) {
     slides.forEach((s,i) => {
       document.getElementById('slide-'+s).style.display = i===idx?'block':'none';
       document.getElementById('dot-'+i).className = 'dot'+(i===idx?' active':'');
@@ -882,8 +885,6 @@ function initSwipe() {
     document.getElementById('vol-label').textContent = labels[idx];
     current = idx;
   }
-
-  let startX = 0, startY = 0;
 
   card.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
@@ -893,7 +894,6 @@ function initSwipe() {
   card.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
-    // Nur reagieren wenn horizontal deutlich mehr als vertikal
     if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
     if (dx < 0 && current < 2) goTo(current+1);
     if (dx > 0 && current > 0) goTo(current-1);
@@ -902,12 +902,20 @@ function initSwipe() {
 
 function showWeekModal() {
   document.getElementById('modal-title').textContent='Diese Woche';
-  document.getElementById('modal-body').innerHTML=_thisWeekRuns.length
-    ? _thisWeekRuns.map(r=>`<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;">
-        <span class="modal-stat-value">${fmtDate(r.start_date_local)} · ${r.name}</span>
-        <span class="modal-stat-label">${(r.distance/1000).toFixed(1)} km · ${fmtPace(r.distance,r.moving_time)}/km${r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':''}</span>
-      </div>`).join('')
-    : '<div style="padding:20px;text-align:center;color:var(--text3)">Noch keine Läufe diese Woche</div>';
+  let html = '';
+  if (_thisWeekRuns.length) {
+    _thisWeekRuns.forEach(r => {
+      const km = (r.distance/1000).toFixed(1);
+      const hr = r.average_heartrate ? ' · ' + Math.round(r.average_heartrate) + ' bpm' : '';
+      html += '<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;">';
+      html += '<span class="modal-stat-value">' + fmtDate(r.start_date_local) + ' · ' + r.name + '</span>';
+      html += '<span class="modal-stat-label">' + km + ' km · ' + fmtPace(r.distance,r.moving_time) + '/km' + hr + '</span>';
+      html += '</div>';
+    });
+  } else {
+    html = '<div style="padding:20px;text-align:center;color:var(--text3)">Noch keine Läufe diese Woche</div>';
+  }
+  document.getElementById('modal-body').innerHTML = html;
   const m=document.getElementById('modal'); m.style.display='flex'; m.classList.add('open');
 }
 
