@@ -1,25 +1,34 @@
-
-// Vercel Serverless Function: Strava API Proxy + Claude Analyse
 const CLIENT_ID = process.env.STRAVA_CLIENT_ID;
 const CLIENT_SECRET = process.env.STRAVA_CLIENT_SECRET;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
-module.exports = async function handler(req, res) {
+module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') { return res.status(200).end(); }
-  if (req.method !== 'POST') { return res.status(405).json({ error: 'Method not allowed' }); }
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-  const { action, code, refresh_token, access_token, run } = req.body;
+  let body = req.body;
+  if (typeof body === 'string') {
+    body = JSON.parse(body);
+  }
+
+  const { action, code, refresh_token, access_token, run } = body || {};
 
   try {
     if (action === 'exchange') {
       const r = await fetch('https://www.strava.com/oauth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id: CLIENT_ID, client_secret: CLIENT_SECRET, code, grant_type: 'authorization_code' }),
+        body: JSON.stringify({
+          client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET,
+          code,
+          grant_type: 'authorization_code'
+        }),
       });
       return res.status(200).json(await r.json());
     }
@@ -28,7 +37,12 @@ module.exports = async function handler(req, res) {
       const r = await fetch('https://www.strava.com/oauth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id: CLIENT_ID, client_secret: CLIENT_SECRET, refresh_token, grant_type: 'refresh_token' }),
+        body: JSON.stringify({
+          client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET,
+          refresh_token,
+          grant_type: 'refresh_token'
+        }),
       });
       return res.status(200).json(await r.json());
     }
@@ -48,7 +62,26 @@ module.exports = async function handler(req, res) {
     }
 
     if (action === 'analyse') {
-      const prompt = `Du bist ein präziser Laufcoach. Analysiere diesen Lauf von Marius in 5 kurzen Punkten auf Deutsch.
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 300,
+          messages: [{ role: 'user', content: `Sage nur: "Hallo Marius, ich funktioniere!"` }],
+        }),
+      });
+      const data = await r.json();
+      console.log('Anthropic Response:', JSON.stringify(data));
+      if (data.content?.[0]?.text) {
+        return res.status(200).json({ analysis: data.content[0].text });
+      }
+      return res.status(200).json({ analysis: 'API Fehler: ' + JSON.stringify(data) });
+    }
 
 LAUFDATEN:
 - Datum: ${run.date}
@@ -84,11 +117,11 @@ Gib genau 5 Zeilen zurück, jede beginnt mit einem Emoji, maximal 12 Wörter pro
         }),
       });
       const data = await r.json();
-      const text = data.content?.[0]?.text || 'Analyse nicht verfügbar.';
-      return res.status(200).json({ analysis: text });
+      return res.status(200).json({ analysis: data.content?.[0]?.text || 'Analyse nicht verfügbar.' });
     }
 
     return res.status(400).json({ error: 'Unknown action' });
+
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
