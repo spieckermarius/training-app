@@ -310,10 +310,16 @@
   }
 
   /* Swipe Card */
-  .swipe-card { overflow: hidden; touch-action: pan-y; }
-  .swipe-slide { width: 100%; }
+  /* ── SWIPE CARD ── */
+  .swipe-card { overflow: hidden; touch-action: pan-y; position: relative; }
+  .swipe-track {
+    display: flex;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+  }
+  .swipe-slide { min-width: 100%; width: 100%; flex-shrink: 0; }
   .swipe-dots { display: flex; justify-content: center; gap: 6px; padding: 10px 0 12px; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bg3); transition: background 0.2s; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bg3); transition: all 0.2s; }
   .dot.active { background: var(--orange); width: 16px; border-radius: 3px; }
 
   /* Step rows */
@@ -361,51 +367,53 @@
 
     <div class="section-label" id="vol-label">Diese Woche</div>
     <div class="swipe-card card" id="vol-card">
-      <!-- Slide 0: Woche -->
-      <div class="swipe-slide" id="slide-week">
-        <div class="split" style="cursor:pointer;" onclick="showWeekModal()">
-          <div class="split-half">
-            <div class="stat-label">Wochenvolumen</div>
-            <div class="prog-km" id="week-km">0<small> / 35 km</small></div>
-            <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
-            <div class="prog-sessions" id="week-sessions">0/4 Trainings</div>
-          </div>
-          <div class="split-div"></div>
-          <div class="split-half">
-            <div class="stat-label">Wochentrend</div>
-            <div class="kw-bars" id="kw-bars"></div>
-          </div>
-        </div>
-      </div>
-      <!-- Slide 1: Monat -->
-      <div class="swipe-slide" id="slide-month" style="display:none;">
-        <div class="split">
-          <div class="split-half">
-            <div class="stat-label">Monatsvolumen</div>
-            <div class="prog-km" id="month-km">0<small> km</small></div>
-            <div class="prog-bar-track"><div class="prog-bar-fill" id="month-bar" style="width:0%"></div></div>
-            <div class="prog-sessions" id="month-label-text">–</div>
-          </div>
-          <div class="split-div"></div>
-          <div class="split-half">
-            <div class="stat-label">Monatstrend</div>
-            <div class="kw-bars" id="month-bars"></div>
+      <div class="swipe-track" id="swipe-track">
+        <!-- Slide 0: Woche -->
+        <div class="swipe-slide" id="slide-week">
+          <div class="split" style="cursor:pointer;" onclick="showWeekModal()">
+            <div class="split-half">
+              <div class="stat-label">Wochenvolumen</div>
+              <div class="prog-km" id="week-km">0<small> / 35 km</small></div>
+              <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
+              <div class="prog-sessions" id="week-sessions">0/4 Trainings</div>
+            </div>
+            <div class="split-div"></div>
+            <div class="split-half">
+              <div class="stat-label">Wochentrend</div>
+              <div class="kw-bars" id="kw-bars"></div>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- Slide 2: Jahr -->
-      <div class="swipe-slide" id="slide-year" style="display:none;">
-        <div class="split">
-          <div class="split-half">
-            <div class="stat-label">Jahresvolumen</div>
-            <div class="prog-km" id="year-km">0<small> km</small></div>
-            <div class="prog-bar-track"><div class="prog-bar-fill" id="year-bar" style="width:0%"></div></div>
-            <div class="prog-sessions" id="year-runs">– Läufe</div>
+        <!-- Slide 1: Monat -->
+        <div class="swipe-slide" id="slide-month">
+          <div class="split">
+            <div class="split-half">
+              <div class="stat-label">Monatsvolumen</div>
+              <div class="prog-km" id="month-km">0<small> km</small></div>
+              <div class="prog-bar-track"><div class="prog-bar-fill" id="month-bar" style="width:0%"></div></div>
+              <div class="prog-sessions" id="month-label-text">–</div>
+            </div>
+            <div class="split-div"></div>
+            <div class="split-half">
+              <div class="stat-label">Monatstrend</div>
+              <div class="kw-bars" id="month-bars"></div>
+            </div>
           </div>
-          <div class="split-div"></div>
-          <div class="split-half">
-            <div class="stat-label">Trend (Monate)</div>
-            <div class="kw-bars" id="year-bars"></div>
+        </div>
+        <!-- Slide 2: Jahr -->
+        <div class="swipe-slide" id="slide-year">
+          <div class="split">
+            <div class="split-half">
+              <div class="stat-label">Jahresvolumen</div>
+              <div class="prog-km" id="year-km">0<small> km</small></div>
+              <div class="prog-bar-track"><div class="prog-bar-fill" id="year-bar" style="width:0%"></div></div>
+              <div class="prog-sessions" id="year-runs">– Läufe</div>
+            </div>
+            <div class="split-div"></div>
+            <div class="split-half">
+              <div class="stat-label">Trend (Monate)</div>
+              <div class="kw-bars" id="year-bars"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -879,33 +887,52 @@ function closeAnalyse(e) {
 
 function initSwipe() {
   const card = document.getElementById('vol-card');
-  const slides = ['week','month','year'];
-  const labels = ['Diese Woche','Diesen Monat','Dieses Jahr'];
+  const track = document.getElementById('swipe-track');
+  const labels = ['Diese Woche', 'Diesen Monat', 'Dieses Jahr'];
   let current = 0;
   let startX = 0;
   let startY = 0;
+  let isDragging = false;
 
   function goTo(idx) {
-    slides.forEach((s,i) => {
-      document.getElementById('slide-'+s).style.display = i===idx?'block':'none';
-      document.getElementById('dot-'+i).className = 'dot'+(i===idx?' active':'');
+    current = idx;
+    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+    ['dot-0','dot-1','dot-2'].forEach((id, i) => {
+      document.getElementById(id).className = 'dot' + (i === idx ? ' active' : '');
     });
     document.getElementById('vol-label').textContent = labels[idx];
-    current = idx;
   }
 
   card.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-  }, {passive:true});
+    isDragging = true;
+    track.style.transition = 'none';
+  }, {passive: true});
+
+  card.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (Math.abs(dy) > Math.abs(dx)) { isDragging = false; return; }
+    const offset = -(current * 100) + (dx / card.offsetWidth * 100);
+    track.style.transform = 'translateX(' + offset + '%)';
+  }, {passive: true});
 
   card.addEventListener('touchend', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    track.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
-    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
-    if (dx < 0 && current < 2) goTo(current+1);
-    if (dx > 0 && current > 0) goTo(current-1);
-  }, {passive:true});
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0 && current < 2) goTo(current + 1);
+      else if (dx > 0 && current > 0) goTo(current - 1);
+      else goTo(current);
+    } else {
+      goTo(current);
+    }
+  }, {passive: true});
 }
 
 function showWeekModal() {
