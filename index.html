@@ -548,7 +548,7 @@
 <script>
 const CLIENT_ID = '269194';
 const REDIRECT_URI = window.location.origin + window.location.pathname;
-const API = '/.netlify/functions/strava';
+const API = '/api/strava';
 
 document.getElementById('strava-login-btn').href =
   `https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=activity:read_all,read`;
