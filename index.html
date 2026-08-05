@@ -594,6 +594,7 @@ let _activities=[], _thisWeekRuns=[];
 function renderDashboard(activities) {
   const runs = activities.filter(a => a.sport_type==='Run'||a.type==='Run');
   _activities = runs;
+  window._activities = runs;
 
   const now = new Date();
   const wsNow = weekStart(now);
@@ -813,10 +814,7 @@ function getPlannedType(run) {
 }
 
 async function openAnalyse() {
-  if (!window._activities||!window._activities.length) {
-    alert('Keine Aktivitäten geladen');
-    return;
-  }
+  if (!window._activities||!window._activities.length) return;
   const run = window._activities[0];
   const prev = window._activities[1];
   const dist = (run.distance/1000).toFixed(1);
@@ -839,7 +837,6 @@ async function openAnalyse() {
   document.getElementById('analyse-body').innerHTML =
     `<div class="analyse-loading"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>Claude analysiert…</div>`;
   const overlay = document.getElementById('analyse-overlay');
-  if (!overlay) { alert('Overlay nicht gefunden!'); return; }
   overlay.style.display = 'flex';
   overlay.classList.add('open');
 
