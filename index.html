@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Trainingsstand">
@@ -873,9 +874,7 @@ function initSwipe() {
   const slides = ['week','month','year'];
   const labels = ['Diese Woche','Diesen Monat','Dieses Jahr'];
   let current = 0;
-  let startX = 0;
-
-  function goTo(idx) {
+  let startX = 0, startY = 0;
     slides.forEach((s,i) => {
       document.getElementById('slide-'+s).style.display = i===idx?'block':'none';
       document.getElementById('dot-'+i).className = 'dot'+(i===idx?' active':'');
