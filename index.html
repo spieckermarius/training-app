@@ -50,7 +50,6 @@
   }
 
   /* ── LOGIN ── */
-  #app:not([style*="none"]) ~ #login-screen { display: none !important; }
   #login-screen {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -341,12 +340,12 @@
   </a>
 </div>
 
-<div id="loading-screen" style="display:flex;">
+<div id="loading-screen" style="display:none;">
   <div class="spinner"></div>
   <div style="font-size:12px;color:var(--text2);font-weight:500;">Daten werden geladen…</div>
 </div>
 
-<div id="app">
+<div id="app" style="display:none;">
   <div class="wrap">
 
     <div class="app-header">
@@ -1040,6 +1039,10 @@ function closeModal(e) {
 }
 
 async function init() {
+  // Alles verstecken, loading zeigen
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('loading-screen').style.display='flex';
   const params=new URLSearchParams(window.location.search);
   const code=params.get('code');
   if (code) {
@@ -1063,6 +1066,7 @@ async function init() {
   try {
     const activities=await callAPI({action:'activities',access_token:token});
     document.getElementById('loading-screen').style.display='none';
+    document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
     renderDashboard(activities);
     initSwipe();
