@@ -50,6 +50,7 @@
   }
 
   /* ── LOGIN ── */
+  #app:not([style*="none"]) ~ #login-screen { display: none !important; }
   #login-screen {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -331,7 +332,7 @@
 </head>
 <body>
 
-<div id="login-screen">
+<div id="login-screen" style="display:none;">
   <h1><span>TRAININGS</span><span style="color:var(--orange)">STAND.</span></h1>
   <p>Verbinde dein Strava-Konto für Live-Trainingsdaten.</p>
   <a id="strava-login-btn" class="strava-btn" href="#">
@@ -340,7 +341,7 @@
   </a>
 </div>
 
-<div id="loading-screen">
+<div id="loading-screen" style="display:flex;">
   <div class="spinner"></div>
   <div style="font-size:12px;color:var(--text2);font-weight:500;">Daten werden geladen…</div>
 </div>
@@ -1047,12 +1048,18 @@ async function init() {
     window.history.replaceState({},'',REDIRECT_URI);
     const tokens=await callAPI({action:'exchange',code});
     if (tokens.access_token) localStorage.setItem('strava_tokens',JSON.stringify(tokens));
-    else { alert('Login fehlgeschlagen.'); window.location.href=REDIRECT_URI; return; }
+    else { alert('Strava Fehler: ' + JSON.stringify(tokens)); window.location.href=REDIRECT_URI; return; }
   }
   const token=await getValidToken();
-  if (!token) { document.getElementById('login-screen').style.display='flex'; return; }
+  if (!token) {
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('app').style.display='none';
+    return;
+  }
   document.getElementById('login-screen').style.display='none';
   document.getElementById('loading-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
   try {
     const activities=await callAPI({action:'activities',access_token:token});
     document.getElementById('loading-screen').style.display='none';
