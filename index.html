@@ -1092,9 +1092,10 @@ async function init() {
       openAnalyse();
     }, {passive: false});
   } catch(err) {
-    alert('Fehler beim Laden. Bitte neu laden.');
+    console.error('Ladefehler:', err);
     document.getElementById('loading-screen').style.display='none';
     document.getElementById('login-screen').style.display='flex';
+    localStorage.removeItem('strava_tokens');
   }
 }
 init();
