@@ -290,23 +290,23 @@
   /* ── TOUCH FEEDBACK ── */
   .tappable {
     cursor: pointer;
-    transition: transform 0.12s ease, opacity 0.12s ease;
+    transition: transform 0.08s ease, opacity 0.08s ease, box-shadow 0.08s ease;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
   .tappable:active {
-    transform: scale(0.97);
-    opacity: 0.88;
+    transform: scale(0.94);
+    opacity: 0.82;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
   }
 
   /* Tabellenzeilen */
   tbody tr {
-    transition: background 0.1s, transform 0.1s;
+    transition: background 0.08s;
     -webkit-tap-highlight-color: transparent;
   }
   tbody tr:active {
     background: var(--bg3) !important;
-    transform: scale(0.99);
   }
 
   /* Swipe Card */
@@ -982,6 +982,24 @@ async function init() {
     document.getElementById('app').style.display='block';
     renderDashboard(activities);
     initSwipe();
+
+    // Touch-Feedback für iOS Safari (CSS :active funktioniert dort nicht immer)
+    document.querySelectorAll('.tappable').forEach(el => {
+      el.addEventListener('touchstart', () => {
+        el.style.transform = 'scale(0.94)';
+        el.style.opacity = '0.82';
+      }, {passive: true});
+      el.addEventListener('touchend', () => {
+        setTimeout(() => {
+          el.style.transform = '';
+          el.style.opacity = '';
+        }, 150);
+      }, {passive: true});
+      el.addEventListener('touchcancel', () => {
+        el.style.transform = '';
+        el.style.opacity = '';
+      }, {passive: true});
+    });
     const fab = document.getElementById('claude-fab');
     fab.classList.add('visible');
     fab.addEventListener('click', function(e) {
