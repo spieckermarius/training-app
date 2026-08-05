@@ -33,7 +33,7 @@ module.exports = async function(req, res) {
     }
 
     if (action === 'activities') {
-      const r = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=20', {
+      const r = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=40', {
         headers: { Authorization: 'Bearer ' + access_token },
       });
       return res.status(200).json(await r.json());
