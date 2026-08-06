@@ -229,7 +229,7 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
 <div id="app">
   <div class="ptr-indicator" id="ptr-indicator">
     <div class="ptr-spinner" id="ptr-spinner" style="display:none;"></div>
-    <span id="ptr-text">↓ Zum Aktualisieren ziehen</span>
+    <span id="ptr-text"></span>
   </div>
   <div class="wrap">
     <div class="app-header">
@@ -246,8 +246,8 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
         <div id="last-run-days" style="font-size:11px;color:var(--text2);margin-top:1px;">–</div>
       </div>
       <div class="status-streak">
-        <div class="streak-badge" id="streak-badge">
-          🔥 <span id="streak-count">0</span> Wochen
+        <div class="streak-badge" id="streak-badge" title="Wochen mit ≥30 km in Folge">
+          🔥 <span id="streak-count">0</span> Wochen ≥30km
         </div>
       </div>
     </div>
@@ -270,7 +270,7 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
           <div class="split tappable" onclick="showWeekModal()">
             <div class="split-half">
               <div class="stat-label">Wochenvolumen</div>
-              <div class="prog-km" id="week-km">0<small> / 35 km</small></div>
+              <div class="prog-km" id="week-km">0<small> / 30 km</small></div>
               <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
               <div class="prog-sessions" id="week-sessions">0/4 Trainings</div>
             </div>
@@ -282,7 +282,7 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
           </div>
         </div>
         <div class="swipe-slide">
-          <div class="split">
+          <div class="split tappable" onclick="showMonthModal()">
             <div class="split-half">
               <div class="stat-label">Monatsvolumen</div>
               <div class="prog-km" id="month-km">0<small> km</small></div>
@@ -343,9 +343,10 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
               <span style="color:var(--text3);margin:0 4px;">→</span>
               <span style="font-size:16px;font-weight:700;color:var(--green);" id="hr-now">–</span>
             </div>
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin:8px 0 2px;">Pace-Trend</div>
-            <div id="pace-curr-row" style="font-size:13px;font-weight:600;color:var(--text);"></div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin:8px 0 2px;">Effizienzfaktor</div>
+            <div id="pace-curr-row" style="font-size:16px;font-weight:700;color:var(--green);"></div>
             <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-top:2px;"></div>
+            <div style="font-size:9px;color:var(--text3);margin-top:4px;">m/min ÷ HR · höher = besser</div>
           </div>
         </div>
       </div>
@@ -374,7 +375,7 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
       </div>
       <div class="step amber">
         <div class="step-num">3</div>
-        <div style="flex:1"><div class="step-title">35 km/Woche stabil</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
+        <div style="flex:1"><div class="step-title">30 km/Woche stabil</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
         <div class="step-status" style="color:var(--orange)">AUFBAU</div>
       </div>
       <div class="step">
@@ -490,8 +491,8 @@ function renderDashboard(activities) {
   _thisWeekRuns = _runs.filter(r => new Date(r.start_date_local) >= wsNow);
   const weekKm = _thisWeekRuns.reduce((s,r)=>s+r.distance/1000, 0);
   const sessions = _thisWeekRuns.length;
-  document.getElementById('week-km').innerHTML = weekKm.toFixed(1)+'<small> / 35 km</small>'+(sessions>=4?' <span class="check-done">✓</span>':'');
-  document.getElementById('week-bar').style.width = Math.min(100,weekKm/35*100)+'%';
+  document.getElementById('week-km').innerHTML = weekKm.toFixed(1)+'<small> / 30 km</small>'+(sessions>=4?' <span class="check-done">✓</span>':'');
+  document.getElementById('week-bar').style.width = Math.min(100,weekKm/30*100)+'%';
   document.getElementById('week-sessions').textContent = sessions+'/4 Trainings'+(sessions>=4?' ✓':'');
 
   // KW Trend
@@ -549,9 +550,6 @@ function renderDashboard(activities) {
     const prev=easyRuns[easyRuns.length-2], curr=easyRuns[easyRuns.length-1];
     document.getElementById('hr-prev').textContent=Math.round(prev.average_heartrate);
     document.getElementById('hr-now').textContent=Math.round(curr.average_heartrate)+' bpm';
-    const diff=Math.round(prev.average_heartrate-curr.average_heartrate);
-    document.getElementById('pace-curr-row').textContent=fmtDate(curr.start_date_local)+' '+fmtPace(curr.distance,curr.moving_time)+'/km · '+Math.round(curr.average_heartrate)+' bpm';
-    document.getElementById('pace-prev-row').textContent=fmtDate(prev.start_date_local)+' '+fmtPace(prev.distance,prev.moving_time)+'/km · '+Math.round(prev.average_heartrate)+' bpm';
   }
   window._easyRuns = easyRuns;
 
@@ -582,13 +580,24 @@ function renderDashboard(activities) {
   if (streak === 0) badge.style.background = 'var(--bg3)';
   else if (streak >= 4) badge.style.background = 'linear-gradient(135deg, #FFD60A, #FF6B35)';
 
-  // Efficiency Factor für easyRuns
+  // Efficiency Factor: m/min geteilt durch HR (Standard-Formel)
   window._easyRunsWithEF = easyRuns.map(r => ({
     ...r,
-    ef: r.average_heartrate ? ((r.distance/1000) / (r.moving_time/60) / r.average_heartrate * 100).toFixed(2) : null
+    ef: r.average_heartrate ? (r.distance / r.moving_time * 60 / r.average_heartrate).toFixed(2) : null
   }));
+
+  // EF in Grundlagen-Kachel anzeigen
+  if (easyRuns.length >= 2) {
+    const curr = easyRuns[easyRuns.length-1];
+    const prev = easyRuns[easyRuns.length-2];
+    const efCurr = curr.average_heartrate ? (curr.distance / curr.moving_time * 60 / curr.average_heartrate).toFixed(2) : null;
+    const efPrev = prev.average_heartrate ? (prev.distance / prev.moving_time * 60 / prev.average_heartrate).toFixed(2) : null;
+    const efDiff = efCurr && efPrev ? (efCurr - efPrev).toFixed(2) : null;
+    document.getElementById('pace-curr-row').textContent = efCurr ? 'EF ' + efCurr + (efDiff > 0 ? ' ↑ +'+efDiff : efDiff < 0 ? ' ↓ '+efDiff : '') : '–';
+    document.getElementById('pace-prev-row').textContent = efPrev ? 'Vorher EF ' + efPrev : '–';
+  }
   if (easyRuns.length) document.getElementById('step1-sub').textContent='Aktuell '+Math.round(easyRuns[easyRuns.length-1].average_heartrate)+' bpm · Ziel <135 bpm';
-  document.getElementById('step3-sub').textContent='Diese Woche '+weekKm.toFixed(1)+' km von 35 km';
+  document.getElementById('step3-sub').textContent='Diese Woche '+weekKm.toFixed(1)+' km von 30 km';
 
   document.getElementById('last-updated').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
   renderRunsTable();
@@ -678,7 +687,7 @@ function showGrundlageModal() {
     else if (hr <= 150) color = '#FFD60A';
     else color = '#FF453A';
     const pct=Math.min(100,Math.max(0,(160-hr)/(160-120)*100));
-    const ef = r.average_heartrate ? ((r.distance/1000) / (r.moving_time/60) / r.average_heartrate * 100).toFixed(2) : null;
+    const ef = r.average_heartrate ? (r.distance / r.moving_time * 60 / r.average_heartrate).toFixed(2) : null;
     html+='<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
       +'<span style="font-size:12px;color:var(--text2)">'+fmtDate(r.start_date_local)+' · '+(r.distance/1000).toFixed(1)+'km · '+fmtPace(r.distance,r.moving_time)+'/km</span>'
       +'<div style="text-align:right;">'
@@ -688,6 +697,31 @@ function showGrundlageModal() {
       +'<div style="background:var(--bg3);height:6px;border-radius:3px;"><div style="background:'+color+';height:6px;border-radius:3px;width:'+pct+'%"></div></div></div>';
   });
   openModal('Grundlagen-Trend', html);
+}
+
+function showMonthModal() {
+  const now = new Date();
+  const nm = now.getMonth(), ny = now.getFullYear();
+  const monthNames = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const mRuns = _runs.filter(r => {
+    const d = new Date(r.start_date_local);
+    return d.getMonth()===nm && d.getFullYear()===ny;
+  }).sort((a,b) => new Date(b.start_date_local)-new Date(a.start_date_local));
+  const mKm = mRuns.reduce((s,r)=>s+r.distance/1000,0);
+  let html = '<div style="font-size:13px;color:var(--text2);margin-bottom:16px;">'+monthNames[nm]+' · '+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>';
+  if (!mRuns.length) {
+    html += '<div style="text-align:center;padding:20px;color:var(--text3)">Keine Läufe diesen Monat</div>';
+  } else {
+    mRuns.forEach((r,i) => {
+      const km=(r.distance/1000).toFixed(1);
+      const hr=r.average_heartrate?Math.round(r.average_heartrate)+' bpm':'–';
+      html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;">'
+        +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
+        +'<span class="modal-stat-label">'+km+' km · '+fmtPace(r.distance,r.moving_time)+'/km · '+hr+'</span>'
+        +'</div>';
+    });
+  }
+  openModal(monthNames[nm]+' Rückblick', html);
 }
 
 function showWeekModal() {
