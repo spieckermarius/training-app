@@ -207,8 +207,10 @@ tbody td { font-size: 13px; padding: 11px 12px; font-weight: 500; }
   display: flex; align-items: center; gap: 4px;
 }
 
-.day.today { box-shadow: 0 0 0 2px var(--orange); }
-.day.today .d-label { color: var(--orange) !important; font-weight: 800; }
+.day.today { background: var(--orange) !important; border: none !important; opacity: 1 !important; }
+.day.today .d-label { color: rgba(255,255,255,0.8) !important; font-weight: 800; }
+.day.today .d-name { color: #fff !important; }
+.day.today .d-sub { color: rgba(255,255,255,0.7) !important; }
 
 footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 16px; }
 </style>
@@ -255,11 +257,17 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
       </div>
     </div>
 
+    <!-- HEUTIGER LAUF -->
+    <div id="today-run-bar" style="display:none;background:var(--orange);border-radius:12px;padding:10px 14px;margin-bottom:10px;cursor:pointer;" onclick="showRunDetail(0)">
+      <div style="font-size:10px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Heute trainieren</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;" id="today-run-text">–</div>
+    </div>
+
     <div class="section-label">Wochenplan</div>
     <div class="week-grid" id="week-grid">
       <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Easy</div></div>
       <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
-      <div class="day tempo" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
+      <div class="day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
       <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
       <div class="day" id="day-5"><div class="d-label">FR</div><div class="d-name">Pull</div><div class="d-sub">Easy</div></div>
       <div class="day rest" id="day-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
@@ -355,14 +363,15 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
       </div>
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;" class="section-label">
-      <span>Letzte Läufe · Antippen für Details</span>
-      <button onclick="toggleRuns()" id="runs-toggle-btn" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;">Alle anzeigen</button>
+    <div class="card tappable" onclick="showAllRunsModal()" style="margin-bottom:10px;">
+      <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Letzte Läufe</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;" id="runs-preview">– Läufe geladen</div>
+        </div>
+        <div style="font-size:24px;color:var(--orange);">→</div>
+      </div>
     </div>
-    <table>
-      <thead><tr><td>Datum</td><td>km</td><td>HR</td><td>Pace</td><td>Status</td></tr></thead>
-      <tbody id="runs-table"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">Lädt…</td></tr></tbody>
-    </table>
 
     <div class="section-label">Weg zum Ziel</div>
     <div class="steps">
@@ -552,7 +561,11 @@ function renderDashboard(activities) {
   if (easyRuns.length>=2) {
     const prev=easyRuns[easyRuns.length-2], curr=easyRuns[easyRuns.length-1];
     document.getElementById('hr-prev').textContent=Math.round(prev.average_heartrate);
-    document.getElementById('hr-now').textContent=Math.round(curr.average_heartrate)+' bpm';
+    const hrNowEl = document.getElementById('hr-now');
+    hrNowEl.textContent=Math.round(curr.average_heartrate)+' bpm';
+    // HR höher = schlechter = rot, HR niedriger = besser = grün
+    const hrDiff = curr.average_heartrate - prev.average_heartrate;
+    hrNowEl.style.color = hrDiff < 0 ? 'var(--green)' : hrDiff > 0 ? 'var(--red)' : 'var(--text)';
   }
   window._easyRuns = easyRuns;
 
@@ -601,28 +614,47 @@ function renderDashboard(activities) {
     document.getElementById('pace-curr-row').textContent = efCurr ? 'EF ' + efCurr + (efDiff > 0 ? ' ↑ +'+efDiff : efDiff < 0 ? ' ↓ '+efDiff : '') : '–';
     document.getElementById('pace-prev-row').textContent = efPrev ? 'Vorher EF ' + efPrev : '–';
   }
+  // Heutiger Lauf Text
+  const todayMsgs = {
+    0: 'Long Run · 15–21 km, locker unter 145 bpm 🏃',
+    1: 'Push + Easy Run · 7–10 km, locker unter 140 bpm',
+    2: 'Pull · Krafttraining, kein Lauf heute 💪',
+    3: 'Tempolauf · 5–6 km, Intervalle — gib Gas! ⚡',
+    4: 'Push + Beine · laufspezifisches Krafttraining 💪',
+    5: 'Pull + Easy Run · 7–10 km, Mitteldistanz locker',
+    6: 'Rest Day · Erholung und Regeneration 😴'
+  };
+  const todayBar = document.getElementById('today-run-bar');
+  const todayText = document.getElementById('today-run-text');
+  if (todayMsgs[new Date().getDay()]) {
+    todayBar.style.display = 'block';
+    todayText.textContent = todayMsgs[new Date().getDay()];
+  }
+
+  // Runs Preview
+  const runsPreview = document.getElementById('runs-preview');
+  if (runsPreview && _runs.length) {
+    runsPreview.textContent = _runs.length + ' Läufe · zuletzt ' + fmtDate(_runs[0].start_date_local) + ' · ' + (_runs[0].distance/1000).toFixed(1) + ' km';
+  }
   if (easyRuns.length) document.getElementById('step1-sub').textContent='Aktuell '+Math.round(easyRuns[easyRuns.length-1].average_heartrate)+' bpm · Ziel <135 bpm';
+
   document.getElementById('step3-sub').textContent='Diese Woche '+weekKm.toFixed(1)+' km von 30 km';
-
   document.getElementById('last-updated').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
-  renderRunsTable();
 }
 
-function renderRunsTable() {
-  const count = _showAll ? 6 : 3;
-  document.getElementById('runs-table').innerHTML = _runs.slice(0,count).map((r,i)=>{
-    const hr=r.average_heartrate?Math.round(r.average_heartrate):'–';
-    return '<tr onclick="showRunDetail('+i+')">'
-      +'<td>'+fmtDate(r.start_date_local)+'</td>'
-      +'<td>'+(r.distance/1000).toFixed(1)+'</td>'
-      +'<td><b>'+hr+'</b></td>'
-      +'<td>'+fmtPace(r.distance,r.moving_time)+'</td>'
-      +'<td>'+(r.average_heartrate?hrPill(r.average_heartrate,r.pr_count>0):'')+' </td></tr>';
-  }).join('') || '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text3)">Keine Läufe</td></tr>';
-  document.getElementById('runs-toggle-btn').textContent = _showAll ? 'Weniger' : 'Alle anzeigen';
+function showAllRunsModal() {
+  const last6 = _runs.slice(0,6);
+  let html = '';
+  last6.forEach((r,i) => {
+    const km=(r.distance/1000).toFixed(1);
+    const hr=r.average_heartrate?Math.round(r.average_heartrate)+' bpm':'–';
+    html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer;" onclick="closeModal();setTimeout(()=>showRunDetail('+i+'),300)">'
+      +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
+      +'<span class="modal-stat-label">'+km+' km · '+fmtPace(r.distance,r.moving_time)+'/km · '+hr+'</span>'
+      +'</div>';
+  });
+  openModal('Letzte Läufe', html);
 }
-
-function toggleRuns() { _showAll=!_showAll; renderRunsTable(); }
 
 function openModal(title, body) {
   document.getElementById('modal-title').textContent = title;
@@ -843,6 +875,12 @@ async function init() {
     const todayDay = new Date().getDay();
     const todayEl = document.getElementById('day-' + todayDay);
     if (todayEl) todayEl.classList.add('today');
+    // Status-Bar letzter Lauf antippbar
+    const statusBar = document.querySelector('.status-last-run');
+    if (statusBar) {
+      statusBar.style.cursor = 'pointer';
+      statusBar.addEventListener('click', () => { if(_runs.length) showRunDetail(0); });
+    }
     initSwipe();
     const fab=document.getElementById('claude-fab');
     fab.classList.add('visible');
