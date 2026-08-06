@@ -508,7 +508,6 @@ function renderDashboard(activities) {
     document.getElementById('hr-prev').textContent=Math.round(prev.average_heartrate);
     document.getElementById('hr-now').textContent=Math.round(curr.average_heartrate)+' bpm';
     const diff=Math.round(prev.average_heartrate-curr.average_heartrate);
-    document.getElementById('hr-goal').textContent=(diff>0?'−'+diff:'+'+Math.abs(diff))+' bpm · Ziel <135 bpm';
     document.getElementById('pace-curr-row').textContent=fmtDate(curr.start_date_local)+' '+fmtPace(curr.distance,curr.moving_time)+'/km · '+Math.round(curr.average_heartrate)+' bpm';
     document.getElementById('pace-prev-row').textContent=fmtDate(prev.start_date_local)+' '+fmtPace(prev.distance,prev.moving_time)+'/km · '+Math.round(prev.average_heartrate)+' bpm';
   }
