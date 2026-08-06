@@ -278,9 +278,9 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
     </div>
 
     <div class="section-label">Fortschritt</div>
-    <div class="card tappable" onclick="showPRModal()" style="margin-bottom:8px;">
+    <div class="card">
       <div class="split">
-        <div class="split-half">
+        <div class="split-half tappable" onclick="showPRModal()" style="border-radius:14px 0 0 14px;">
           <div class="stat-label">Bestzeiten ♛ · Antippen</div>
           <div style="margin-top:6px;">
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">5 km</div>
@@ -292,28 +292,15 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
           </div>
         </div>
         <div class="split-div"></div>
-        <div class="split-half" style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;">
-          <div style="font-size:32px;">🏆</div>
-          <div style="font-size:10px;color:var(--orange);font-weight:600;">Alle Bestzeiten →</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card tappable" onclick="showGrundlageModal()">
-      <div class="split">
-        <div class="split-half">
-          <div class="stat-label">Grundlage Ø HR · Antippen</div>
+        <div class="split-half tappable" onclick="showGrundlageModal()" style="border-radius:0 14px 14px 0;">
+          <div class="stat-label">Grundlage · Antippen</div>
           <div class="trend-row" style="margin-top:4px;">
             <span class="trend-prev" id="hr-prev">–</span>
             <span style="color:var(--text3);">→</span>
             <span class="stat-value trend-good" id="hr-now">–</span>
           </div>
           <div class="stat-delta delta-good" id="hr-goal">Ziel &lt;135 bpm</div>
-        </div>
-        <div class="split-div"></div>
-        <div class="split-half">
-          <div class="stat-label">Pace bei HR</div>
-          <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-top:4px;"></div>
+          <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-top:8px;"></div>
           <div id="pace-curr-row" style="font-size:10px;font-weight:600;color:var(--green);margin-top:2px;"></div>
           <div style="font-size:10px;color:var(--orange);font-weight:600;margin-top:6px;">Trend →</div>
         </div>
@@ -585,7 +572,11 @@ function showGrundlageModal() {
   let html = '<div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Ø HR bei Easy/Long Runs · Ziel &lt;135 bpm</div>';
   runs.forEach(r => {
     const hr=Math.round(r.average_heartrate);
-    const color=hr<=135?'var(--green)':hr<=143?'var(--orange)':'var(--red)';
+    let color;
+    if (hr <= 135) color = '#30D158';
+    else if (hr <= 140) color = '#7CD67C';
+    else if (hr <= 150) color = '#FFD60A';
+    else color = '#FF453A';
     const pct=Math.min(100,Math.max(0,(160-hr)/(160-120)*100));
     html+='<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
       +'<span style="font-size:12px;color:var(--text2)">'+fmtDate(r.start_date_local)+' · '+(r.distance/1000).toFixed(1)+'km · '+fmtPace(r.distance,r.moving_time)+'/km</span>'
@@ -594,8 +585,10 @@ function showGrundlageModal() {
   });
   if (runs.length>=2) {
     const diff=Math.round(runs[0].average_heartrate-runs[runs.length-1].average_heartrate);
-    const trend=diff>0?'📉 HR sinkt — Grundlage verbessert sich! ('+diff+' bpm)':diff<0?'📈 HR steigt — mehr lockere Läufe':'➡️ HR stabil';
-    html+='<div style="background:var(--bg3);border-radius:10px;padding:12px;font-size:12px;margin-top:4px;">'+trend+'</div>';
+    const lastHR = Math.round(runs[runs.length-1].average_heartrate);
+    const trendColor = lastHR<=135?'#30D158':lastHR<=140?'#7CD67C':lastHR<=150?'#FFD60A':'#FF453A';
+    const trend=diff>0?'📉 HR sinkt — Grundlage verbessert sich! ('+diff+' bpm)':diff<0?'📈 HR steigt — mehr lockere Läufe':'➡️ HR stabil — weiter dranbleiben';
+    html+='<div style="background:var(--bg3);border-radius:10px;padding:12px;font-size:12px;margin-top:4px;border-left:3px solid '+trendColor+'">'+trend+'</div>';
   }
   openModal('Grundlagen-Trend', html);
 }
