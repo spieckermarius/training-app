@@ -207,6 +207,9 @@ tbody td { font-size: 13px; padding: 11px 12px; font-weight: 500; }
   display: flex; align-items: center; gap: 4px;
 }
 
+.day.today { box-shadow: 0 0 0 2px var(--orange); }
+.day.today .d-label { color: var(--orange) !important; font-weight: 800; }
+
 footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 16px; }
 </style>
 </head>
@@ -253,14 +256,14 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
     </div>
 
     <div class="section-label">Wochenplan</div>
-    <div class="week-grid">
-      <div class="day"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Easy</div></div>
-      <div class="day"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
-      <div class="day tempo"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
-      <div class="day"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
-      <div class="day"><div class="d-label">FR</div><div class="d-name">Pull</div><div class="d-sub">Easy</div></div>
-      <div class="day rest"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
-      <div class="day long"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">15–21</div></div>
+    <div class="week-grid" id="week-grid">
+      <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Easy</div></div>
+      <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
+      <div class="day tempo" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
+      <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
+      <div class="day" id="day-5"><div class="d-label">FR</div><div class="d-name">Pull</div><div class="d-sub">Easy</div></div>
+      <div class="day rest" id="day-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
+      <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">15–21</div></div>
     </div>
 
     <div class="section-label" id="vol-label">Diese Woche</div>
@@ -593,6 +596,8 @@ function renderDashboard(activities) {
     const efCurr = curr.average_heartrate ? (curr.distance / curr.moving_time * 60 / curr.average_heartrate).toFixed(2) : null;
     const efPrev = prev.average_heartrate ? (prev.distance / prev.moving_time * 60 / prev.average_heartrate).toFixed(2) : null;
     const efDiff = efCurr && efPrev ? (efCurr - efPrev).toFixed(2) : null;
+    const efColor = efDiff > 0 ? 'var(--green)' : efDiff < 0 ? 'var(--red)' : 'var(--text)';
+    document.getElementById('pace-curr-row').style.color = efColor;
     document.getElementById('pace-curr-row').textContent = efCurr ? 'EF ' + efCurr + (efDiff > 0 ? ' ↑ +'+efDiff : efDiff < 0 ? ' ↓ '+efDiff : '') : '–';
     document.getElementById('pace-prev-row').textContent = efPrev ? 'Vorher EF ' + efPrev : '–';
   }
@@ -834,6 +839,10 @@ async function init() {
     if (!Array.isArray(activities)) { localStorage.removeItem('strava_tokens'); show('login-screen'); return; }
     show('app');
     renderDashboard(activities);
+    // Heutigen Wochentag markieren
+    const todayDay = new Date().getDay();
+    const todayEl = document.getElementById('day-' + todayDay);
+    if (todayEl) todayEl.classList.add('today');
     initSwipe();
     const fab=document.getElementById('claude-fab');
     fab.classList.add('visible');
