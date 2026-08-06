@@ -14,205 +14,161 @@
 <title>Trainingsstand</title>
 <style>
 :root {
-  --bg: #1C1C1E; --bg2: #2C2C2E; --bg3: #3A3A3C; --border: #48484A;
-  --text: #F2F2F7; --text2: #AEAEB2; --text3: #636366;
-  --orange: #FF6B35; --green: #30D158; --red: #FF453A; --yellow: #FFD60A;
+  --bg:#1C1C1E; --bg2:#2C2C2E; --bg3:#3A3A3C; --border:#48484A;
+  --text:#F2F2F7; --text2:#AEAEB2; --text3:#636366;
+  --orange:#FF6B35; --green:#30D158; --red:#FF453A; --yellow:#FFD60A;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; }
+*,::-webkit-scrollbar { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; display:revert; }
+::-webkit-scrollbar { display:none; }
+html { scrollbar-width:none; -ms-overflow-style:none; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; }
 
-/* SCREENS */
-#login-screen, #loading-screen {
-  position: fixed; inset: 0; z-index: 900;
-  background: var(--bg); display: none;
-  flex-direction: column; align-items: center; justify-content: center;
+#login-screen,#loading-screen {
+  position:fixed; inset:0; z-index:900; background:var(--bg);
+  display:none; flex-direction:column; align-items:center; justify-content:center;
 }
-#login-screen { padding: 40px 24px; text-align: center; }
-#app { display: none; padding-bottom: 80px; }
+#login-screen { padding:40px 24px; text-align:center; }
+#app { display:none; padding-bottom:80px; }
 
-/* LOGIN */
-#login-screen h1 { font-size: 42px; font-weight: 800; margin-bottom: 12px; }
-#login-screen p { font-size: 15px; color: var(--text2); margin-bottom: 40px; }
+#login-screen h1 { font-size:42px; font-weight:800; margin-bottom:12px; }
+#login-screen p { font-size:15px; color:var(--text2); margin-bottom:40px; }
 .strava-btn {
-  display: flex; align-items: center; gap: 12px;
-  background: #FC4C02; color: white; border: none; border-radius: 12px;
-  padding: 16px 28px; font-size: 16px; font-weight: 600;
-  cursor: pointer; text-decoration: none; font-family: inherit;
+  display:flex; align-items:center; gap:12px;
+  background:#FC4C02; color:white; border:none; border-radius:12px;
+  padding:16px 28px; font-size:16px; font-weight:600;
+  cursor:pointer; text-decoration:none; font-family:inherit;
 }
-/* LOADING */
 .spinner {
-  width: 36px; height: 36px;
-  border: 3px solid var(--bg3); border-top-color: var(--orange);
-  border-radius: 50%; animation: spin 0.8s linear infinite;
+  width:36px; height:36px;
+  border:3px solid var(--bg3); border-top-color:var(--orange);
+  border-radius:50%; animation:spin 0.8s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin { to { transform:rotate(360deg); } }
 
-/* LAYOUT */
-.wrap { max-width: 680px; margin: 0 auto; padding: 20px 16px 40px; padding-top: max(env(safe-area-inset-top, 20px), 20px); }
-.app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top: 8px; }
-.app-title { font-size: 26px; font-weight: 800; }
-.app-title span { color: var(--orange); }
-.logout-btn { background: var(--bg2); border: none; color: var(--text2); font-size: 12px; padding: 6px 12px; cursor: pointer; font-family: inherit; border-radius: 8px; }
-.divider { height: 1px; background: var(--border); margin-bottom: 20px; }
-.section-label { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; margin-top: 20px; }
+.wrap { max-width:680px; margin:0 auto; padding:20px 16px 40px; padding-top:max(env(safe-area-inset-top,20px),20px); }
+.app-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-top:8px; }
+.app-title { font-size:26px; font-weight:800; }
+.app-title span { color:var(--orange); }
+.logout-btn { background:var(--bg2); border:none; color:var(--text2); font-size:12px; padding:6px 12px; cursor:pointer; font-family:inherit; border-radius:8px; }
+.divider { height:1px; background:var(--border); margin-bottom:20px; }
+.section-label { font-size:11px; font-weight:600; color:var(--text3); letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; margin-top:20px; }
 
-/* WEEK GRID */
-.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 6px; }
-.day { background: var(--bg2); border-radius: 10px; padding: 8px 4px; text-align: center; min-height: 70px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.day.tempo { background: var(--orange); }
-.day.long { background: var(--bg3); border: 1.5px solid var(--orange); }
-.day.rest { opacity: 0.4; }
-.d-label { font-size: 9px; font-weight: 700; color: var(--text3); }
-.day.tempo .d-label, .day.long .d-label { color: rgba(255,255,255,0.7); }
-.d-name { font-size: 9px; font-weight: 700; color: var(--text); }
-.day.tempo .d-name { color: #fff; }
-.d-sub { font-size: 8px; color: var(--text3); }
+.ptr-indicator { text-align:center; font-size:11px; color:var(--text3); height:0; overflow:hidden; transition:height .2s; display:flex; align-items:center; justify-content:center; gap:6px; }
+.ptr-indicator.visible { height:40px; }
 
-/* CARDS */
-.card { background: var(--bg2); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
-.tappable { cursor: pointer; transition: transform 0.08s, opacity 0.08s; }
-.tappable:active { transform: scale(0.95); opacity: 0.85; }
-.split { display: flex; }
-.split-half { flex: 1; padding: 14px 16px; min-width: 0; }
-.split-div { width: 1px; background: var(--border); flex-shrink: 0; }
-.stat-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
-.stat-value { font-size: 20px; font-weight: 700; }
-.stat-value small { font-size: 11px; font-weight: 400; color: var(--text2); }
-.stat-delta { font-size: 11px; margin-top: 4px; font-weight: 500; }
-.delta-good { color: var(--green); }
-.delta-warn { color: var(--red); }
-.pr-crown { color: var(--yellow); }
-.check-done { color: var(--green); }
-.trend-row { display: flex; align-items: baseline; gap: 5px; }
-.trend-prev { font-size: 13px; color: var(--text3); text-decoration: line-through; }
-.trend-good { color: var(--green); font-weight: 700; }
+.status-bar { background:var(--bg2); border-radius:14px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
+.status-last-run { font-size:12px; color:var(--text2); }
+.status-last-run strong { color:var(--text); font-size:14px; font-weight:700; }
+.streak-badge { background:linear-gradient(135deg,#FF6B35,#FF453A); border-radius:20px; padding:4px 10px; font-size:12px; font-weight:700; color:white; display:flex; align-items:center; gap:4px; }
 
-/* PROGRESS */
-.prog-km { font-size: 20px; font-weight: 700; color: var(--text); }
-.prog-km small { font-size: 11px; font-weight: 400; color: var(--text2); }
-.prog-bar-track { background: var(--bg3); height: 5px; border-radius: 3px; margin: 8px 0 5px; }
-.prog-bar-fill { background: var(--orange); height: 5px; border-radius: 3px; }
-.prog-sessions { font-size: 10px; color: var(--text3); margin-top: 3px; }
+.week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:6px; }
+.day { background:var(--bg2); border-radius:10px; padding:8px 4px; text-align:center; min-height:70px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.day.long { background:var(--bg3); border:1.5px solid var(--orange); }
+.day.rest { opacity:.4; }
+.day.today { background:var(--orange) !important; border:none !important; opacity:1 !important; }
+.d-label { font-size:9px; font-weight:700; color:var(--text3); }
+.day.long .d-label { color:var(--orange); }
+.day.today .d-label { color:rgba(255,255,255,.8) !important; font-weight:800; }
+.d-name { font-size:9px; font-weight:700; color:var(--text); }
+.day.today .d-name,.day.today .d-sub { color:white !important; }
+.d-sub { font-size:8px; color:var(--text3); }
 
-/* SWIPE */
-.swipe-card { overflow: hidden; touch-action: pan-y; }
-.swipe-track { display: flex; transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94); }
-.swipe-slide { min-width: 100%; flex-shrink: 0; }
-.swipe-dots { display: flex; justify-content: center; gap: 6px; padding: 10px 0 12px; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bg3); transition: all 0.2s; }
-.dot.active { background: var(--orange); width: 16px; border-radius: 3px; }
+.card { background:var(--bg2); border-radius:14px; margin-bottom:10px; overflow:hidden; }
+.tappable { cursor:pointer; transition:transform .08s,opacity .08s; }
+.tappable:active { transform:scale(.95); opacity:.85; }
+.split { display:flex; }
+.split-half { flex:1; padding:14px 16px; min-width:0; }
+.split-div { width:1px; background:var(--border); flex-shrink:0; }
+.stat-label { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
+.stat-value { font-size:20px; font-weight:700; }
+.stat-value small { font-size:11px; font-weight:400; color:var(--text2); }
+.stat-delta { font-size:11px; margin-top:4px; font-weight:500; }
+.delta-good { color:var(--green); }
+.delta-warn { color:var(--red); }
+.pr-crown { color:var(--yellow); }
+.check-done { color:var(--green); }
+.trend-row { display:flex; align-items:baseline; gap:5px; }
+.trend-prev { font-size:13px; color:var(--text3); text-decoration:line-through; }
+.trend-good { color:var(--green); font-weight:700; }
 
-/* KW BARS */
-.kw-bars { display: flex; align-items: flex-end; gap: 6px; height: 64px; margin-top: 8px; }
-.kw-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; height: 100%; }
-.kw-bar-wrap { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; width: 100%; }
-.kw-bar { width: 100%; min-height: 18px; border-radius: 4px 4px 0 0; display: flex; align-items: center; justify-content: center; }
-.kw-bar-label { font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.85); text-align: center; line-height: 1.1; }
-.kw-label-text { font-size: 8px; color: var(--text3); margin-top: 3px; }
+.prog-km { font-size:20px; font-weight:700; color:var(--text); }
+.prog-km small { font-size:11px; font-weight:400; color:var(--text2); }
+.prog-bar-track { background:var(--bg3); height:5px; border-radius:3px; margin:8px 0 5px; }
+.prog-bar-fill { background:var(--orange); height:5px; border-radius:3px; }
+.prog-sessions { font-size:10px; color:var(--text3); margin-top:3px; }
 
-/* TABLE */
-table { width: 100%; border-collapse: collapse; background: var(--bg2); border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
-thead td { font-size: 9px; font-weight: 700; color: var(--text3); padding: 10px 12px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.06em; }
-tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; }
-tbody tr:last-child { border-bottom: none; }
-tbody tr:active { background: var(--bg3); }
-tbody td { font-size: 13px; padding: 11px 12px; font-weight: 500; }
-.pill { font-size: 9px; font-weight: 600; padding: 3px 7px; border-radius: 6px; display: inline-block; white-space: nowrap; }
-.pill-high { background: rgba(255,69,58,0.15); color: var(--red); }
-.pill-mid { background: rgba(255,107,53,0.15); color: var(--orange); }
-.pill-pr { background: var(--yellow); color: #000; }
-.pill-best { background: rgba(48,209,88,0.15); color: var(--green); }
+.swipe-card { overflow:hidden; touch-action:pan-y; }
+.swipe-track { display:flex; transition:transform .35s cubic-bezier(.25,.46,.45,.94); }
+.swipe-slide { min-width:100%; flex-shrink:0; }
+.swipe-dots { display:flex; justify-content:center; gap:6px; padding:10px 0 12px; }
+.dot { width:6px; height:6px; border-radius:50%; background:var(--bg3); transition:all .2s; }
+.dot.active { background:var(--orange); width:16px; border-radius:3px; }
 
-/* STEPS */
-.steps { background: var(--bg2); border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
-.step { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--border); }
-.step:last-child { border-bottom: none; background: var(--orange); border-radius: 0 0 14px 14px; }
-.step.amber { background: rgba(255,107,53,0.08); }
-.step-num { font-size: 18px; font-weight: 800; width: 22px; flex-shrink: 0; color: var(--text3); }
-.step:last-child .step-num { color: rgba(255,255,255,0.7); }
-.step-title { font-size: 13px; font-weight: 600; }
-.step:last-child .step-title { color: #fff; }
-.step-sub { font-size: 10px; color: var(--text2); margin-top: 2px; }
-.step:last-child .step-sub { color: rgba(255,255,255,0.7); }
-.step.amber .step-sub { color: rgba(255,107,53,0.8); }
-.step-status { font-size: 9px; font-weight: 700; margin-left: auto; white-space: nowrap; }
+.kw-bars { display:flex; align-items:flex-end; gap:6px; height:64px; margin-top:8px; }
+.kw-col { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; flex:1; height:100%; }
+.kw-bar-wrap { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; flex:1; width:100%; }
+.kw-bar { width:100%; min-height:18px; border-radius:4px 4px 0 0; display:flex; align-items:center; justify-content:center; }
+.kw-bar-label { font-size:7px; font-weight:700; color:rgba(255,255,255,.85); text-align:center; line-height:1.1; }
+.kw-label-text { font-size:8px; color:var(--text3); margin-top:3px; }
 
-/* FAB */
+.pill { font-size:9px; font-weight:600; padding:3px 7px; border-radius:6px; display:inline-block; white-space:nowrap; }
+.pill-high { background:rgba(255,69,58,.15); color:var(--red); }
+.pill-mid { background:rgba(255,107,53,.15); color:var(--orange); }
+.pill-pr { background:var(--yellow); color:#000; }
+.pill-best { background:rgba(48,209,88,.15); color:var(--green); }
+
+.steps { background:var(--bg2); border-radius:14px; overflow:hidden; margin-bottom:10px; }
+.step { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--border); }
+.step:last-child { border-bottom:none; background:var(--orange); border-radius:0 0 14px 14px; }
+.step.amber { background:rgba(255,107,53,.08); }
+.step-num { font-size:18px; font-weight:800; width:22px; flex-shrink:0; color:var(--text3); }
+.step:last-child .step-num { color:rgba(255,255,255,.7); }
+.step-title { font-size:13px; font-weight:600; }
+.step:last-child .step-title { color:#fff; }
+.step-sub { font-size:10px; color:var(--text2); margin-top:2px; }
+.step:last-child .step-sub { color:rgba(255,255,255,.7); }
+.step-status { font-size:9px; font-weight:700; margin-left:auto; white-space:nowrap; }
+
 .claude-fab {
-  position: fixed; bottom: 32px; right: 24px;
-  width: 62px; height: 62px; border-radius: 50%;
-  background: var(--orange);
-  border: none; cursor: pointer;
-  box-shadow: 0 4px 24px rgba(255,107,53,0.5);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200; opacity: 0; pointer-events: none;
-  transition: opacity 0.3s, transform 0.15s;
-  touch-action: manipulation;
+  position:fixed; bottom:32px; right:24px;
+  width:62px; height:62px; border-radius:50%;
+  background:var(--orange); border:none; cursor:pointer;
+  box-shadow:0 4px 24px rgba(255,107,53,.5);
+  display:flex; align-items:center; justify-content:center;
+  z-index:200; opacity:0; pointer-events:none;
+  transition:opacity .3s,transform .15s; touch-action:manipulation;
 }
-.claude-fab.visible { opacity: 1; pointer-events: auto; }
-.claude-fab:active { transform: scale(0.88); }
+.claude-fab.visible { opacity:1; pointer-events:auto; }
+.claude-fab:active { transform:scale(.88); }
 
-/* MODALS */
 .modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6); z-index: 800;
-  align-items: flex-end; justify-content: center;
-  backdrop-filter: blur(4px);
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.6); z-index:800;
+  align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(4px);
 }
-.modal-overlay.open { display: flex; }
 .modal {
-  background: var(--bg2); width: 100%; max-width: 680px;
-  border-radius: 20px 20px 0 0; padding: 20px 20px 48px;
-  max-height: 85vh; overflow-y: auto;
-  animation: slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+  background:var(--bg2); width:100%; max-width:680px;
+  border-radius:20px 20px 0 0; padding:20px 20px 48px;
+  max-height:85vh; overflow-y:auto;
+  animation:slideUp .3s cubic-bezier(.32,.72,0,1);
 }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.modal-title { font-size: 17px; font-weight: 700; }
-.modal-close { background: var(--bg3); border: none; color: var(--text2); font-size: 16px; cursor: pointer; padding: 6px 10px; border-radius: 8px; font-family: inherit; }
-.modal-stat { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
-.modal-stat:last-child { border-bottom: none; }
-.modal-stat-label { color: var(--text2); }
-.modal-stat-value { font-weight: 600; }
+@keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.modal-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 16px; }
+.modal-header { margin-bottom:16px; }
+.modal-title { font-size:17px; font-weight:700; }
+.modal-stat { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.modal-stat:last-child { border-bottom:none; }
+.modal-stat-label { color:var(--text2); }
+.modal-stat-value { font-weight:600; }
 
-/* ANALYSE */
-.analyse-run-info { background: var(--bg3); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; display: flex; gap: 16px; flex-wrap: wrap; }
-.analyse-run-stat { font-size: 11px; color: var(--text2); }
-.analyse-run-stat strong { color: var(--text); font-weight: 700; display: block; font-size: 13px; }
-.analyse-line { font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--border); line-height: 1.4; }
-.analyse-line:last-child { border-bottom: none; }
+.analyse-run-info { background:var(--bg3); border-radius:10px; padding:10px 14px; margin-bottom:16px; display:flex; gap:16px; flex-wrap:wrap; }
+.analyse-run-stat { font-size:11px; color:var(--text2); }
+.analyse-run-stat strong { color:var(--text); font-weight:700; display:block; font-size:13px; }
+.analyse-line { font-size:14px; padding:8px 0; border-bottom:1px solid var(--border); line-height:1.4; }
+.analyse-line:last-child { border-bottom:none; }
 
-/* PULL TO REFRESH */
-.ptr-indicator {
-  text-align: center; font-size: 11px; color: var(--text3);
-  padding: 8px; height: 0; overflow: hidden;
-  transition: height 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.ptr-indicator.visible { height: 40px; }
-.ptr-spinner { width: 14px; height: 14px; border: 2px solid var(--bg3); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
-
-/* STATUS BAR */
-.status-bar {
-  background: var(--bg2); border-radius: 14px; padding: 12px 16px;
-  margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
-}
-.status-last-run { font-size: 12px; color: var(--text2); }
-.status-last-run strong { color: var(--text); font-size: 14px; font-weight: 700; }
-.status-streak { display: flex; align-items: center; gap: 6px; }
-.streak-badge {
-  background: linear-gradient(135deg, #FF6B35, #FF453A);
-  border-radius: 20px; padding: 4px 10px;
-  font-size: 12px; font-weight: 700; color: white;
-  display: flex; align-items: center; gap: 4px;
-}
-
-.day.today { background: var(--orange) !important; border: none !important; opacity: 1 !important; }
-.day.today .d-label { color: rgba(255,255,255,0.8) !important; font-weight: 800; }
-.day.today .d-name { color: #fff !important; }
-.day.today .d-sub { color: rgba(255,255,255,0.7) !important; }
-
-footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 16px; }
+footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px; }
 </style>
 </head>
 <body>
@@ -233,7 +189,7 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
 
 <div id="app">
   <div class="ptr-indicator" id="ptr-indicator">
-    <div class="ptr-spinner" id="ptr-spinner" style="display:none;"></div>
+    <div class="spinner" id="ptr-spinner" style="display:none;width:14px;height:14px;border-width:2px;"></div>
     <span id="ptr-text"></span>
   </div>
   <div class="wrap">
@@ -243,28 +199,22 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
     </div>
     <div class="divider"></div>
 
-    <!-- STATUS BAR -->
     <div class="status-bar">
-      <div class="status-last-run tappable" onclick="if(_runs.length)showRunDetail(0)" style="flex:1;">
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Letzter Lauf · Antippen</div>
+      <div class="status-last-run tappable" onclick="if(_runs.length)showRunDetail(0)" style="flex:1;cursor:pointer;">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Letzter Lauf · Antippen</div>
         <strong id="last-run-name">–</strong>
         <div id="last-run-days" style="font-size:11px;color:var(--text2);margin-top:1px;">–</div>
       </div>
-      <div class="status-streak">
-        <div class="streak-badge" id="streak-badge" title="Wochen mit ≥30 km in Folge">
-          🔥 <span id="streak-count">0</span> Wochen ≥30km
-        </div>
-      </div>
+      <div class="streak-badge" id="streak-badge">🔥 <span id="streak-count">0</span> Wochen ≥30km</div>
     </div>
 
-    <!-- HEUTIGER LAUF -->
     <div id="today-run-bar" style="display:none;background:var(--orange);border-radius:12px;padding:10px 14px;margin-bottom:10px;">
-      <div style="font-size:10px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Heute trainieren</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Heute trainieren</div>
       <div style="font-size:14px;font-weight:700;color:#fff;" id="today-run-text">–</div>
     </div>
 
     <div class="section-label">Wochenplan</div>
-    <div class="week-grid" id="week-grid">
+    <div class="week-grid">
       <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Easy</div></div>
       <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
       <div class="day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
@@ -317,7 +267,7 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
             </div>
             <div class="split-div"></div>
             <div class="split-half">
-              <div class="stat-label">Trend (Monate)</div>
+              <div class="stat-label">Trend (Quartale)</div>
               <div class="kw-bars" id="year-bars"></div>
             </div>
           </div>
@@ -333,7 +283,7 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
     <div class="section-label">Fortschritt</div>
     <div class="card">
       <div class="split">
-        <div class="split-half tappable" onclick="showPRModal()" style="border-radius:14px 0 0 14px;">
+        <div class="split-half tappable" onclick="showPRModal()">
           <div class="stat-label">Bestzeiten ♛ · Antippen</div>
           <div style="margin-top:6px;">
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">5 km</div>
@@ -345,29 +295,29 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
           </div>
         </div>
         <div class="split-div"></div>
-        <div class="split-half tappable" onclick="showGrundlageModal()" style="border-radius:0 14px 14px 0;">
+        <div class="split-half tappable" onclick="showGrundlageModal()">
           <div class="stat-label">Grundlage · Antippen</div>
           <div style="margin-top:6px;">
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">Ø Herzfrequenz</div>
             <div class="trend-row">
               <span class="trend-prev" id="hr-prev">–</span>
               <span style="color:var(--text3);margin:0 4px;">→</span>
-              <span style="font-size:16px;font-weight:700;color:var(--green);" id="hr-now">–</span>
+              <span style="font-size:16px;font-weight:700;" id="hr-now">–</span>
             </div>
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin:8px 0 2px;">Effizienzfaktor</div>
-            <div id="pace-curr-row" style="font-size:16px;font-weight:700;color:var(--green);"></div>
-            <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-top:2px;"></div>
+            <div style="font-size:16px;font-weight:700;" id="pace-curr-row">–</div>
+            <div style="font-size:10px;color:var(--text2);margin-top:2px;" id="pace-prev-row">–</div>
             <div style="font-size:9px;color:var(--text3);margin-top:4px;">m/min ÷ HR · höher = besser</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="card tappable" onclick="showAllRunsModal()" style="margin-bottom:10px;">
+    <div class="card tappable" onclick="showAllRunsModal()">
       <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Letzte Läufe</div>
-          <div style="font-size:16px;font-weight:700;color:#fff;" id="runs-preview">– Läufe geladen</div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Letzte Läufe</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;" id="runs-preview">– Läufe</div>
         </div>
         <div style="font-size:24px;color:var(--orange);">→</div>
       </div>
@@ -396,24 +346,20 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
         <div class="step-status" style="color:#fff">ZIEL</div>
       </div>
     </div>
-
     <footer>Strava Live · <span id="last-updated">–</span></footer>
   </div>
 </div>
 
 <button class="claude-fab" id="claude-fab" title="Lauf analysieren">
   <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="11" cy="11" r="7"/>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
 </button>
 
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">Details</div>
-    </div>
+    <div class="modal-header"><div class="modal-title" id="modal-title">Details</div></div>
     <div id="modal-body"></div>
   </div>
 </div>
@@ -421,12 +367,10 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
 <div class="modal-overlay" id="analyse-overlay" onclick="if(event.target===this)closeAnalyse()">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-header">
-      <div class="modal-title">Laufanalyse</div>
-    </div>
+    <div class="modal-header"><div class="modal-title">Laufanalyse</div></div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:12px;" id="analyse-subtitle"></div>
     <div class="analyse-run-info" id="analyse-run-info"></div>
-    <div id="analyse-body"><div style="display:flex;align-items:center;gap:10px;color:var(--text2);font-size:13px;"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>Analysiere…</div></div>
+    <div id="analyse-body"></div>
   </div>
 </div>
 
@@ -435,9 +379,7 @@ const CLIENT_ID = '269194';
 const REDIRECT_URI = window.location.origin + window.location.pathname;
 const API = '/api/strava';
 
-// Beim Start: Login zeigen bis JS entscheidet
 document.getElementById('login-screen').style.display = 'flex';
-
 document.getElementById('strava-login-btn').href =
   'https://www.strava.com/oauth/authorize?client_id=' + CLIENT_ID +
   '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) +
@@ -445,57 +387,72 @@ document.getElementById('strava-login-btn').href =
 
 function show(id) {
   ['login-screen','loading-screen','app'].forEach(s => {
-    document.getElementById(s).style.display = s === id ? (id === 'app' ? 'block' : 'flex') : 'none';
+    document.getElementById(s).style.display = s===id ? (id==='app'?'block':'flex') : 'none';
   });
 }
 
 async function callAPI(body) {
-  const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-  return res.json();
+  const r = await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return r.json();
 }
 
 async function getValidToken() {
   let t = JSON.parse(localStorage.getItem('strava_tokens') || 'null');
   if (!t) return null;
   if (Date.now()/1000 > t.expires_at - 300) {
-    const f = await callAPI({ action:'refresh', refresh_token:t.refresh_token });
-    if (f.access_token) { t = {...t,...f}; localStorage.setItem('strava_tokens', JSON.stringify(t)); }
-    else return null;
+    const f = await callAPI({action:'refresh', refresh_token:t.refresh_token});
+    if (!f.access_token) return null;
+    t = {...t,...f};
+    localStorage.setItem('strava_tokens', JSON.stringify(t));
   }
   return t.access_token;
 }
 
 function logout() { localStorage.removeItem('strava_tokens'); show('login-screen'); }
 
-function fmtPace(m,s) { const p=s/(m/1000); return Math.floor(p/60)+':'+String(Math.floor(p%60)).padStart(2,'0'); }
-function fmtDate(iso) { const d=new Date(iso); return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'; }
-function fmtTime(s) { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; return h>0?h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')+' h':m+':'+String(sec).padStart(2,'0')+' min'; }
-function weekStart(d) { const dt=new Date(d); const day=dt.getDay()||7; dt.setDate(dt.getDate()-day+1); dt.setHours(0,0,0,0); return dt; }
-function isoWeek(d) { const dt=new Date(d); dt.setHours(0,0,0,0); dt.setDate(dt.getDate()+3-(dt.getDay()||7)+1); const w=new Date(dt.getFullYear(),0,4); return Math.round(((dt-w)/86400000+(w.getDay()||7)-1)/7)+1; }
+// ── Helpers ──
+const pad = n => String(n).padStart(2,'0');
+function fmtPace(m,s) { const p=s/(m/1000); return Math.floor(p/60)+':'+pad(Math.floor(p%60)); }
+function fmtDate(iso) { const d=new Date(iso); return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'; }
+function fmtTime(s) {
+  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+  return h>0 ? h+':'+pad(m)+':'+pad(sec)+' h' : m+':'+pad(sec)+' min';
+}
+function weekStart(d) {
+  const dt=new Date(d), day=dt.getDay()||7;
+  dt.setDate(dt.getDate()-day+1); dt.setHours(0,0,0,0); return dt;
+}
+function isoWeek(d) {
+  const dt=new Date(d); dt.setHours(0,0,0,0);
+  dt.setDate(dt.getDate()+3-(dt.getDay()||7)+1);
+  const w=new Date(dt.getFullYear(),0,4);
+  return Math.round(((dt-w)/86400000+(w.getDay()||7)-1)/7)+1;
+}
 function hrPill(hr, isPR) {
   if (isPR) return '<span class="pill pill-pr">♛ PR</span>';
-  if (hr < 137) return '<span class="pill pill-best">Bestwert</span>';
-  if (hr < 143) return '<span class="pill pill-mid">Ok</span>';
+  if (hr<137) return '<span class="pill pill-best">Bestwert</span>';
+  if (hr<143) return '<span class="pill pill-mid">Ok</span>';
   return '<span class="pill pill-high">Hoch</span>';
 }
-
-let _runs = [], _thisWeekRuns = [], _showAll = false;
-
-function renderKWBars(containerId, data, maxVal) {
-  const max = maxVal || Math.max(...data.map(d=>d.km), 1);
-  document.getElementById(containerId).innerHTML = data.map(d => {
+function renderKWBars(id, data) {
+  const max = Math.max(...data.map(d=>d.km), 1);
+  document.getElementById(id).innerHTML = data.map(d => {
     const h = Math.max(18, Math.round(d.km/max*55));
     const bg = d.current ? 'var(--orange)' : 'var(--bg3)';
-    const border = d.current ? 'border:1px dashed rgba(255,255,255,0.3);' : '';
-    return '<div class="kw-col"><div class="kw-bar-wrap"><div class="kw-bar" style="height:'+h+'px;background:'+bg+';width:100%;'+border+'">' +
+    return '<div class="kw-col"><div class="kw-bar-wrap">' +
+      '<div class="kw-bar" style="height:'+h+'px;background:'+bg+';width:100%">' +
       '<div class="kw-bar-label">'+d.km.toFixed(1)+'<br>km</div></div></div>' +
       '<div class="kw-label-text" style="'+(d.current?'color:var(--orange);font-weight:700;':'')+'">'+d.label+'</div></div>';
   }).join('');
 }
 
+// ── State ──
+let _runs = [], _thisWeekRuns = [], _easyRuns = [];
+
+// ── Dashboard ──
 function renderDashboard(activities) {
-  _runs = activities.filter(a => a.sport_type==='Run'||a.type==='Run');
-  const now = new Date();
+  _runs = activities.filter(a => a.sport_type==='Run' || a.type==='Run');
+  const now = new Date(), nm = now.getMonth(), ny = now.getFullYear();
 
   // Woche
   const wsNow = weekStart(now);
@@ -508,206 +465,149 @@ function renderDashboard(activities) {
 
   // KW Trend
   const weekMap = {};
-  _runs.forEach(r => { const kw=isoWeek(r.start_date_local); weekMap[kw]=(weekMap[kw]||0)+r.distance/1000; });
+  _runs.forEach(r => { const k=isoWeek(r.start_date_local); weekMap[k]=(weekMap[k]||0)+r.distance/1000; });
   const curKW = isoWeek(now);
   const kwKeys = Object.keys(weekMap).map(Number).sort().slice(-4);
-  renderKWBars('kw-bars', kwKeys.map(kw => ({km:weekMap[kw]||0, label:'KW'+kw+(kw===curKW?'↗':''), current:kw===curKW})));
+  renderKWBars('kw-bars', kwKeys.map(k => ({km:weekMap[k]||0, label:'KW'+k+(k===curKW?'↗':''), current:k===curKW})));
 
   // Monat
-  const nm = now.getMonth(), ny = now.getFullYear();
   const mRuns = _runs.filter(r => { const d=new Date(r.start_date_local); return d.getMonth()===nm&&d.getFullYear()===ny; });
-  const mKm = mRuns.reduce((s,r)=>s+r.distance/1000,0);
+  const mKm = mRuns.reduce((s,r)=>s+r.distance/1000, 0);
   document.getElementById('month-km').innerHTML = mKm.toFixed(1)+'<small> km</small>';
   document.getElementById('month-bar').style.width = Math.min(100,mKm/140*100)+'%';
   document.getElementById('month-sessions').textContent = mRuns.length+' Läufe · Ziel ~140 km';
-  // Monatstrend und Jahrestrend werden weiter unten berechnet
+  const mMap = {};
+  _runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny).forEach(r=>{
+    const m=new Date(r.start_date_local).getMonth(); mMap[m]=(mMap[m]||0)+r.distance/1000;
+  });
+  const mn=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const last4m = [...Array(4)].map((_,i)=>(nm-3+i+12)%12);
+  renderKWBars('month-bars', last4m.map(m=>({km:mMap[m]||0, label:mn[m], current:m===nm})));
 
   // Jahr
   const yRuns = _runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
-  const yKm = yRuns.reduce((s,r)=>s+r.distance/1000,0);
+  const yKm = yRuns.reduce((s,r)=>s+r.distance/1000, 0);
   document.getElementById('year-km').innerHTML = Math.round(yKm)+'<small> km</small>';
   document.getElementById('year-bar').style.width = Math.min(100,yKm/1500*100)+'%';
   document.getElementById('year-sessions').textContent = yRuns.length+' Läufe · Ziel ~1500 km';
-  // Monatstrend: letzte 4 Monate
-  const monthNames=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-  const mMap={};
-  _runs.forEach(r=>{const m=new Date(r.start_date_local).getMonth();const y=new Date(r.start_date_local).getFullYear();if(y===ny)mMap[m]=(mMap[m]||0)+r.distance/1000;});
-  const last4Months=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
-  renderKWBars('month-bars', last4Months.map(m=>({km:mMap[m]||0,label:monthNames[m],current:m===nm})));
-
-  // Jahrestrend: Quartale
   const qMap={1:0,2:0,3:0,4:0};
-  yRuns.forEach(r=>{const m=new Date(r.start_date_local).getMonth();const q=Math.floor(m/3)+1;qMap[q]+=r.distance/1000;});
-  const curQ=Math.floor(nm/3)+1;
+  yRuns.forEach(r=>{ const q=Math.floor(new Date(r.start_date_local).getMonth()/3)+1; qMap[q]+=r.distance/1000; });
+  const curQ = Math.floor(nm/3)+1;
   renderKWBars('year-bars',[1,2,3,4].map(q=>({km:qMap[q]||0,label:'Q'+q,current:q===curQ})));
 
   // PRs
-  const pr5k=_runs.filter(r=>r.distance>=4800&&r.distance<=5500&&(r.average_heartrate||0)>155).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
-  const prHM=_runs.filter(r=>r.distance>=19000&&r.distance<=23000).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
-  const pr10k=_runs.filter(r=>r.distance>=9500&&r.distance<=11000&&(r.average_heartrate||0)>150).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
+  const pr5k  = _runs.filter(r=>r.distance>=4800&&r.distance<=5500&&(r.average_heartrate||0)>155).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
+  const pr10k = _runs.filter(r=>r.distance>=9500&&r.distance<=11000&&(r.average_heartrate||0)>150).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
+  const prHM  = _runs.filter(r=>r.distance>=19000&&r.distance<=23000).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
   if (pr5k) {
-    document.getElementById('pr-5k-time').innerHTML=fmtTime(pr5k.moving_time)+' <span class="pr-crown">♛</span>';
-    document.getElementById('pr-5k-pace').textContent=fmtPace(pr5k.distance,pr5k.moving_time)+'/km · '+fmtDate(pr5k.start_date_local);
+    document.getElementById('pr-5k-time').innerHTML = fmtTime(pr5k.moving_time)+' <span class="pr-crown">♛</span>';
+    document.getElementById('pr-5k-pace').textContent = fmtPace(pr5k.distance,pr5k.moving_time)+'/km · '+fmtDate(pr5k.start_date_local);
   }
   if (prHM) {
-    document.getElementById('pr-hm').innerHTML=fmtTime(prHM.moving_time)+' <span class="pr-crown">♛</span>';
-    document.getElementById('pr-hm-pace').textContent=fmtPace(prHM.distance,prHM.moving_time)+'/km · '+fmtDate(prHM.start_date_local);
+    document.getElementById('pr-hm').innerHTML = fmtTime(prHM.moving_time)+' <span class="pr-crown">♛</span>';
+    document.getElementById('pr-hm-pace').textContent = fmtPace(prHM.distance,prHM.moving_time)+'/km · '+fmtDate(prHM.start_date_local);
   }
   window._pr5k=pr5k; window._pr10k=pr10k; window._prHM=prHM;
 
-  // Grundlage
-  const easyRuns=_runs.filter(r=>r.distance>5000&&r.average_heartrate&&r.average_heartrate<160).sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
-  if (easyRuns.length>=2) {
-    const prev=easyRuns[easyRuns.length-2], curr=easyRuns[easyRuns.length-1];
-    document.getElementById('hr-prev').textContent=Math.round(prev.average_heartrate);
-    const hrNowEl = document.getElementById('hr-now');
-    hrNowEl.textContent=Math.round(curr.average_heartrate)+' bpm';
-    // HR höher = schlechter = rot, HR niedriger = besser = grün
-    const hrDiff = curr.average_heartrate - prev.average_heartrate;
-    hrNowEl.style.color = hrDiff < 0 ? 'var(--green)' : hrDiff > 0 ? 'var(--red)' : 'var(--text)';
+  // Grundlage + EF
+  _easyRuns = _runs.filter(r=>r.distance>5000&&r.average_heartrate&&r.average_heartrate<160)
+    .sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
+  if (_easyRuns.length>=2) {
+    const prev=_easyRuns[_easyRuns.length-2], curr=_easyRuns[_easyRuns.length-1];
+    document.getElementById('hr-prev').textContent = Math.round(prev.average_heartrate);
+    const hrNow = document.getElementById('hr-now');
+    hrNow.textContent = Math.round(curr.average_heartrate)+' bpm';
+    hrNow.style.color = curr.average_heartrate<prev.average_heartrate ? 'var(--green)' : curr.average_heartrate>prev.average_heartrate ? 'var(--red)' : 'var(--text)';
+    const ef = r => (r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
+    const efCurr=ef(curr), efPrev=ef(prev), efDiff=(efCurr-efPrev).toFixed(2);
+    const efEl = document.getElementById('pace-curr-row');
+    efEl.textContent = 'EF '+efCurr+(efDiff>0?' ↑ +'+efDiff:efDiff<0?' ↓ '+efDiff:'');
+    efEl.style.color = efDiff>0 ? 'var(--green)' : efDiff<0 ? 'var(--red)' : 'var(--text)';
+    document.getElementById('pace-prev-row').textContent = 'Vorher EF '+efPrev;
   }
-  window._easyRuns = easyRuns;
 
-  // Steps
-  // Status Bar — letzter Lauf + Streak
+  // Status Bar
   if (_runs.length) {
-    const last = _runs[0];
-    const daysSince = Math.round((now - new Date(last.start_date_local)) / 86400000);
+    const last=_runs[0], days=Math.round((now-new Date(last.start_date_local))/86400000);
     document.getElementById('last-run-name').textContent = last.name;
-    document.getElementById('last-run-days').textContent = daysSince === 0 ? 'Heute' : daysSince === 1 ? 'Gestern' : 'vor ' + daysSince + ' Tagen';
+    document.getElementById('last-run-days').textContent = days===0?'Heute':days===1?'Gestern':'vor '+days+' Tagen';
   }
 
-  // Streak — wie viele Wochen in Folge ≥30km
-  let streak = 0;
-  const streakTarget = 30;
-  let checkDate = new Date(now);
-  for (let w = 0; w < 52; w++) {
-    const ws = weekStart(new Date(checkDate));
-    const we = new Date(ws); we.setDate(we.getDate() + 7);
-    const wRuns = _runs.filter(r => { const d = new Date(r.start_date_local); return d >= ws && d < we; });
-    const wKm = wRuns.reduce((s,r) => s + r.distance/1000, 0);
-    if (w === 0 && wKm < streakTarget) { checkDate.setDate(checkDate.getDate() - 7); continue; }
-    if (wKm >= streakTarget) { streak++; checkDate.setDate(checkDate.getDate() - 7); }
-    else break;
+  // Streak
+  let streak=0; const chk=new Date(now);
+  for (let w=0;w<52;w++) {
+    const ws=weekStart(new Date(chk)), we=new Date(ws); we.setDate(we.getDate()+7);
+    const wKm=_runs.filter(r=>{const d=new Date(r.start_date_local);return d>=ws&&d<we;}).reduce((s,r)=>s+r.distance/1000,0);
+    if (w===0&&wKm<30){chk.setDate(chk.getDate()-7);continue;}
+    if (wKm>=30){streak++;chk.setDate(chk.getDate()-7);}else break;
   }
   document.getElementById('streak-count').textContent = streak;
-  const badge = document.getElementById('streak-badge');
-  if (streak === 0) badge.style.background = 'var(--bg3)';
-  else if (streak >= 4) badge.style.background = 'linear-gradient(135deg, #FFD60A, #FF6B35)';
+  if (streak>=4) document.getElementById('streak-badge').style.background='linear-gradient(135deg,#FFD60A,#FF6B35)';
+  else if (streak===0) document.getElementById('streak-badge').style.background='var(--bg3)';
 
-  // Efficiency Factor: m/min geteilt durch HR (Standard-Formel)
-  window._easyRunsWithEF = easyRuns.map(r => ({
-    ...r,
-    ef: r.average_heartrate ? (r.distance / r.moving_time * 60 / r.average_heartrate).toFixed(2) : null
-  }));
-
-  // EF in Grundlagen-Kachel anzeigen
-  if (easyRuns.length >= 2) {
-    const curr = easyRuns[easyRuns.length-1];
-    const prev = easyRuns[easyRuns.length-2];
-    const efCurr = curr.average_heartrate ? (curr.distance / curr.moving_time * 60 / curr.average_heartrate).toFixed(2) : null;
-    const efPrev = prev.average_heartrate ? (prev.distance / prev.moving_time * 60 / prev.average_heartrate).toFixed(2) : null;
-    const efDiff = efCurr && efPrev ? (efCurr - efPrev).toFixed(2) : null;
-    const efColor = efDiff > 0 ? 'var(--green)' : efDiff < 0 ? 'var(--red)' : 'var(--text)';
-    document.getElementById('pace-curr-row').style.color = efColor;
-    document.getElementById('pace-curr-row').textContent = efCurr ? 'EF ' + efCurr + (efDiff > 0 ? ' ↑ +'+efDiff : efDiff < 0 ? ' ↓ '+efDiff : '') : '–';
-    document.getElementById('pace-prev-row').textContent = efPrev ? 'Vorher EF ' + efPrev : '–';
-  }
-  // Heutiger Lauf Text
+  // Heutiger Lauf
   const todayMsgs = {
-    0: 'Long Run · 15–21 km, locker unter 145 bpm 🏃',
-    1: 'Push + Easy Run · 7–10 km, locker unter 140 bpm',
-    2: 'Pull · Krafttraining, kein Lauf heute 💪',
-    3: 'Tempolauf · 5–6 km, Intervalle — gib Gas! ⚡',
-    4: 'Push + Beine · laufspezifisches Krafttraining 💪',
-    5: 'Pull + Easy Run · 7–10 km, Mitteldistanz locker',
-    6: 'Rest Day · Erholung und Regeneration 😴'
+    0:'Long Run · 15–21 km, locker unter 145 bpm 🏃',
+    1:'Push + Easy Run · 7–10 km, locker unter 140 bpm',
+    2:'Pull · Krafttraining, kein Lauf heute 💪',
+    3:'Tempolauf · 5–6 km, Intervalle — gib Gas! ⚡',
+    4:'Push + Beine · laufspezifisches Krafttraining 💪',
+    5:'Pull + Easy Run · 7–10 km, Mitteldistanz locker',
+    6:'Rest Day · Erholung und Regeneration 😴'
   };
-  const todayBar = document.getElementById('today-run-bar');
-  const todayText = document.getElementById('today-run-text');
-  if (todayMsgs[new Date().getDay()]) {
-    todayBar.style.display = 'block';
-    todayText.textContent = todayMsgs[new Date().getDay()];
-  }
+  const today=new Date().getDay();
+  document.getElementById('today-run-bar').style.display='block';
+  document.getElementById('today-run-text').textContent=todayMsgs[today];
 
   // Runs Preview
-  const runsPreview = document.getElementById('runs-preview');
-  if (runsPreview && _runs.length) {
-    runsPreview.textContent = _runs.length + ' Läufe · zuletzt ' + fmtDate(_runs[0].start_date_local) + ' · ' + (_runs[0].distance/1000).toFixed(1) + ' km';
+  if (_runs.length) {
+    document.getElementById('runs-preview').textContent=
+      _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local)+' · '+(_runs[0].distance/1000).toFixed(1)+' km';
   }
-  if (easyRuns.length) document.getElementById('step1-sub').textContent='Aktuell '+Math.round(easyRuns[easyRuns.length-1].average_heartrate)+' bpm · Ziel <135 bpm';
 
+  // Steps
+  if (_easyRuns.length) document.getElementById('step1-sub').textContent='Aktuell '+Math.round(_easyRuns[_easyRuns.length-1].average_heartrate)+' bpm · Ziel <135 bpm';
   document.getElementById('step3-sub').textContent='Diese Woche '+weekKm.toFixed(1)+' km von 30 km';
   document.getElementById('last-updated').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
 }
 
-function showAllRunsModal() {
-  let html = '';
-  _runs.forEach((r,i) => {
-    const km=(r.distance/1000).toFixed(1);
-    const hr=r.average_heartrate?Math.round(r.average_heartrate)+' bpm':'–';
-    html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer;" onclick="closeModal();setTimeout(()=>showRunDetail('+i+'),300)">'
-      +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-      +'<span class="modal-stat-label">'+km+' km · '+fmtPace(r.distance,r.moving_time)+'/km · '+hr+'</span>'
-      +'</div>';
-  });
-  openModal('Alle Läufe · '+_runs.length+' gesamt', html);
-}
-
+// ── Modals ──
 function openModal(title, body) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = body;
-  const overlay = document.getElementById('modal');
-  overlay.style.display = 'flex';
+  document.getElementById('modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   enableSwipeDown(document.querySelector('#modal .modal'), closeModal);
 }
-
 function closeModal() {
   document.getElementById('modal').style.display = 'none';
   document.body.style.overflow = '';
 }
-
 function closeAnalyse() {
   document.getElementById('analyse-overlay').style.display = 'none';
   document.body.style.overflow = '';
 }
-
 function enableSwipeDown(el, closeFn) {
-  let startY = 0, isDragging = false;
-  el.addEventListener('touchstart', e => {
-    startY = e.touches[0].clientY;
-    isDragging = true;
-    el.style.transition = 'none';
-  }, {passive: true});
-  el.addEventListener('touchmove', e => {
-    if (!isDragging) return;
-    const dy = e.touches[0].clientY - startY;
-    if (dy > 0) {
-      e.preventDefault(); // Verhindert Scroll der App dahinter
-      el.style.transform = 'translateY(' + dy + 'px)';
-    }
-  }, {passive: false});
-  el.addEventListener('touchend', e => {
-    if (!isDragging) return;
-    isDragging = false;
-    const dy = e.changedTouches[0].clientY - startY;
-    el.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
-    if (dy > 100) {
-      el.style.transform = 'translateY(100%)';
-      setTimeout(() => { el.style.transform = ''; closeFn(); }, 300);
-    } else {
-      el.style.transform = '';
-    }
-  }, {passive: true});
+  let startY=0, dragging=false;
+  el.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;dragging=true;el.style.transition='none';},{passive:true});
+  el.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    const dy=e.touches[0].clientY-startY;
+    if(dy>0){e.preventDefault();el.style.transform='translateY('+dy+'px)';}
+  },{passive:false});
+  el.addEventListener('touchend',e=>{
+    if(!dragging)return; dragging=false;
+    const dy=e.changedTouches[0].clientY-startY;
+    el.style.transition='transform .3s cubic-bezier(.32,.72,0,1)';
+    if(dy>100){el.style.transform='translateY(100%)';setTimeout(()=>{el.style.transform='';closeFn();},300);}
+    else el.style.transform='';
+  },{passive:true});
 }
 
 function showRunDetail(idx) {
   const r=_runs[idx]; if(!r) return;
-  const rows = [
-    ['Distanz',(r.distance/1000).toFixed(1)+' km'],
-    ['Zeit',fmtTime(r.moving_time)],
-    ['Pace',fmtPace(r.distance,r.moving_time)+'/km'],
+  const rows=[
+    ['Distanz',(r.distance/1000).toFixed(1)+' km'],['Zeit',fmtTime(r.moving_time)],['Pace',fmtPace(r.distance,r.moving_time)+'/km'],
     r.average_heartrate?['Ø HR',Math.round(r.average_heartrate)+' bpm']:null,
     r.max_heartrate?['Max HR',Math.round(r.max_heartrate)+' bpm']:null,
     r.total_elevation_gain?['Höhenmeter',Math.round(r.total_elevation_gain)+' m']:null,
@@ -718,118 +618,93 @@ function showRunDetail(idx) {
 
 function showPRModal() {
   function prRow(label, run) {
-    if (!run) return '<div class="modal-stat"><span class="modal-stat-label">'+label+'</span><span class="modal-stat-value" style="color:var(--text3)">Noch keine</span></div>';
+    if(!run) return '<div class="modal-stat"><span class="modal-stat-label">'+label+'</span><span class="modal-stat-value" style="color:var(--text3)">Noch keine</span></div>';
     return '<div style="padding:16px 0;border-bottom:1px solid var(--border)">'
-      +'<div style="font-size:13px;font-weight:800;color:#FFFFFF;letter-spacing:0.04em;margin-bottom:8px;">'+label+'</div>'
+      +'<div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;">'+label+'</div>'
       +'<div style="font-size:28px;font-weight:800;margin-bottom:4px;">'+fmtTime(run.moving_time)+'</div>'
       +'<div style="font-size:14px;font-weight:600;color:var(--orange);margin-bottom:4px;">'+fmtPace(run.distance,run.moving_time)+'/km</div>'
-      +'<div style="font-size:11px;color:var(--text2);">'+fmtDate(run.start_date_local)+' · Ø '+(run.average_heartrate?Math.round(run.average_heartrate):'-')+' bpm</div>'
-      +'</div>';
+      +'<div style="font-size:11px;color:var(--text2)">'+fmtDate(run.start_date_local)+' · Ø '+(run.average_heartrate?Math.round(run.average_heartrate):'-')+' bpm</div></div>';
   }
   openModal('Bestzeiten ♛', prRow('5 km',window._pr5k)+prRow('10 km',window._pr10k)+prRow('Halbmarathon',window._prHM));
 }
 
 function showGrundlageModal() {
-  const runs = (window._easyRuns||[]).slice(-8);
-  if (!runs.length) { openModal('Grundlagen-Trend','<div style="padding:20px;text-align:center;color:var(--text3)">Keine Easy Runs</div>'); return; }
-  let html = '';
-  // Trend-Aussage zuerst (oben)
-  if (runs.length>=2) {
+  const runs=_easyRuns.slice(-8);
+  if(!runs.length){openModal('Grundlagen-Trend','<div style="padding:20px;text-align:center;color:var(--text3)">Keine Easy Runs</div>');return;}
+  let html='';
+  if(runs.length>=2){
     const diff=Math.round(runs[0].average_heartrate-runs[runs.length-1].average_heartrate);
     const lastHR=Math.round(runs[runs.length-1].average_heartrate);
-    const trendColor=lastHR<=135?'#30D158':lastHR<=140?'#7CD67C':lastHR<=150?'#FFD60A':'#FF453A';
-    let trendText, trendIcon;
-    if (diff>0) {
-      trendIcon='📉';
-      trendText='Deine Herzfrequenz sinkt — du arbeitest erfolgreich an deiner Grundlagenausdauer! Weiter so.';
-    } else if (diff<0) {
-      trendIcon='📈';
-      trendText='Deine Herzfrequenz steigt. Baue mehr lockere Läufe ein, um deine Grundlagenausdauer zu verbessern.';
-    } else {
-      trendIcon='➡️';
-      trendText='Deine Herzfrequenz ist stabil. Bleib konsequent bei lockeren Läufen unter 135 bpm.';
-    }
-    html+='<div style="background:var(--bg3);border-radius:10px;padding:14px;font-size:13px;margin-bottom:16px;border-left:3px solid '+trendColor+';line-height:1.5;">'
-      +'<div style="font-size:18px;margin-bottom:6px;">'+trendIcon+'</div>'
-      +'<div style="color:var(--text);font-weight:500;">'+trendText+'</div>'
-      +'</div>';
+    const tc=lastHR<=135?'#30D158':lastHR<=140?'#7CD67C':lastHR<=150?'#FFD60A':'#FF453A';
+    const txt=diff>0?'Deine Herzfrequenz sinkt — du arbeitest erfolgreich an deiner Grundlagenausdauer! Weiter so.':
+              diff<0?'Deine Herzfrequenz steigt. Baue mehr lockere Läufe ein, um deine Grundlagenausdauer zu verbessern.':
+              'Deine Herzfrequenz ist stabil. Bleib konsequent bei lockeren Läufen unter 135 bpm.';
+    const icon=diff>0?'📉':diff<0?'📈':'➡️';
+    html+='<div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px;border-left:3px solid '+tc+';line-height:1.5">'
+      +'<div style="font-size:18px;margin-bottom:6px">'+icon+'</div>'
+      +'<div style="color:var(--text);font-weight:500;font-size:13px">'+txt+'</div></div>';
   }
-  html += '<div style="font-size:11px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Verlauf · Ø HR bei Easy Runs</div>';
-  runs.forEach(r => {
+  html+='<div style="font-size:11px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Verlauf · Ø HR bei Easy Runs</div>';
+  runs.forEach(r=>{
     const hr=Math.round(r.average_heartrate);
-    let color;
-    if (hr <= 135) color = '#30D158';
-    else if (hr <= 140) color = '#7CD67C';
-    else if (hr <= 150) color = '#FFD60A';
-    else color = '#FF453A';
+    const c=hr<=135?'#30D158':hr<=140?'#7CD67C':hr<=150?'#FFD60A':'#FF453A';
     const pct=Math.min(100,Math.max(0,(160-hr)/(160-120)*100));
-    const ef = r.average_heartrate ? (r.distance / r.moving_time * 60 / r.average_heartrate).toFixed(2) : null;
-    html+='<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
+    const ef=(r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
+    html+='<div style="margin-bottom:14px">'
+      +'<div style="display:flex;justify-content:space-between;margin-bottom:4px">'
       +'<span style="font-size:12px;color:var(--text2)">'+fmtDate(r.start_date_local)+' · '+(r.distance/1000).toFixed(1)+'km · '+fmtPace(r.distance,r.moving_time)+'/km</span>'
-      +'<div style="text-align:right;">'
-      +'<span style="font-size:13px;font-weight:700;color:'+color+'">'+hr+' bpm</span>'
-      +(ef?'<br><span style="font-size:10px;color:var(--text3)">EF '+ef+'</span>':'')
-      +'</div></div>'
-      +'<div style="background:var(--bg3);height:6px;border-radius:3px;"><div style="background:'+color+';height:6px;border-radius:3px;width:'+pct+'%"></div></div></div>';
+      +'<div style="text-align:right"><span style="font-size:13px;font-weight:700;color:'+c+'">'+hr+' bpm</span>'
+      +'<br><span style="font-size:10px;color:var(--text3)">EF '+ef+'</span></div></div>'
+      +'<div style="background:var(--bg3);height:6px;border-radius:3px"><div style="background:'+c+';height:6px;border-radius:3px;width:'+pct+'%"></div></div></div>';
   });
   openModal('Grundlagen-Trend', html);
 }
 
-function showMonthModal() {
-  const now = new Date();
-  const nm = now.getMonth(), ny = now.getFullYear();
-  const monthNames = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-  const mRuns = _runs.filter(r => {
-    const d = new Date(r.start_date_local);
-    return d.getMonth()===nm && d.getFullYear()===ny;
-  }).sort((a,b) => new Date(b.start_date_local)-new Date(a.start_date_local));
-  const mKm = mRuns.reduce((s,r)=>s+r.distance/1000,0);
-  let html = '<div style="font-size:13px;color:var(--text2);margin-bottom:16px;">'+monthNames[nm]+' · '+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>';
-  if (!mRuns.length) {
-    html += '<div style="text-align:center;padding:20px;color:var(--text3)">Keine Läufe diesen Monat</div>';
-  } else {
-    mRuns.forEach((r,i) => {
-      const km=(r.distance/1000).toFixed(1);
-      const hr=r.average_heartrate?Math.round(r.average_heartrate)+' bpm':'–';
-      html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;">'
-        +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-        +'<span class="modal-stat-label">'+km+' km · '+fmtPace(r.distance,r.moving_time)+'/km · '+hr+'</span>'
-        +'</div>';
-    });
-  }
-  openModal(monthNames[nm]+' Rückblick', html);
-}
-
 function showWeekModal() {
-  let html = '';
-  if (_thisWeekRuns.length) {
-    _thisWeekRuns.forEach(r => {
-      const km=(r.distance/1000).toFixed(1);
-      const hr=r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'';
-      html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;">'
-        +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-        +'<span class="modal-stat-label">'+km+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+hr+'</span></div>';
-    });
-  } else {
-    html='<div style="padding:20px;text-align:center;color:var(--text3)">Noch keine Läufe diese Woche</div>';
-  }
-  openModal('Diese Woche', html);
+  let html='';
+  _thisWeekRuns.forEach(r=>{
+    html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px">'
+      +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
+      +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
+  });
+  openModal('Diese Woche', html||'<div style="padding:20px;text-align:center;color:var(--text3)">Noch keine Läufe</div>');
 }
 
+function showMonthModal() {
+  const now=new Date(), nm=now.getMonth(), ny=now.getFullYear();
+  const mn=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const mRuns=_runs.filter(r=>{const d=new Date(r.start_date_local);return d.getMonth()===nm&&d.getFullYear()===ny;})
+    .sort((a,b)=>new Date(b.start_date_local)-new Date(a.start_date_local));
+  const mKm=mRuns.reduce((s,r)=>s+r.distance/1000,0);
+  let html='<div style="font-size:13px;color:var(--text2);margin-bottom:16px">'+mn[nm]+' · '+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>';
+  mRuns.forEach((r,i)=>{
+    html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
+      +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
+      +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
+  });
+  openModal(mn[nm]+' Rückblick', html||'<div style="text-align:center;padding:20px;color:var(--text3)">Keine Läufe</div>');
+}
+
+function showAllRunsModal() {
+  let html='';
+  _runs.forEach((r,i)=>{
+    html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+i+'),300)">'
+      +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
+      +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
+  });
+  openModal('Alle Läufe · '+_runs.length+' gesamt', html);
+}
+
+// ── Analyse ──
 function getPlannedType(run) {
-  const day=new Date(run.start_date_local).getDay();
-  if (day===3) return 'Tempolauf';
-  if (day===5||day===1) return 'Easy Run';
-  if (day===0) return 'Long Run';
-  return 'Kein Lauftag';
+  const d=new Date(run.start_date_local).getDay();
+  return d===3?'Tempolauf':d===5||d===1?'Easy Run':d===0?'Long Run':'Kein Lauftag';
 }
 
 async function openAnalyse() {
-  if (!_runs.length) return;
+  if(!_runs.length) return;
   const run=_runs[0], prev=_runs[1];
-  const dist=(run.distance/1000).toFixed(1);
-  const pace=fmtPace(run.distance,run.moving_time);
-  const time=fmtTime(run.moving_time);
+  const dist=(run.distance/1000).toFixed(1), pace=fmtPace(run.distance,run.moving_time), time=fmtTime(run.moving_time);
   const days=prev?Math.round((new Date(run.start_date_local)-new Date(prev.start_date_local))/86400000):'?';
   document.getElementById('analyse-subtitle').textContent=fmtDate(run.start_date_local)+' · '+run.name;
   document.getElementById('analyse-run-info').innerHTML=
@@ -838,130 +713,115 @@ async function openAnalyse() {
     +'<div class="analyse-run-stat"><strong>'+pace+'/km</strong>Pace</div>'
     +'<div class="analyse-run-stat"><strong>'+Math.round(run.average_heartrate||0)+' bpm</strong>Ø HR</div>'
     +(run.pr_count>0?'<div class="analyse-run-stat"><strong style="color:var(--yellow)">♛ '+run.pr_count+'</strong>PRs</div>':'');
-  document.getElementById('analyse-body').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--text2);font-size:13px;"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>Analysiere…</div>';
+  document.getElementById('analyse-body').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--text2);font-size:13px"><div class="spinner" style="width:20px;height:20px;border-width:2px"></div>Analysiere…</div>';
   document.getElementById('analyse-overlay').style.display='flex';
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow='hidden';
   enableSwipeDown(document.querySelector('#analyse-overlay .modal'), closeAnalyse);
   try {
     const res=await callAPI({action:'analyse',run:{date:fmtDate(run.start_date_local),plannedType:getPlannedType(run),distance:dist,time,pace,avgHR:Math.round(run.average_heartrate||0),maxHR:Math.round(run.max_heartrate||0),daysSinceLast:days,prCount:run.pr_count||0}});
-    const lines=(res.analysis||'').split('\n').filter(l=>l.trim());
-    document.getElementById('analyse-body').innerHTML=lines.map(l=>'<div class="analyse-line">'+l+'</div>').join('');
+    document.getElementById('analyse-body').innerHTML=(res.analysis||'').split('\n').filter(l=>l.trim()).map(l=>'<div class="analyse-line">'+l+'</div>').join('');
   } catch(e) {
     document.getElementById('analyse-body').innerHTML='<div style="color:var(--red)">Fehler beim Laden</div>';
   }
 }
 
+// ── Swipe ──
 function initSwipe() {
-  const card=document.getElementById('vol-card');
-  const track=document.getElementById('swipe-track');
+  const card=document.getElementById('vol-card'), track=document.getElementById('swipe-track');
   const labels=['Diese Woche','Diesen Monat','Dieses Jahr'];
   let current=0, startX=0, startY=0, dragging=false;
   function goTo(idx) {
-    current=idx;
-    track.style.transform='translateX(-'+idx*100+'%)';
+    current=idx; track.style.transform='translateX(-'+idx*100+'%)';
     [0,1,2].forEach(i=>{
-      const dot = document.getElementById('dot-'+i);
+      const dot=document.getElementById('dot-'+i);
       dot.className='dot'+(i===idx?' active':'');
-      dot.style.width = i===idx ? '16px' : '6px';
+      dot.style.width=i===idx?'16px':'6px';
     });
     document.getElementById('vol-label').textContent=labels[idx];
   }
   card.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;dragging=true;track.style.transition='none';},{passive:true});
   card.addEventListener('touchmove',e=>{
     if(!dragging)return;
-    const dx=e.touches[0].clientX-startX,dy=e.touches[0].clientY-startY;
+    const dx=e.touches[0].clientX-startX, dy=e.touches[0].clientY-startY;
     if(Math.abs(dy)>Math.abs(dx)){dragging=false;return;}
     track.style.transform='translateX('+(-current*100+dx/card.offsetWidth*100)+'%)';
-    // Live dots
-    const pct = dx/card.offsetWidth;
+    const pct=dx/card.offsetWidth;
     [0,1,2].forEach(i=>{
       const dot=document.getElementById('dot-'+i);
-      const isActive = i===current;
-      const isNext = dx<0 && i===current+1 || dx>0 && i===current-1;
-      dot.style.width = isActive ? Math.max(6,16-Math.abs(pct)*10)+'px' : isNext ? Math.min(16,6+Math.abs(pct)*10)+'px' : '6px';
-      dot.style.background = (isActive||isNext) ? 'var(--orange)' : 'var(--bg3)';
+      const isActive=i===current, isNext=(dx<0&&i===current+1)||(dx>0&&i===current-1);
+      dot.style.width=isActive?Math.max(6,16-Math.abs(pct)*10)+'px':isNext?Math.min(16,6+Math.abs(pct)*10)+'px':'6px';
+      dot.style.background=(isActive||isNext)?'var(--orange)':'var(--bg3)';
     });
   },{passive:true});
   card.addEventListener('touchend',e=>{
-    if(!dragging)return;
-    dragging=false;
-    track.style.transition='transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
-    const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;
+    if(!dragging)return; dragging=false;
+    track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
+    const dx=e.changedTouches[0].clientX-startX, dy=e.changedTouches[0].clientY-startY;
     if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){if(dx<0&&current<2)goTo(current+1);else if(dx>0&&current>0)goTo(current-1);else goTo(current);}
     else goTo(current);
   },{passive:true});
 }
 
+// ── Pull to Refresh ──
+function initPTR(loadFn) {
+  let startY=0, active=false;
+  const el=document.getElementById('ptr-indicator');
+  const txt=document.getElementById('ptr-text');
+  const sp=document.getElementById('ptr-spinner');
+  document.addEventListener('touchstart',e=>{if(window.scrollY===0)startY=e.touches[0].clientY;},{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(window.scrollY>0||!startY)return;
+    const dy=e.touches[0].clientY-startY;
+    if(dy>20){el.classList.add('visible');txt.textContent=dy>80?'↑ Loslassen':'↓ Ziehen';active=dy>80;}
+  },{passive:true});
+  document.addEventListener('touchend',async()=>{
+    if(!active){el.classList.remove('visible');startY=0;return;}
+    txt.style.display='none';sp.style.display='block';
+    await loadFn();
+    el.classList.remove('visible');txt.style.display='block';sp.style.display='none';active=false;startY=0;
+  },{passive:true});
+}
+
+// ── Init ──
 async function init() {
   const params=new URLSearchParams(window.location.search);
   const code=params.get('code');
-  if (code) {
+  if(code){
     show('loading-screen');
     window.history.replaceState({},'',REDIRECT_URI);
     const tokens=await callAPI({action:'exchange',code});
-    if (tokens.access_token) localStorage.setItem('strava_tokens',JSON.stringify(tokens));
+    if(tokens.access_token) localStorage.setItem('strava_tokens',JSON.stringify(tokens));
     else { alert('Login fehlgeschlagen: '+JSON.stringify(tokens)); show('login-screen'); return; }
   }
   const token=await getValidToken();
-  if (!token) { show('login-screen'); return; }
+  if(!token){show('login-screen');return;}
   show('loading-screen');
   try {
     const activities=await callAPI({action:'activities',access_token:token});
-    if (!Array.isArray(activities)) { localStorage.removeItem('strava_tokens'); show('login-screen'); return; }
+    if(!Array.isArray(activities)){localStorage.removeItem('strava_tokens');show('login-screen');return;}
     show('app');
     renderDashboard(activities);
-    // Heutigen Wochentag markieren
-    const todayDay = new Date().getDay();
-    const todayEl = document.getElementById('day-' + todayDay);
-    if (todayEl) todayEl.classList.add('today');
+    // Heutiger Tag
+    const todayEl=document.getElementById('day-'+new Date().getDay());
+    if(todayEl) todayEl.classList.add('today');
     initSwipe();
+    // FAB
     const fab=document.getElementById('claude-fab');
     fab.classList.add('visible');
-    fab.addEventListener('click',function(e){e.stopPropagation();openAnalyse();});
-    fab.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();openAnalyse();},{passive:false});
-    // Haptic Feedback
-    function haptic() { if (navigator.vibrate) navigator.vibrate(8); }
-
-    // Touch Feedback + Haptic
+    fab.addEventListener('click',e=>{e.stopPropagation();openAnalyse();});
+    fab.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();openAnalyse();},{passive:false});
+    // Touch Feedback
+    const haptic=()=>{ if(navigator.vibrate) navigator.vibrate(8); };
     document.querySelectorAll('.tappable').forEach(el=>{
-      el.addEventListener('touchstart',()=>{
-        haptic();
-        el.style.transform='scale(0.95)';
-        el.style.opacity='0.85';
-      },{passive:true});
+      el.addEventListener('touchstart',()=>{haptic();el.style.transform='scale(.95)';el.style.opacity='.85';},{passive:true});
       el.addEventListener('touchend',()=>{setTimeout(()=>{el.style.transform='';el.style.opacity='';},150);},{passive:true});
       el.addEventListener('touchcancel',()=>{el.style.transform='';el.style.opacity='';},{passive:true});
     });
-
-    // Pull-to-Refresh
-    let ptrStartY=0, ptrActive=false, ptrThreshold=80;
-    const ptrEl=document.getElementById('ptr-indicator');
-    const ptrText=document.getElementById('ptr-text');
-    const ptrSpinner=document.getElementById('ptr-spinner');
-    document.addEventListener('touchstart',e=>{if(window.scrollY===0)ptrStartY=e.touches[0].clientY;},{passive:true});
-    document.addEventListener('touchmove',e=>{
-      if(window.scrollY>0||ptrStartY===0)return;
-      const dy=e.touches[0].clientY-ptrStartY;
-      if(dy>20){
-        ptrEl.classList.add('visible');
-        ptrText.textContent=dy>ptrThreshold?'↑ Loslassen zum Aktualisieren':'↓ Zum Aktualisieren ziehen';
-        ptrActive=dy>ptrThreshold;
-      }
-    },{passive:true});
-    document.addEventListener('touchend',async()=>{
-      if(!ptrActive){ptrEl.classList.remove('visible');ptrStartY=0;return;}
-      ptrText.style.display='none';
-      ptrSpinner.style.display='block';
-      const token=await getValidToken();
-      if(token){
-        const acts=await callAPI({action:'activities',access_token:token});
-        if(Array.isArray(acts)){renderDashboard(acts);}
-      }
-      ptrEl.classList.remove('visible');
-      ptrText.style.display='block';
-      ptrSpinner.style.display='none';
-      ptrActive=false;ptrStartY=0;
-    },{passive:true});
+    // PTR
+    initPTR(async()=>{
+      const t=await getValidToken();
+      if(t){const a=await callAPI({action:'activities',access_token:t});if(Array.isArray(a))renderDashboard(a);}
+    });
   } catch(err) {
     console.error(err);
     localStorage.removeItem('strava_tokens');
