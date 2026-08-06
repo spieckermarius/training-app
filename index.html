@@ -294,15 +294,17 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
         <div class="split-div"></div>
         <div class="split-half tappable" onclick="showGrundlageModal()" style="border-radius:0 14px 14px 0;">
           <div class="stat-label">Grundlage · Antippen</div>
-          <div class="trend-row" style="margin-top:4px;">
-            <span class="trend-prev" id="hr-prev">–</span>
-            <span style="color:var(--text3);">→</span>
-            <span class="stat-value trend-good" id="hr-now">–</span>
+          <div style="margin-top:6px;">
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">Ø Herzfrequenz</div>
+            <div class="trend-row">
+              <span class="trend-prev" id="hr-prev">–</span>
+              <span style="color:var(--text3);margin:0 4px;">→</span>
+              <span style="font-size:16px;font-weight:700;color:var(--green);" id="hr-now">–</span>
+            </div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin:8px 0 2px;">Pace-Trend</div>
+            <div id="pace-curr-row" style="font-size:13px;font-weight:600;color:var(--text);"></div>
+            <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-top:2px;"></div>
           </div>
-          <div class="stat-delta delta-good" id="hr-goal">Ziel &lt;135 bpm</div>
-          <div id="pace-prev-row" style="font-size:10px;color:var(--text2);margin-top:8px;"></div>
-          <div id="pace-curr-row" style="font-size:10px;font-weight:600;color:var(--green);margin-top:2px;"></div>
-          <div style="font-size:10px;color:var(--orange);font-weight:600;margin-top:6px;">Trend →</div>
         </div>
       </div>
     </div>
@@ -507,8 +509,8 @@ function renderDashboard(activities) {
     document.getElementById('hr-now').textContent=Math.round(curr.average_heartrate)+' bpm';
     const diff=Math.round(prev.average_heartrate-curr.average_heartrate);
     document.getElementById('hr-goal').textContent=(diff>0?'−'+diff:'+'+Math.abs(diff))+' bpm · Ziel <135 bpm';
+    document.getElementById('pace-curr-row').textContent=fmtDate(curr.start_date_local)+' '+fmtPace(curr.distance,curr.moving_time)+'/km · '+Math.round(curr.average_heartrate)+' bpm';
     document.getElementById('pace-prev-row').textContent=fmtDate(prev.start_date_local)+' '+fmtPace(prev.distance,prev.moving_time)+'/km · '+Math.round(prev.average_heartrate)+' bpm';
-    document.getElementById('pace-curr-row').textContent=fmtDate(curr.start_date_local)+' '+fmtPace(curr.distance,curr.moving_time)+'/km · '+Math.round(curr.average_heartrate)+' bpm ↑';
   }
   window._easyRuns = easyRuns;
 
@@ -585,7 +587,7 @@ function showGrundlageModal() {
       trendText='Deine Herzfrequenz sinkt — du arbeitest erfolgreich an deiner Grundlagenausdauer! Weiter so.';
     } else if (diff<0) {
       trendIcon='📈';
-      trendText='Deine Herzfrequenz steigt. Bitte baue mehr lockere Läufe ein, um deine Grundlagenausdauer zu verbessern.';
+      trendText='Deine Herzfrequenz steigt. Baue mehr lockere Läufe ein, um deine Grundlagenausdauer zu verbessern.';
     } else {
       trendIcon='➡️';
       trendText='Deine Herzfrequenz ist stabil. Bleib konsequent bei lockeren Läufen unter 135 bpm.';
