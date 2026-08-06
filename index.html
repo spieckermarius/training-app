@@ -48,8 +48,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-s
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* LAYOUT */
-.wrap { max-width: 680px; margin: 0 auto; padding: 16px 16px 40px; }
-.app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.wrap { max-width: 680px; margin: 0 auto; padding: 20px 16px 40px; padding-top: max(env(safe-area-inset-top, 20px), 20px); }
+.app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top: 8px; }
 .app-title { font-size: 26px; font-weight: 800; }
 .app-title span { color: var(--orange); }
 .logout-btn { background: var(--bg2); border: none; color: var(--text2); font-size: 12px; padding: 6px 12px; cursor: pointer; font-family: inherit; border-radius: 8px; }
