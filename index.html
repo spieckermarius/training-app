@@ -245,8 +245,8 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
 
     <!-- STATUS BAR -->
     <div class="status-bar">
-      <div class="status-last-run">
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Letzter Lauf</div>
+      <div class="status-last-run tappable" onclick="if(_runs.length)showRunDetail(0)" style="flex:1;">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Letzter Lauf · Antippen</div>
         <strong id="last-run-name">–</strong>
         <div id="last-run-days" style="font-size:11px;color:var(--text2);margin-top:1px;">–</div>
       </div>
@@ -258,7 +258,7 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
     </div>
 
     <!-- HEUTIGER LAUF -->
-    <div id="today-run-bar" style="display:none;background:var(--orange);border-radius:12px;padding:10px 14px;margin-bottom:10px;cursor:pointer;" onclick="showRunDetail(0)">
+    <div id="today-run-bar" style="display:none;background:var(--orange);border-radius:12px;padding:10px 14px;margin-bottom:10px;">
       <div style="font-size:10px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Heute trainieren</div>
       <div style="font-size:14px;font-weight:700;color:#fff;" id="today-run-text">–</div>
     </div>
@@ -643,9 +643,8 @@ function renderDashboard(activities) {
 }
 
 function showAllRunsModal() {
-  const last6 = _runs.slice(0,6);
   let html = '';
-  last6.forEach((r,i) => {
+  _runs.forEach((r,i) => {
     const km=(r.distance/1000).toFixed(1);
     const hr=r.average_heartrate?Math.round(r.average_heartrate)+' bpm':'–';
     html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer;" onclick="closeModal();setTimeout(()=>showRunDetail('+i+'),300)">'
@@ -653,7 +652,7 @@ function showAllRunsModal() {
       +'<span class="modal-stat-label">'+km+' km · '+fmtPace(r.distance,r.moving_time)+'/km · '+hr+'</span>'
       +'</div>';
   });
-  openModal('Letzte Läufe', html);
+  openModal('Alle Läufe · '+_runs.length+' gesamt', html);
 }
 
 function openModal(title, body) {
@@ -875,12 +874,6 @@ async function init() {
     const todayDay = new Date().getDay();
     const todayEl = document.getElementById('day-' + todayDay);
     if (todayEl) todayEl.classList.add('today');
-    // Status-Bar letzter Lauf antippbar
-    const statusBar = document.querySelector('.status-last-run');
-    if (statusBar) {
-      statusBar.style.cursor = 'pointer';
-      statusBar.addEventListener('click', () => { if(_runs.length) showRunDetail(0); });
-    }
     initSwipe();
     const fab=document.getElementById('claude-fab');
     fab.classList.add('visible');
