@@ -402,8 +402,9 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
 </div>
 
 <button class="claude-fab" id="claude-fab" title="Lauf analysieren">
-  <svg viewBox="0 0 100 100" width="32" height="32" fill="none">
-    <text x="50" y="68" text-anchor="middle" font-size="58" font-family="serif" fill="white">C</text>
+  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="7"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
 </button>
 
@@ -658,7 +659,36 @@ function showAllRunsModal() {
 function openModal(title, body) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = body;
-  document.getElementById('modal').style.display = 'flex';
+  const overlay = document.getElementById('modal');
+  overlay.style.display = 'flex';
+  enableSwipeDown(document.querySelector('#modal .modal'), closeModal);
+}
+
+function enableSwipeDown(el, closeFn) {
+  let startY = 0, isDragging = false;
+  el.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    isDragging = true;
+    el.style.transition = 'none';
+  }, {passive: true});
+  el.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 0) el.style.transform = 'translateY(' + dy + 'px)';
+  }, {passive: true});
+  el.addEventListener('touchend', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    const dy = e.changedTouches[0].clientY - startY;
+    el.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
+    if (dy > 100) {
+      el.style.transform = 'translateY(100%)';
+      setTimeout(() => { el.style.transform = ''; closeFn(); }, 300);
+    } else {
+      el.style.transform = '';
+    }
+    isDragging = false;
+  }, {passive: true});
 }
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
@@ -802,6 +832,7 @@ async function openAnalyse() {
     +(run.pr_count>0?'<div class="analyse-run-stat"><strong style="color:var(--yellow)">♛ '+run.pr_count+'</strong>PRs</div>':'');
   document.getElementById('analyse-body').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--text2);font-size:13px;"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>Analysiere…</div>';
   document.getElementById('analyse-overlay').style.display='flex';
+  enableSwipeDown(document.querySelector('#analyse-overlay .modal'), closeAnalyse);
   try {
     const res=await callAPI({action:'analyse',run:{date:fmtDate(run.start_date_local),plannedType:getPlannedType(run),distance:dist,time,pace,avgHR:Math.round(run.average_heartrate||0),maxHR:Math.round(run.max_heartrate||0),daysSinceLast:days,prCount:run.pr_count||0}});
     const lines=(res.analysis||'').split('\n').filter(l=>l.trim());
