@@ -93,9 +93,15 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 
 .prog-km { font-size:20px; font-weight:700; color:var(--text); }
 .prog-km small { font-size:11px; font-weight:400; color:var(--text2); }
-.prog-bar-track { background:var(--bg3); height:5px; border-radius:3px; margin:8px 0 5px; }
-.prog-bar-fill { background:var(--orange); height:5px; border-radius:3px; }
-.prog-sessions { font-size:10px; color:var(--text3); margin-top:3px; }
+.vol-inner { padding:14px 16px 10px; }
+.vol-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.sessions-bar { display:flex; gap:3px; margin-top:6px; height:4px; }
+.sessions-seg { flex:1; border-radius:2px; background:var(--bg3); transition:background .3s; }
+.sessions-seg.done { background:var(--green); }
+
+.prog-bar-track { background:var(--bg3); height:5px; border-radius:3px; }
+.prog-bar-fill { background:var(--orange); height:5px; border-radius:3px; transition:width .6s ease; }
+.prog-sessions { font-size:10px; color:var(--text3); margin-top:6px; }
 
 .swipe-card { overflow:hidden; touch-action:pan-y; }
 .swipe-track { display:flex; transition:transform .35s cubic-bezier(.25,.46,.45,.94); }
@@ -227,49 +233,43 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="section-label" id="vol-label">Diese Woche</div>
     <div class="card swipe-card" id="vol-card">
       <div class="swipe-track" id="swipe-track">
+        <!-- Woche -->
         <div class="swipe-slide">
-          <div class="split tappable" onclick="showWeekModal()">
-            <div class="split-half">
+          <div class="vol-inner tappable" onclick="showWeekModal()">
+            <div class="vol-top">
               <div class="stat-label">Wochenvolumen</div>
               <div class="prog-km" id="week-km">0<small> / 30 km</small></div>
-              <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
-              <div class="prog-sessions" id="week-sessions">0/4 Trainings</div>
             </div>
-            <div class="split-div"></div>
-            <div class="split-half">
-              <div class="stat-label">Wochentrend</div>
-              <div class="kw-bars" id="kw-bars"></div>
+            <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
+            <div class="sessions-bar">
+              <div class="sessions-seg" id="seg-0"></div>
+              <div class="sessions-seg" id="seg-1"></div>
+              <div class="sessions-seg" id="seg-2"></div>
+              <div class="sessions-seg" id="seg-3"></div>
             </div>
+            <div class="prog-sessions" id="week-sessions">0/4 Trainings</div>
           </div>
         </div>
+        <!-- Monat -->
         <div class="swipe-slide">
-          <div class="split tappable" onclick="showMonthModal()">
-            <div class="split-half">
+          <div class="vol-inner tappable" onclick="showMonthModal()">
+            <div class="vol-top">
               <div class="stat-label">Monatsvolumen</div>
               <div class="prog-km" id="month-km">0<small> km</small></div>
-              <div class="prog-bar-track"><div class="prog-bar-fill" id="month-bar" style="width:0%"></div></div>
-              <div class="prog-sessions" id="month-sessions">–</div>
             </div>
-            <div class="split-div"></div>
-            <div class="split-half">
-              <div class="stat-label">Monatstrend</div>
-              <div class="kw-bars" id="month-bars"></div>
-            </div>
+            <div class="prog-bar-track"><div class="prog-bar-fill" id="month-bar" style="width:0%"></div></div>
+            <div class="prog-sessions" id="month-sessions">–</div>
           </div>
         </div>
+        <!-- Jahr -->
         <div class="swipe-slide">
-          <div class="split">
-            <div class="split-half">
+          <div class="vol-inner tappable" onclick="showYearModal()">
+            <div class="vol-top">
               <div class="stat-label">Jahresvolumen</div>
               <div class="prog-km" id="year-km">0<small> km</small></div>
-              <div class="prog-bar-track"><div class="prog-bar-fill" id="year-bar" style="width:0%"></div></div>
-              <div class="prog-sessions" id="year-sessions">–</div>
             </div>
-            <div class="split-div"></div>
-            <div class="split-half">
-              <div class="stat-label">Trend (Quartale)</div>
-              <div class="kw-bars" id="year-bars"></div>
-            </div>
+            <div class="prog-bar-track"><div class="prog-bar-fill" id="year-bar" style="width:0%"></div></div>
+            <div class="prog-sessions" id="year-sessions">–</div>
           </div>
         </div>
       </div>
@@ -462,13 +462,10 @@ function renderDashboard(activities) {
   document.getElementById('week-km').innerHTML = weekKm.toFixed(1)+'<small> / 30 km</small>'+(sessions>=4?' <span class="check-done">✓</span>':'');
   document.getElementById('week-bar').style.width = Math.min(100,weekKm/30*100)+'%';
   document.getElementById('week-sessions').textContent = sessions+'/4 Trainings'+(sessions>=4?' ✓':'');
-
-  // KW Trend
-  const weekMap = {};
-  _runs.forEach(r => { const k=isoWeek(r.start_date_local); weekMap[k]=(weekMap[k]||0)+r.distance/1000; });
-  const curKW = isoWeek(now);
-  const kwKeys = Object.keys(weekMap).map(Number).sort().slice(-4);
-  renderKWBars('kw-bars', kwKeys.map(k => ({km:weekMap[k]||0, label:'KW'+k+(k===curKW?'↗':''), current:k===curKW})));
+  // Segment-Balken
+  [0,1,2,3].forEach(i => {
+    document.getElementById('seg-'+i).className = 'sessions-seg'+(i<sessions?' done':'');
+  });
 
   // Monat
   const mRuns = _runs.filter(r => { const d=new Date(r.start_date_local); return d.getMonth()===nm&&d.getFullYear()===ny; });
@@ -476,13 +473,13 @@ function renderDashboard(activities) {
   document.getElementById('month-km').innerHTML = mKm.toFixed(1)+'<small> km</small>';
   document.getElementById('month-bar').style.width = Math.min(100,mKm/140*100)+'%';
   document.getElementById('month-sessions').textContent = mRuns.length+' Läufe · Ziel ~140 km';
+
+  // Monatsdaten für Modal speichern
   const mMap = {};
   _runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny).forEach(r=>{
     const m=new Date(r.start_date_local).getMonth(); mMap[m]=(mMap[m]||0)+r.distance/1000;
   });
-  const mn=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-  const last4m = [...Array(4)].map((_,i)=>(nm-3+i+12)%12);
-  renderKWBars('month-bars', last4m.map(m=>({km:mMap[m]||0, label:mn[m], current:m===nm})));
+  window._mMap = mMap;
 
   // Jahr
   const yRuns = _runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
@@ -490,10 +487,10 @@ function renderDashboard(activities) {
   document.getElementById('year-km').innerHTML = Math.round(yKm)+'<small> km</small>';
   document.getElementById('year-bar').style.width = Math.min(100,yKm/1500*100)+'%';
   document.getElementById('year-sessions').textContent = yRuns.length+' Läufe · Ziel ~1500 km';
+  // Quartalsdaten für Modal speichern
   const qMap={1:0,2:0,3:0,4:0};
   yRuns.forEach(r=>{ const q=Math.floor(new Date(r.start_date_local).getMonth()/3)+1; qMap[q]+=r.distance/1000; });
-  const curQ = Math.floor(nm/3)+1;
-  renderKWBars('year-bars',[1,2,3,4].map(q=>({km:qMap[q]||0,label:'Q'+q,current:q===curQ})));
+  window._qMap = qMap; window._curQ = Math.floor(nm/3)+1;
 
   // PRs
   const pr5k  = _runs.filter(r=>r.distance>=4800&&r.distance<=5500&&(r.average_heartrate||0)>155).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
@@ -661,28 +658,55 @@ function showGrundlageModal() {
 }
 
 function showWeekModal() {
-  let html='';
+  const now=new Date(), curKW=isoWeek(now);
+  const weekMap={};
+  _runs.forEach(r=>{const k=isoWeek(r.start_date_local);weekMap[k]=(weekMap[k]||0)+r.distance/1000;});
+  const kwKeys=Object.keys(weekMap).map(Number).sort().slice(-4);
+  let html='<div style="margin-bottom:16px"><div class="stat-label" style="margin-bottom:8px">KW-Trend</div><div class="kw-bars" id="modal-kw-bars" style="height:80px"></div></div>';
+  html+='<div class="stat-label" style="margin-bottom:8px">Diese Woche · Läufe</div>';
   _thisWeekRuns.forEach(r=>{
     html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px">'
       +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
       +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
   });
-  openModal('Diese Woche', html||'<div style="padding:20px;text-align:center;color:var(--text3)">Noch keine Läufe</div>');
+  if(!_thisWeekRuns.length) html+='<div style="padding:16px;text-align:center;color:var(--text3)">Noch keine Läufe</div>';
+  openModal('Diese Woche', html);
+  setTimeout(()=>renderKWBars('modal-kw-bars', kwKeys.map(k=>({km:weekMap[k]||0,label:'KW'+k+(k===curKW?'↗':''),current:k===curKW}))),50);
 }
 
 function showMonthModal() {
   const now=new Date(), nm=now.getMonth(), ny=now.getFullYear();
-  const mn=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const mn_full=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const mn_short=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const mRuns=_runs.filter(r=>{const d=new Date(r.start_date_local);return d.getMonth()===nm&&d.getFullYear()===ny;})
     .sort((a,b)=>new Date(b.start_date_local)-new Date(a.start_date_local));
   const mKm=mRuns.reduce((s,r)=>s+r.distance/1000,0);
-  let html='<div style="font-size:13px;color:var(--text2);margin-bottom:16px">'+mn[nm]+' · '+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>';
-  mRuns.forEach((r,i)=>{
+  const mMap=window._mMap||{};
+  const last4m=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
+  let html='<div style="margin-bottom:16px"><div class="stat-label" style="margin-bottom:8px">Monatstrend</div><div class="kw-bars" id="modal-month-bars" style="height:80px"></div></div>';
+  html+='<div style="font-size:13px;color:var(--text2);margin-bottom:12px">'+mn_full[nm]+' · '+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>';
+  mRuns.forEach(r=>{
     html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
       +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
       +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
   });
-  openModal(mn[nm]+' Rückblick', html||'<div style="text-align:center;padding:20px;color:var(--text3)">Keine Läufe</div>');
+  if(!mRuns.length) html+='<div style="text-align:center;padding:20px;color:var(--text3)">Keine Läufe</div>';
+  openModal(mn_full[nm]+' Rückblick', html);
+  setTimeout(()=>renderKWBars('modal-month-bars', last4m.map(m=>({km:mMap[m]||0,label:mn_short[m],current:m===nm}))),50);
+}
+
+function showYearModal() {
+  const qMap=window._qMap||{1:0,2:0,3:0,4:0}, curQ=window._curQ||1;
+  const yRuns=_runs.filter(r=>new Date(r.start_date_local).getFullYear()===new Date().getFullYear());
+  const yKm=yRuns.reduce((s,r)=>s+r.distance/1000,0);
+  let html='<div style="margin-bottom:16px"><div class="stat-label" style="margin-bottom:8px">Quartalstrend</div><div class="kw-bars" id="modal-year-bars" style="height:80px"></div></div>';
+  html+='<div style="font-size:13px;color:var(--text2);margin-bottom:12px">'+new Date().getFullYear()+' · '+Math.round(yKm)+' km · '+yRuns.length+' Läufe</div>';
+  [1,2,3,4].forEach(q=>{
+    const qRuns=yRuns.filter(r=>Math.floor(new Date(r.start_date_local).getMonth()/3)+1===q);
+    if(qRuns.length) html+='<div class="modal-stat"><span class="modal-stat-label">Q'+q+(q===curQ?' · aktuell':'')+' · '+qRuns.length+' Läufe</span><span class="modal-stat-value">'+(qMap[q]||0).toFixed(0)+' km</span></div>';
+  });
+  openModal(new Date().getFullYear()+' Jahresrückblick', html);
+  setTimeout(()=>renderKWBars('modal-year-bars',[1,2,3,4].map(q=>({km:qMap[q]||0,label:'Q'+q,current:q===curQ}))),50);
 }
 
 function showAllRunsModal() {
