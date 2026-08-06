@@ -464,10 +464,7 @@ function renderDashboard(activities) {
   document.getElementById('month-km').innerHTML = mKm.toFixed(1)+'<small> km</small>';
   document.getElementById('month-bar').style.width = Math.min(100,mKm/140*100)+'%';
   document.getElementById('month-sessions').textContent = mRuns.length+' Läufe · Ziel ~140 km';
-  const weekMap2={};
-  mRuns.forEach(r=>{ const kw=isoWeek(r.start_date_local); weekMap2[kw]=(weekMap2[kw]||0)+r.distance/1000; });
-  const kwKeys2=Object.keys(weekMap2).map(Number).sort().slice(-4);
-  renderKWBars('month-bars', kwKeys2.map(kw=>({km:weekMap2[kw]||0,label:'KW'+kw,current:kw===curKW})));
+  // Monatstrend und Jahrestrend werden weiter unten berechnet
 
   // Jahr
   const yRuns = _runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
@@ -475,11 +472,18 @@ function renderDashboard(activities) {
   document.getElementById('year-km').innerHTML = Math.round(yKm)+'<small> km</small>';
   document.getElementById('year-bar').style.width = Math.min(100,yKm/1500*100)+'%';
   document.getElementById('year-sessions').textContent = yRuns.length+' Läufe · Ziel ~1500 km';
-  const mn=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  // Monatstrend: letzte 4 Monate
+  const monthNames=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const mMap={};
-  yRuns.forEach(r=>{const m=new Date(r.start_date_local).getMonth();mMap[m]=(mMap[m]||0)+r.distance/1000;});
-  const rMonths=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
-  renderKWBars('year-bars', rMonths.map(m=>({km:mMap[m]||0,label:mn[m],current:m===nm})));
+  _runs.forEach(r=>{const m=new Date(r.start_date_local).getMonth();const y=new Date(r.start_date_local).getFullYear();if(y===ny)mMap[m]=(mMap[m]||0)+r.distance/1000;});
+  const last4Months=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
+  renderKWBars('month-bars', last4Months.map(m=>({km:mMap[m]||0,label:monthNames[m],current:m===nm})));
+
+  // Jahrestrend: Quartale
+  const qMap={1:0,2:0,3:0,4:0};
+  yRuns.forEach(r=>{const m=new Date(r.start_date_local).getMonth();const q=Math.floor(m/3)+1;qMap[q]+=r.distance/1000;});
+  const curQ=Math.floor(nm/3)+1;
+  renderKWBars('year-bars',[1,2,3,4].map(q=>({km:qMap[q]||0,label:'Q'+q,current:q===curQ})));
 
   // PRs
   const pr5k=_runs.filter(r=>r.distance>=4800&&r.distance<=5500&&(r.average_heartrate||0)>155).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
