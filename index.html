@@ -183,6 +183,30 @@ tbody td { font-size: 13px; padding: 11px 12px; font-weight: 500; }
 .analyse-line { font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--border); line-height: 1.4; }
 .analyse-line:last-child { border-bottom: none; }
 
+/* PULL TO REFRESH */
+.ptr-indicator {
+  text-align: center; font-size: 11px; color: var(--text3);
+  padding: 8px; height: 0; overflow: hidden;
+  transition: height 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.ptr-indicator.visible { height: 40px; }
+.ptr-spinner { width: 14px; height: 14px; border: 2px solid var(--bg3); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+/* STATUS BAR */
+.status-bar {
+  background: var(--bg2); border-radius: 14px; padding: 12px 16px;
+  margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+}
+.status-last-run { font-size: 12px; color: var(--text2); }
+.status-last-run strong { color: var(--text); font-size: 14px; font-weight: 700; }
+.status-streak { display: flex; align-items: center; gap: 6px; }
+.streak-badge {
+  background: linear-gradient(135deg, #FF6B35, #FF453A);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 12px; font-weight: 700; color: white;
+  display: flex; align-items: center; gap: 4px;
+}
+
 footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 16px; }
 </style>
 </head>
@@ -203,12 +227,30 @@ footer { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1
 </div>
 
 <div id="app">
+  <div class="ptr-indicator" id="ptr-indicator">
+    <div class="ptr-spinner" id="ptr-spinner" style="display:none;"></div>
+    <span id="ptr-text">↓ Zum Aktualisieren ziehen</span>
+  </div>
   <div class="wrap">
     <div class="app-header">
       <div class="app-title">TRAININGS<span>STAND.</span></div>
       <button class="logout-btn" onclick="logout()">Abmelden</button>
     </div>
     <div class="divider"></div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <div class="status-last-run">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Letzter Lauf</div>
+        <strong id="last-run-name">–</strong>
+        <div id="last-run-days" style="font-size:11px;color:var(--text2);margin-top:1px;">–</div>
+      </div>
+      <div class="status-streak">
+        <div class="streak-badge" id="streak-badge">
+          🔥 <span id="streak-count">0</span> Wochen
+        </div>
+      </div>
+    </div>
 
     <div class="section-label">Wochenplan</div>
     <div class="week-grid">
@@ -514,10 +556,41 @@ function renderDashboard(activities) {
   window._easyRuns = easyRuns;
 
   // Steps
+  // Status Bar — letzter Lauf + Streak
+  if (_runs.length) {
+    const last = _runs[0];
+    const daysSince = Math.round((now - new Date(last.start_date_local)) / 86400000);
+    document.getElementById('last-run-name').textContent = last.name;
+    document.getElementById('last-run-days').textContent = daysSince === 0 ? 'Heute' : daysSince === 1 ? 'Gestern' : 'vor ' + daysSince + ' Tagen';
+  }
+
+  // Streak — wie viele Wochen in Folge ≥30km
+  let streak = 0;
+  const streakTarget = 30;
+  let checkDate = new Date(now);
+  for (let w = 0; w < 52; w++) {
+    const ws = weekStart(new Date(checkDate));
+    const we = new Date(ws); we.setDate(we.getDate() + 7);
+    const wRuns = _runs.filter(r => { const d = new Date(r.start_date_local); return d >= ws && d < we; });
+    const wKm = wRuns.reduce((s,r) => s + r.distance/1000, 0);
+    if (w === 0 && wKm < streakTarget) { checkDate.setDate(checkDate.getDate() - 7); continue; }
+    if (wKm >= streakTarget) { streak++; checkDate.setDate(checkDate.getDate() - 7); }
+    else break;
+  }
+  document.getElementById('streak-count').textContent = streak;
+  const badge = document.getElementById('streak-badge');
+  if (streak === 0) badge.style.background = 'var(--bg3)';
+  else if (streak >= 4) badge.style.background = 'linear-gradient(135deg, #FFD60A, #FF6B35)';
+
+  // Efficiency Factor für easyRuns
+  window._easyRunsWithEF = easyRuns.map(r => ({
+    ...r,
+    ef: r.average_heartrate ? ((r.distance/1000) / (r.moving_time/60) / r.average_heartrate * 100).toFixed(2) : null
+  }));
   if (easyRuns.length) document.getElementById('step1-sub').textContent='Aktuell '+Math.round(easyRuns[easyRuns.length-1].average_heartrate)+' bpm · Ziel <135 bpm';
   document.getElementById('step3-sub').textContent='Diese Woche '+weekKm.toFixed(1)+' km von 35 km';
-  document.getElementById('last-updated').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
 
+  document.getElementById('last-updated').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
   renderRunsTable();
 }
 
@@ -605,9 +678,13 @@ function showGrundlageModal() {
     else if (hr <= 150) color = '#FFD60A';
     else color = '#FF453A';
     const pct=Math.min(100,Math.max(0,(160-hr)/(160-120)*100));
+    const ef = r.average_heartrate ? ((r.distance/1000) / (r.moving_time/60) / r.average_heartrate * 100).toFixed(2) : null;
     html+='<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
       +'<span style="font-size:12px;color:var(--text2)">'+fmtDate(r.start_date_local)+' · '+(r.distance/1000).toFixed(1)+'km · '+fmtPace(r.distance,r.moving_time)+'/km</span>'
-      +'<span style="font-size:13px;font-weight:700;color:'+color+'">'+hr+' bpm</span></div>'
+      +'<div style="text-align:right;">'
+      +'<span style="font-size:13px;font-weight:700;color:'+color+'">'+hr+' bpm</span>'
+      +(ef?'<br><span style="font-size:10px;color:var(--text3)">EF '+ef+'</span>':'')
+      +'</div></div>'
       +'<div style="background:var(--bg3);height:6px;border-radius:3px;"><div style="background:'+color+';height:6px;border-radius:3px;width:'+pct+'%"></div></div></div>';
   });
   openModal('Grundlagen-Trend', html);
@@ -672,7 +749,11 @@ function initSwipe() {
   function goTo(idx) {
     current=idx;
     track.style.transform='translateX(-'+idx*100+'%)';
-    [0,1,2].forEach(i=>{ document.getElementById('dot-'+i).className='dot'+(i===idx?' active':''); });
+    [0,1,2].forEach(i=>{
+      const dot = document.getElementById('dot-'+i);
+      dot.className='dot'+(i===idx?' active':'');
+      dot.style.width = i===idx ? '16px' : '6px';
+    });
     document.getElementById('vol-label').textContent=labels[idx];
   }
   card.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;dragging=true;track.style.transition='none';},{passive:true});
@@ -681,6 +762,15 @@ function initSwipe() {
     const dx=e.touches[0].clientX-startX,dy=e.touches[0].clientY-startY;
     if(Math.abs(dy)>Math.abs(dx)){dragging=false;return;}
     track.style.transform='translateX('+(-current*100+dx/card.offsetWidth*100)+'%)';
+    // Live dots
+    const pct = dx/card.offsetWidth;
+    [0,1,2].forEach(i=>{
+      const dot=document.getElementById('dot-'+i);
+      const isActive = i===current;
+      const isNext = dx<0 && i===current+1 || dx>0 && i===current-1;
+      dot.style.width = isActive ? Math.max(6,16-Math.abs(pct)*10)+'px' : isNext ? Math.min(16,6+Math.abs(pct)*10)+'px' : '6px';
+      dot.style.background = (isActive||isNext) ? 'var(--orange)' : 'var(--bg3)';
+    });
   },{passive:true});
   card.addEventListener('touchend',e=>{
     if(!dragging)return;
@@ -715,12 +805,49 @@ async function init() {
     fab.classList.add('visible');
     fab.addEventListener('click',function(e){e.stopPropagation();openAnalyse();});
     fab.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();openAnalyse();},{passive:false});
-    // Touch Feedback
+    // Haptic Feedback
+    function haptic() { if (navigator.vibrate) navigator.vibrate(8); }
+
+    // Touch Feedback + Haptic
     document.querySelectorAll('.tappable').forEach(el=>{
-      el.addEventListener('touchstart',()=>{el.style.transform='scale(0.95)';el.style.opacity='0.85';},{passive:true});
+      el.addEventListener('touchstart',()=>{
+        haptic();
+        el.style.transform='scale(0.95)';
+        el.style.opacity='0.85';
+      },{passive:true});
       el.addEventListener('touchend',()=>{setTimeout(()=>{el.style.transform='';el.style.opacity='';},150);},{passive:true});
       el.addEventListener('touchcancel',()=>{el.style.transform='';el.style.opacity='';},{passive:true});
     });
+
+    // Pull-to-Refresh
+    let ptrStartY=0, ptrActive=false, ptrThreshold=80;
+    const ptrEl=document.getElementById('ptr-indicator');
+    const ptrText=document.getElementById('ptr-text');
+    const ptrSpinner=document.getElementById('ptr-spinner');
+    document.addEventListener('touchstart',e=>{if(window.scrollY===0)ptrStartY=e.touches[0].clientY;},{passive:true});
+    document.addEventListener('touchmove',e=>{
+      if(window.scrollY>0||ptrStartY===0)return;
+      const dy=e.touches[0].clientY-ptrStartY;
+      if(dy>20){
+        ptrEl.classList.add('visible');
+        ptrText.textContent=dy>ptrThreshold?'↑ Loslassen zum Aktualisieren':'↓ Zum Aktualisieren ziehen';
+        ptrActive=dy>ptrThreshold;
+      }
+    },{passive:true});
+    document.addEventListener('touchend',async()=>{
+      if(!ptrActive){ptrEl.classList.remove('visible');ptrStartY=0;return;}
+      ptrText.style.display='none';
+      ptrSpinner.style.display='block';
+      const token=await getValidToken();
+      if(token){
+        const acts=await callAPI({action:'activities',access_token:token});
+        if(Array.isArray(acts)){renderDashboard(acts);}
+      }
+      ptrEl.classList.remove('visible');
+      ptrText.style.display='block';
+      ptrSpinner.style.display='none';
+      ptrActive=false;ptrStartY=0;
+    },{passive:true});
   } catch(err) {
     console.error(err);
     localStorage.removeItem('strava_tokens');
