@@ -211,7 +211,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <strong id="last-run-name">–</strong>
         <div id="last-run-days" style="font-size:11px;color:var(--text2);margin-top:1px;">–</div>
       </div>
-      <div class="streak-badge" id="streak-badge">🔥 <span id="streak-count">0</span> Wochen ≥30km</div>
+      <div class="streak-badge" id="streak-badge">🔥 <span id="streak-count">0</span> Wochen ≥25km</div>
     </div>
 
     <div id="today-run-bar" style="display:none;background:var(--orange);border-radius:12px;padding:10px 14px;margin-bottom:10px;">
@@ -221,13 +221,13 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
 
     <div class="section-label">Wochenplan</div>
     <div class="week-grid">
-      <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Easy</div></div>
+      <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Kraft</div></div>
       <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
       <div class="day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
       <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
-      <div class="day" id="day-5"><div class="d-label">FR</div><div class="d-name">Pull</div><div class="d-sub">Easy</div></div>
+      <div class="day" id="day-5"><div class="d-label">FR</div><div class="d-name">Easy</div><div class="d-sub">8–10km</div></div>
       <div class="day rest" id="day-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
-      <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">15–21</div></div>
+      <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">12–16km</div></div>
     </div>
 
     <div class="section-label" id="vol-label">Diese Woche</div>
@@ -238,14 +238,13 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div class="vol-inner tappable" onclick="showWeekModal()">
             <div class="vol-top">
               <div class="stat-label">Wochenvolumen</div>
-              <div class="prog-km" id="week-km">0<small> / 30 km</small></div>
+              <div class="prog-km" id="week-km">0<small> / 25 km</small></div>
             </div>
             <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
             <div class="sessions-bar">
               <div class="sessions-seg" id="seg-0"></div>
               <div class="sessions-seg" id="seg-1"></div>
               <div class="sessions-seg" id="seg-2"></div>
-              <div class="sessions-seg" id="seg-3"></div>
             </div>
             <div class="prog-sessions" id="week-sessions">0/4 Trainings</div>
           </div>
@@ -337,7 +336,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       </div>
       <div class="step amber">
         <div class="step-num">3</div>
-        <div style="flex:1"><div class="step-title">30 km/Woche stabil</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
+        <div style="flex:1"><div class="step-title">25 km/Woche stabil</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
         <div class="step-status" style="color:var(--orange)">AUFBAU</div>
       </div>
       <div class="step">
@@ -459,11 +458,10 @@ function renderDashboard(activities) {
   _thisWeekRuns = _runs.filter(r => new Date(r.start_date_local) >= wsNow);
   const weekKm = _thisWeekRuns.reduce((s,r)=>s+r.distance/1000, 0);
   const sessions = _thisWeekRuns.length;
-  document.getElementById('week-km').innerHTML = weekKm.toFixed(1)+'<small> / 30 km</small>'+(sessions>=4?' <span class="check-done">✓</span>':'');
-  document.getElementById('week-bar').style.width = Math.min(100,weekKm/30*100)+'%';
-  document.getElementById('week-sessions').textContent = sessions+'/4 Trainings'+(sessions>=4?' ✓':'');
-  // Segment-Balken
-  [0,1,2,3].forEach(i => {
+  document.getElementById('week-km').innerHTML = weekKm.toFixed(1)+'<small> / 25 km</small>'+(sessions>=3?' <span class="check-done">✓</span>':'');
+  document.getElementById('week-bar').style.width = Math.min(100,weekKm/25*100)+'%';
+  document.getElementById('week-sessions').textContent = sessions+'/3 Trainings'+(sessions>=3?' ✓':'');
+  [0,1,2].forEach(i => {
     document.getElementById('seg-'+i).className = 'sessions-seg'+(i<sessions?' done':'');
   });
 
@@ -531,12 +529,14 @@ function renderDashboard(activities) {
   }
 
   // Streak
-  let streak=0; const chk=new Date(now);
+  let streak=0;
+  const streakTarget = 25;
+  let checkDate = new Date(now);
   for (let w=0;w<52;w++) {
-    const ws=weekStart(new Date(chk)), we=new Date(ws); we.setDate(we.getDate()+7);
+    const ws=weekStart(new Date(checkDate)), we=new Date(ws); we.setDate(we.getDate()+7);
     const wKm=_runs.filter(r=>{const d=new Date(r.start_date_local);return d>=ws&&d<we;}).reduce((s,r)=>s+r.distance/1000,0);
-    if (w===0&&wKm<30){chk.setDate(chk.getDate()-7);continue;}
-    if (wKm>=30){streak++;chk.setDate(chk.getDate()-7);}else break;
+    if (w===0&&wKm<streakTarget){checkDate.setDate(checkDate.getDate()-7);continue;}
+    if (wKm>=streakTarget){streak++;checkDate.setDate(checkDate.getDate()-7);}else break;
   }
   document.getElementById('streak-count').textContent = streak;
   if (streak>=4) document.getElementById('streak-badge').style.background='linear-gradient(135deg,#FFD60A,#FF6B35)';
@@ -544,12 +544,12 @@ function renderDashboard(activities) {
 
   // Heutiger Lauf
   const todayMsgs = {
-    0:'Long Run · 15–21 km, locker unter 145 bpm 🏃',
-    1:'Push + Easy Run · 7–10 km, locker unter 140 bpm',
+    0:'Long Run · 12–16 km, locker unter 145 bpm 🏃',
+    1:'Push · Krafttraining, kein Lauf heute 💪',
     2:'Pull · Krafttraining, kein Lauf heute 💪',
     3:'Tempolauf · 5–6 km, Intervalle — gib Gas! ⚡',
     4:'Push + Beine · laufspezifisches Krafttraining 💪',
-    5:'Pull + Easy Run · 7–10 km, Mitteldistanz locker',
+    5:'Easy Run · 8–10 km, locker unter 140 bpm',
     6:'Rest Day · Erholung und Regeneration 😴'
   };
   const today=new Date().getDay();
@@ -564,7 +564,7 @@ function renderDashboard(activities) {
 
   // Steps
   if (_easyRuns.length) document.getElementById('step1-sub').textContent='Aktuell '+Math.round(_easyRuns[_easyRuns.length-1].average_heartrate)+' bpm · Ziel <135 bpm';
-  document.getElementById('step3-sub').textContent='Diese Woche '+weekKm.toFixed(1)+' km von 30 km';
+  document.getElementById('step3-sub').textContent='Diese Woche '+weekKm.toFixed(1)+' km von 25 km';
   document.getElementById('last-updated').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
 }
 
