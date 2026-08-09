@@ -469,8 +469,8 @@ function renderDashboard(activities) {
   const mRuns = _runs.filter(r => { const d=new Date(r.start_date_local); return d.getMonth()===nm&&d.getFullYear()===ny; });
   const mKm = mRuns.reduce((s,r)=>s+r.distance/1000, 0);
   document.getElementById('month-km').innerHTML = mKm.toFixed(1)+'<small> km</small>';
-  document.getElementById('month-bar').style.width = Math.min(100,mKm/140*100)+'%';
-  document.getElementById('month-sessions').textContent = mRuns.length+' Läufe · Ziel ~140 km';
+  document.getElementById('month-bar').style.width = Math.min(100,mKm/100*100)+'%';
+  document.getElementById('month-sessions').textContent = mRuns.length+' Läufe · Ziel ~100 km';
 
   // Monatsdaten für Modal speichern
   const mMap = {};
@@ -483,8 +483,8 @@ function renderDashboard(activities) {
   const yRuns = _runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
   const yKm = yRuns.reduce((s,r)=>s+r.distance/1000, 0);
   document.getElementById('year-km').innerHTML = Math.round(yKm)+'<small> km</small>';
-  document.getElementById('year-bar').style.width = Math.min(100,yKm/1500*100)+'%';
-  document.getElementById('year-sessions').textContent = yRuns.length+' Läufe · Ziel ~1500 km';
+  document.getElementById('year-bar').style.width = Math.min(100,yKm/1200*100)+'%';
+  document.getElementById('year-sessions').textContent = yRuns.length+' Läufe · Ziel ~1200 km';
   // Quartalsdaten für Modal speichern
   const qMap={1:0,2:0,3:0,4:0};
   yRuns.forEach(r=>{ const q=Math.floor(new Date(r.start_date_local).getMonth()/3)+1; qMap[q]+=r.distance/1000; });
