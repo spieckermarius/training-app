@@ -326,7 +326,6 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div class="stat-label">Herzfrequenzzonen</div>
           <div style="display:flex;align-items:center;gap:8px;">
             <div style="font-size:12px;font-weight:700;color:var(--text2);">HRmax <span style="color:var(--text);font-size:15px;font-weight:800;" id="hrmax-display">–</span> bpm</div>
-            <span style="font-size:20px;animation:heartbeat 1.8s ease-in-out infinite;">❤️</span>
           </div>
         </div>
         <div style="display:flex;gap:3px;height:10px;border-radius:5px;overflow:hidden;">
@@ -704,12 +703,13 @@ function showZonenModal() {
 
   let html = '<div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">'
     +'<div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Maximale Herzfrequenz</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;">'
     +'<div style="font-size:28px;font-weight:800;color:var(--text);">'+hm+' <span style="font-size:14px;font-weight:400;color:var(--text2);">bpm</span></div>'
+    +'<span style="font-size:22px;animation:heartbeat 1.8s ease-in-out infinite;">❤️</span>'
+    +'</div>'
     +'<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+src+'</div></div>'
-    +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">'
-    +'<button onclick="closeModal();setTimeout(showHRmaxSettings,300)" style="background:none;border:none;cursor:pointer;font-size:16px;opacity:0.5;padding:4px;" title="HRmax anpassen">⚙️</button>'
-    +'<span style="font-size:28px;animation:heartbeat 1.8s ease-in-out infinite;">❤️</span>'
-    +'</div></div>';
+    +'<button onclick="closeModal();setTimeout(showHRmaxSettings,300)" style="background:none;border:none;cursor:pointer;font-size:18px;opacity:0.4;padding:4px;align-self:flex-start;" title="HRmax anpassen">⚙️</button>'
+    +'</div>';
 
   zones.forEach(z => {
     const isLastRun = lastHR && lastHR >= z.lo && lastHR < z.hi;
