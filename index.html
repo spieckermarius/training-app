@@ -312,6 +312,32 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       </div>
     </div>
 
+    <!-- ZONEN KACHEL -->
+    <div class="card tappable" onclick="showZonenModal()" style="margin-bottom:10px;">
+      <div style="padding:14px 16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="stat-label">Herzfrequenzzonen · Antippen</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text2);">HRmax <span style="color:var(--text);font-size:15px;font-weight:800;">199</span> bpm</div>
+        </div>
+        <div style="display:flex;gap:3px;height:10px;border-radius:5px;overflow:hidden;">
+          <div style="flex:1;background:#4FC3F7;" title="Z1"></div>
+          <div style="flex:1;background:#30D158;" title="Z2"></div>
+          <div style="flex:1;background:#FFD60A;" title="Z3"></div>
+          <div style="flex:1;background:#FF6B35;" title="Z4"></div>
+          <div style="flex:1;background:#FF453A;" title="Z5"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:5px;">
+          <span style="font-size:8px;color:var(--text3);">100 bpm</span>
+          <span style="font-size:8px;color:var(--text3);">119</span>
+          <span style="font-size:8px;color:var(--text3);">139</span>
+          <span style="font-size:8px;color:var(--text3);">159</span>
+          <span style="font-size:8px;color:var(--text3);">179</span>
+          <span style="font-size:8px;color:var(--text3);">199 bpm</span>
+        </div>
+        <div id="zone-last-run" style="font-size:10px;color:var(--text2);margin-top:8px;"></div>
+      </div>
+    </div>
+
     <div class="card tappable" onclick="showAllRunsModal()">
       <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
@@ -556,6 +582,22 @@ function renderDashboard(activities) {
   document.getElementById('today-run-bar').style.display='block';
   document.getElementById('today-run-text').textContent=todayMsgs[today];
 
+  // Zonen-Kachel: letzter Lauf einordnen
+  if (_runs.length) {
+    const lastHR = Math.round(_runs[0].average_heartrate||0);
+    const zones = [
+      {lo:0,  hi:119, name:'Z1 Regeneration', color:'#4FC3F7'},
+      {lo:119,hi:139, name:'Z2 Grundlage',    color:'#30D158'},
+      {lo:139,hi:159, name:'Z3 Aerob',         color:'#FFD60A'},
+      {lo:159,hi:179, name:'Z4 Schwelle',      color:'#FF6B35'},
+      {lo:179,hi:999, name:'Z5 Maximal',       color:'#FF453A'},
+    ];
+    const z = zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
+    if (z && document.getElementById('zone-last-run')) {
+      document.getElementById('zone-last-run').innerHTML =
+        'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
+    }
+  }
   // Runs Preview
   if (_runs.length) {
     document.getElementById('runs-preview').textContent=
@@ -611,6 +653,44 @@ function showRunDetail(idx) {
     r.pr_count?['PRs','♛ '+r.pr_count+' neue Bestzeiten']:null,
   ].filter(Boolean).map(([l,v])=>'<div class="modal-stat"><span class="modal-stat-label">'+l+'</span><span class="modal-stat-value">'+v+'</span></div>').join('');
   openModal(fmtDate(r.start_date_local)+' · '+r.name, rows);
+}
+
+function showZonenModal() {
+  const HRMAX = 199;
+  const zones = [
+    { name:'Z1 · Regeneration', pct:'50–60%', lo:100, hi:119, color:'#4FC3F7', desc:'Sehr leicht · Aktive Erholung' },
+    { name:'Z2 · Grundlage',    pct:'60–70%', lo:119, hi:139, color:'#30D158', desc:'Easy Run · Fettverbrennung · Basis aller Ausdauer' },
+    { name:'Z3 · Aerob',        pct:'70–80%', lo:139, hi:159, color:'#FFD60A', desc:'Ausdauer · Langstrecke · Long Run Obergrenze' },
+    { name:'Z4 · Schwelle',     pct:'80–90%', lo:159, hi:179, color:'#FF6B35', desc:'Tempolauf · Laktatschwelle · 5–10km Renntempo' },
+    { name:'Z5 · Maximal',      pct:'90–100%',lo:179, hi:199, color:'#FF453A', desc:'Intervalle · Sprints · kurze Hochintensität' },
+  ];
+  const lastRun = _runs[0];
+  const lastHR = lastRun ? Math.round(lastRun.average_heartrate||0) : null;
+  let html = '<div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">'
+    +'<div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Maximale Herzfrequenz</div>'
+    +'<div style="font-size:28px;font-weight:800;color:var(--text);">'+HRMAX+' <span style="font-size:14px;font-weight:400;color:var(--text2);">bpm</span></div>'
+    +'<div style="font-size:10px;color:var(--text3);margin-top:2px;">Gemessen · Abendlauf 12.08.2026</div></div>'
+    +'<div style="font-size:32px;">❤️</div></div>';
+
+  zones.forEach(z => {
+    const isLastRun = lastHR && lastHR >= z.lo && lastHR < z.hi;
+    html += '<div style="margin-bottom:12px;padding:'+(isLastRun?'10px 12px':'8px 0')+';border-radius:'+(isLastRun?'10px':'0')+';background:'+(isLastRun?'rgba(255,255,255,0.05)':'transparent')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+      +'<div>'
+      +'<span style="font-size:13px;font-weight:700;color:'+z.color+'">'+z.name+'</span>'
+      +(isLastRun?' <span style="font-size:9px;background:'+z.color+';color:#000;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px;">Letzter Lauf</span>':'')
+      +'</div>'
+      +'<span style="font-size:11px;color:var(--text3);">'+z.pct+'</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<div style="flex:1;background:var(--bg3);height:6px;border-radius:3px;">'
+      +'<div style="background:'+z.color+';height:6px;border-radius:3px;width:100%"></div></div>'
+      +'<span style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;">'+z.lo+'–'+z.hi+' bpm</span>'
+      +'</div>'
+      +'<div style="font-size:10px;color:var(--text3);margin-top:3px;">'+z.desc+'</div>'
+      +'</div>';
+  });
+  openModal('Herzfrequenzzonen', html);
 }
 
 function showPRModal() {
