@@ -207,7 +207,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
 
     <div class="status-bar">
       <div class="status-last-run tappable" onclick="if(_runs.length)showRunDetail(0)" style="flex:1;cursor:pointer;">
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Letzter Lauf · Antippen</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Letzter Lauf</div>
         <strong id="last-run-name">–</strong>
         <div id="last-run-days" style="font-size:11px;color:var(--text2);margin-top:1px;">–</div>
       </div>
@@ -283,7 +283,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="card">
       <div class="split">
         <div class="split-half tappable" onclick="showPRModal()">
-          <div class="stat-label">Bestzeiten ♛ · Antippen</div>
+          <div class="stat-label">Bestzeiten ♛</div>
           <div style="margin-top:6px;">
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">5 km</div>
             <div style="font-size:16px;font-weight:700;" id="pr-5k-time">–</div>
@@ -295,7 +295,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         </div>
         <div class="split-div"></div>
         <div class="split-half tappable" onclick="showGrundlageModal()">
-          <div class="stat-label">Grundlage · Antippen</div>
+          <div class="stat-label">Grundlage</div>
           <div style="margin-top:6px;">
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">Ø Herzfrequenz</div>
             <div class="trend-row">
@@ -313,26 +313,29 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     </div>
 
     <!-- ZONEN KACHEL -->
-    <div class="card tappable" onclick="showZonenModal()" style="margin-bottom:10px;">
-      <div style="padding:14px 16px;">
+    <div class="card" style="margin-bottom:10px;">
+      <div style="padding:14px 16px;" onclick="showZonenModal()" class="tappable">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <div class="stat-label">Herzfrequenzzonen · Antippen</div>
-          <div style="font-size:12px;font-weight:700;color:var(--text2);">HRmax <span style="color:var(--text);font-size:15px;font-weight:800;">199</span> bpm</div>
+          <div class="stat-label">Herzfrequenzzonen</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text2);">HRmax <span style="color:var(--text);font-size:15px;font-weight:800;" id="hrmax-display">–</span> bpm</div>
+            <button onclick="event.stopPropagation();showHRmaxSettings()" style="background:var(--bg3);border:none;border-radius:8px;padding:5px 7px;cursor:pointer;color:var(--text2);font-size:14px;line-height:1;">⚙️</button>
+          </div>
         </div>
         <div style="display:flex;gap:3px;height:10px;border-radius:5px;overflow:hidden;">
-          <div style="flex:1;background:#4FC3F7;" title="Z1"></div>
-          <div style="flex:1;background:#30D158;" title="Z2"></div>
-          <div style="flex:1;background:#FFD60A;" title="Z3"></div>
-          <div style="flex:1;background:#FF6B35;" title="Z4"></div>
-          <div style="flex:1;background:#FF453A;" title="Z5"></div>
+          <div style="flex:1;background:#4FC3F7;"></div>
+          <div style="flex:1;background:#30D158;"></div>
+          <div style="flex:1;background:#FFD60A;"></div>
+          <div style="flex:1;background:#FF6B35;"></div>
+          <div style="flex:1;background:#FF453A;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:5px;">
-          <span style="font-size:8px;color:var(--text3);">100 bpm</span>
-          <span style="font-size:8px;color:var(--text3);">119</span>
-          <span style="font-size:8px;color:var(--text3);">139</span>
-          <span style="font-size:8px;color:var(--text3);">159</span>
-          <span style="font-size:8px;color:var(--text3);">179</span>
-          <span style="font-size:8px;color:var(--text3);">199 bpm</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-0">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-1">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-2">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-3">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-4">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-5">–</span>
         </div>
         <div id="zone-last-run" style="font-size:10px;color:var(--text2);margin-top:8px;"></div>
       </div>
@@ -367,7 +370,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       </div>
       <div class="step tappable" onclick="showZielModal()">
         <div class="step-num">4</div>
-        <div style="flex:1"><div class="step-title">Halbmarathon offiziell</div><div class="step-sub">Ziel 2:20–2:30h · Antippen</div></div>
+        <div style="flex:1"><div class="step-title">Halbmarathon offiziell</div><div class="step-sub">Ziel 2:20–2:30h</div></div>
         <div class="step-status" style="color:#fff">ZIEL →</div>
       </div>
     </div>
@@ -582,21 +585,30 @@ function renderDashboard(activities) {
   document.getElementById('today-run-bar').style.display='block';
   document.getElementById('today-run-text').textContent=todayMsgs[today];
 
-  // Zonen-Kachel: letzter Lauf einordnen
+  // HRmax: manuell gespeichert oder aus Daten berechnet
+  const storedHRmax = parseInt(localStorage.getItem('hrmax_manual') || '0');
+  const measuredHRmax = Math.max(..._runs.map(r => r.summary?.max_heartrate || 0), 0);
+  window._hrmax = storedHRmax > 0 ? storedHRmax : (measuredHRmax > 0 ? measuredHRmax : 199);
+
+  // Zonen dynamisch berechnen (% HRmax)
+  const hm = window._hrmax;
+  window._zones = [
+    {lo:Math.round(hm*0.50), hi:Math.round(hm*0.60), name:'Z1 · Regeneration', color:'#4FC3F7', pct:'50–60%', desc:'Sehr leicht · Aktive Erholung'},
+    {lo:Math.round(hm*0.60), hi:Math.round(hm*0.70), name:'Z2 · Grundlage',    color:'#30D158', pct:'60–70%', desc:'Easy Run · Fettverbrennung · Basis aller Ausdauer'},
+    {lo:Math.round(hm*0.70), hi:Math.round(hm*0.80), name:'Z3 · Aerob',        color:'#FFD60A', pct:'70–80%', desc:'Ausdauer · Langstrecke · Long Run Obergrenze'},
+    {lo:Math.round(hm*0.80), hi:Math.round(hm*0.90), name:'Z4 · Schwelle',     color:'#FF6B35', pct:'80–90%', desc:'Tempolauf · Laktatschwelle · 5–10km Renntempo'},
+    {lo:Math.round(hm*0.90), hi:hm,                  name:'Z5 · Maximal',      color:'#FF453A', pct:'90–100%',desc:'Intervalle · Sprints · kurze Hochintensität'},
+  ];
+
+  // Kachel updaten
+  document.getElementById('hrmax-display').textContent = hm;
+  const labels = [Math.round(hm*0.5), Math.round(hm*0.6), Math.round(hm*0.7), Math.round(hm*0.8), Math.round(hm*0.9), hm];
+  labels.forEach((v,i) => { const el=document.getElementById('zone-label-'+i); if(el) el.textContent = i===0?v+' bpm':i===5?v+' bpm':v; });
   if (_runs.length) {
     const lastHR = Math.round(_runs[0].average_heartrate||0);
-    const zones = [
-      {lo:0,  hi:119, name:'Z1 Regeneration', color:'#4FC3F7'},
-      {lo:119,hi:139, name:'Z2 Grundlage',    color:'#30D158'},
-      {lo:139,hi:159, name:'Z3 Aerob',         color:'#FFD60A'},
-      {lo:159,hi:179, name:'Z4 Schwelle',      color:'#FF6B35'},
-      {lo:179,hi:999, name:'Z5 Maximal',       color:'#FF453A'},
-    ];
-    const z = zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
-    if (z && document.getElementById('zone-last-run')) {
-      document.getElementById('zone-last-run').innerHTML =
-        'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
-    }
+    const z = window._zones && window._zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
+    if (z) document.getElementById('zone-last-run').innerHTML =
+      'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
   }
   // Runs Preview
   if (_runs.length) {
@@ -677,41 +689,80 @@ function showZielModal() {
 }
 
 function showZonenModal() {
-  const HRMAX = 199;
-  const zones = [
-    { name:'Z1 · Regeneration', pct:'50–60%', lo:100, hi:119, color:'#4FC3F7', desc:'Sehr leicht · Aktive Erholung' },
-    { name:'Z2 · Grundlage',    pct:'60–70%', lo:119, hi:139, color:'#30D158', desc:'Easy Run · Fettverbrennung · Basis aller Ausdauer' },
-    { name:'Z3 · Aerob',        pct:'70–80%', lo:139, hi:159, color:'#FFD60A', desc:'Ausdauer · Langstrecke · Long Run Obergrenze' },
-    { name:'Z4 · Schwelle',     pct:'80–90%', lo:159, hi:179, color:'#FF6B35', desc:'Tempolauf · Laktatschwelle · 5–10km Renntempo' },
-    { name:'Z5 · Maximal',      pct:'90–100%',lo:179, hi:199, color:'#FF453A', desc:'Intervalle · Sprints · kurze Hochintensität' },
-  ];
+  const hm = window._hrmax || 199;
+  const zones = window._zones || [];
   const lastRun = _runs[0];
   const lastHR = lastRun ? Math.round(lastRun.average_heartrate||0) : null;
+  const src = localStorage.getItem('hrmax_manual') ? 'Manuell gesetzt' : 'Automatisch gemessen';
+
   let html = '<div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">'
     +'<div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Maximale Herzfrequenz</div>'
-    +'<div style="font-size:28px;font-weight:800;color:var(--text);">'+HRMAX+' <span style="font-size:14px;font-weight:400;color:var(--text2);">bpm</span></div>'
-    +'<div style="font-size:10px;color:var(--text3);margin-top:2px;">Gemessen · Abendlauf 12.08.2026</div></div>'
-    +'<div style="font-size:32px;">❤️</div></div>';
+    +'<div style="font-size:28px;font-weight:800;color:var(--text);">'+hm+' <span style="font-size:14px;font-weight:400;color:var(--text2);">bpm</span></div>'
+    +'<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+src+'</div></div>'
+    +'<button onclick="closeModal();setTimeout(showHRmaxSettings,300)" style="background:var(--bg2);border:none;border-radius:10px;padding:8px 12px;cursor:pointer;color:var(--text2);font-size:13px;">⚙️ Anpassen</button></div>';
 
   zones.forEach(z => {
     const isLastRun = lastHR && lastHR >= z.lo && lastHR < z.hi;
     html += '<div style="margin-bottom:12px;padding:'+(isLastRun?'10px 12px':'8px 0')+';border-radius:'+(isLastRun?'10px':'0')+';background:'+(isLastRun?'rgba(255,255,255,0.05)':'transparent')+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
-      +'<div>'
-      +'<span style="font-size:13px;font-weight:700;color:'+z.color+'">'+z.name+'</span>'
+      +'<div><span style="font-size:13px;font-weight:700;color:'+z.color+'">'+z.name+'</span>'
       +(isLastRun?' <span style="font-size:9px;background:'+z.color+';color:#000;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px;">Letzter Lauf</span>':'')
-      +'</div>'
-      +'<span style="font-size:11px;color:var(--text3);">'+z.pct+'</span>'
-      +'</div>'
+      +'</div><span style="font-size:11px;color:var(--text3);">'+z.pct+'</span></div>'
       +'<div style="display:flex;align-items:center;gap:8px;">'
       +'<div style="flex:1;background:var(--bg3);height:6px;border-radius:3px;">'
       +'<div style="background:'+z.color+';height:6px;border-radius:3px;width:100%"></div></div>'
-      +'<span style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;">'+z.lo+'–'+z.hi+' bpm</span>'
-      +'</div>'
-      +'<div style="font-size:10px;color:var(--text3);margin-top:3px;">'+z.desc+'</div>'
-      +'</div>';
+      +'<span style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;">'+z.lo+'–'+z.hi+' bpm</span></div>'
+      +'<div style="font-size:10px;color:var(--text3);margin-top:3px;">'+z.desc+'</div></div>';
   });
   openModal('Herzfrequenzzonen', html);
+}
+
+function showHRmaxSettings() {
+  const current = window._hrmax || 199;
+  const measured = Math.max(..._runs.map(r=>r.summary?.max_heartrate||0), 0);
+  const html =
+    '<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">'
+    +'Deine maximale Herzfrequenz wird automatisch aus deinen Z5-Läufen berechnet (höchster gemessener Wert: <strong style="color:var(--text)">'+measured+' bpm</strong>). '
+    +'Optional kannst du deine maximale Herzfrequenz auch manuell anpassen.'
+    +'</div>'
+    +'<div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px;">'
+    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Manuell anpassen</div>'
+    +'<div style="display:flex;gap:8px;align-items:center;">'
+    +'<input id="hrmax-input" type="number" min="150" max="230" value="'+current+'" '
+    +'style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:16px;font-family:inherit;">'
+    +'<span style="font-size:13px;color:var(--text2);">bpm</span>'
+    +'</div></div>'
+    +'<div style="display:flex;gap:8px;">'
+    +'<button onclick="saveHRmax()" style="flex:1;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Speichern</button>'
+    +'<button onclick="resetHRmax()" style="background:var(--bg3);color:var(--text2);border:none;border-radius:10px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;">Zurücksetzen</button>'
+    +'</div>';
+  openModal('HRmax Einstellungen', html);
+}
+
+function saveHRmax() {
+  const val = parseInt(document.getElementById('hrmax-input').value);
+  if (val >= 150 && val <= 230) {
+    localStorage.setItem('hrmax_manual', val);
+    closeModal();
+    // Neu berechnen
+    window._hrmax = val;
+    window._zones = [
+      {lo:Math.round(val*.50),hi:Math.round(val*.60),name:'Z1 · Regeneration',color:'#4FC3F7',pct:'50–60%',desc:'Sehr leicht · Aktive Erholung'},
+      {lo:Math.round(val*.60),hi:Math.round(val*.70),name:'Z2 · Grundlage',   color:'#30D158',pct:'60–70%',desc:'Easy Run · Fettverbrennung · Basis aller Ausdauer'},
+      {lo:Math.round(val*.70),hi:Math.round(val*.80),name:'Z3 · Aerob',       color:'#FFD60A',pct:'70–80%',desc:'Ausdauer · Langstrecke · Long Run Obergrenze'},
+      {lo:Math.round(val*.80),hi:Math.round(val*.90),name:'Z4 · Schwelle',    color:'#FF6B35',pct:'80–90%',desc:'Tempolauf · Laktatschwelle · 5–10km Renntempo'},
+      {lo:Math.round(val*.90),hi:val,                name:'Z5 · Maximal',     color:'#FF453A',pct:'90–100%',desc:'Intervalle · Sprints · kurze Hochintensität'},
+    ];
+    document.getElementById('hrmax-display').textContent = val;
+    const labels=[Math.round(val*.5),Math.round(val*.6),Math.round(val*.7),Math.round(val*.8),Math.round(val*.9),val];
+    labels.forEach((v,i)=>{const el=document.getElementById('zone-label-'+i);if(el)el.textContent=i===0?v+' bpm':i===5?v+' bpm':v;});
+  }
+}
+
+function resetHRmax() {
+  localStorage.removeItem('hrmax_manual');
+  closeModal();
+  renderDashboard(window._lastActivities || []);
 }
 
 function showPRModal() {
@@ -730,14 +781,9 @@ function showGrundlageModal() {
   const runs=_easyRuns.slice(-8);
   if(!runs.length){openModal('Grundlagen-Trend','<div style="padding:20px;text-align:center;color:var(--text3)">Keine Easy Runs</div>');return;}
 
-  const ZONES = [
-    {lo:0,  hi:119, name:'Z1 Regeneration', color:'#4FC3F7'},
-    {lo:119,hi:139, name:'Z2 Grundlage',    color:'#30D158'},
-    {lo:139,hi:159, name:'Z3 Aerob',        color:'#FFD60A'},
-    {lo:159,hi:179, name:'Z4 Schwelle',     color:'#FF6B35'},
-    {lo:179,hi:999, name:'Z5 Maximal',      color:'#FF453A'},
-  ];
-  function getZone(hr) { return ZONES.find(z=>hr>=z.lo&&hr<z.hi) || ZONES[4]; }
+  function getZone(hr) { 
+    return (window._zones||[]).find(z=>hr>=z.lo&&hr<z.hi) || {name:'Z5 · Maximal',color:'#FF453A'}; 
+  }
 
   let html='';
   if(runs.length>=2){
@@ -939,6 +985,7 @@ async function init() {
     const activities=await callAPI({action:'activities',access_token:token});
     if(!Array.isArray(activities)){localStorage.removeItem('strava_tokens');show('login-screen');return;}
     show('app');
+    window._lastActivities = activities;
     renderDashboard(activities);
     // Heutiger Tag
     const todayEl=document.getElementById('day-'+new Date().getDay());
