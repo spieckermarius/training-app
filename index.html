@@ -244,7 +244,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div class="swipe-slide">
           <div class="vol-inner tappable" onclick="showWeekModal()">
             <div class="vol-top">
-              <div class="stat-label">Wochenvolumen</div>
+              <div class="stat-label" style="color:#fff;">Wochenvolumen</div>
               <div class="prog-km" id="week-km" style="color:#fff;">0<small style="color:var(--text2);"> / 25 km</small></div>
             </div>
             <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
@@ -263,7 +263,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div class="swipe-slide">
           <div class="vol-inner tappable" onclick="showMonthModal()">
             <div class="vol-top">
-              <div class="stat-label">Monatsvolumen</div>
+              <div class="stat-label" style="color:#fff;">Monatsvolumen</div>
               <div class="prog-km" id="month-km" style="color:#fff;">0<small style="color:var(--text2);"> / 100 km</small></div>
             </div>
             <div class="prog-bar-track"><div class="prog-bar-fill" id="month-bar" style="width:0%"></div></div>
@@ -274,7 +274,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div class="swipe-slide">
           <div class="vol-inner tappable" onclick="showYearModal()">
             <div class="vol-top">
-              <div class="stat-label">Jahresvolumen</div>
+              <div class="stat-label" style="color:#fff;">Jahresvolumen</div>
               <div class="prog-km" id="year-km" style="color:#fff;">0<small style="color:var(--text2);"> / 1200 km</small></div>
             </div>
             <div class="prog-bar-track"><div class="prog-bar-fill" id="year-bar" style="width:0%"></div></div>
@@ -548,19 +548,10 @@ function renderDashboard(activities) {
   // Vorwoche-Vergleich
   const wsPrev = new Date(wsNow); wsPrev.setDate(wsPrev.getDate()-7);
   const prevWeekKm = _runs.filter(r=>{const d=new Date(r.start_date_local);return d>=wsPrev&&d<wsNow;}).reduce((s,r)=>s+r.distance/1000,0);
-  const diff = weekKm - prevWeekKm;
   const vsEl = document.getElementById('week-vs-last');
   if (vsEl && prevWeekKm > 0) {
-    if (Math.abs(diff) < 0.5) {
-      vsEl.textContent = '≈ Gleich wie letzte Woche';
-      vsEl.style.color = 'var(--text3)';
-    } else if (diff > 0) {
-      vsEl.textContent = '+'+diff.toFixed(1)+' km vs. Vorwoche 📈';
-      vsEl.style.color = 'var(--green)';
-    } else {
-      vsEl.textContent = diff.toFixed(1)+' km vs. Vorwoche';
-      vsEl.style.color = 'var(--red)';
-    }
+    vsEl.textContent = prevWeekKm.toFixed(1)+' km letzte Woche';
+    vsEl.style.color = 'var(--text3)';
   }
   document.getElementById('week-km').innerHTML = weekKm.toFixed(1)+'<small> / 25 km</small>'+(sessions>=3?' <span class="check-done">✓</span>':'');
   document.getElementById('week-bar').style.width = Math.min(100,weekKm/25*100)+'%';
@@ -924,7 +915,8 @@ function showWeekModal() {
   const now=new Date(), curKW=isoWeek(now);
   const weekMap={};
   _runs.forEach(r=>{const k=isoWeek(r.start_date_local);weekMap[k]=(weekMap[k]||0)+r.distance/1000;});
-  const kwKeys=Object.keys(weekMap).map(Number).sort().slice(-4);
+  // Immer die letzten 4 KW anzeigen (aktuelle + 3 davor), egal ob Daten
+  const kwKeys=[curKW-3, curKW-2, curKW-1, curKW];
   let html='<div style="margin-bottom:16px"><div class="stat-label" style="margin-bottom:8px">KW-Trend</div><div id="modal-kw-bars"></div></div>';
   html+='<div class="stat-label" style="margin-bottom:8px">Diese Woche · Läufe</div>';
   _thisWeekRuns.forEach(r=>{
