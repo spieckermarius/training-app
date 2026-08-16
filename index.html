@@ -293,7 +293,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="card">
       <div class="split">
         <div class="split-half tappable" onclick="showPRModal()">
-          <div class="stat-label">Bestzeiten ♛</div>
+          <div class="stat-label" style="color:#fff;font-size:11px;">Bestzeiten ♛</div>
           <div style="margin-top:6px;">
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">5 km</div>
             <div style="font-size:16px;font-weight:700;" id="pr-5k-time">–</div>
@@ -305,7 +305,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         </div>
         <div class="split-div"></div>
         <div class="split-half tappable" onclick="showGrundlageModal()">
-          <div class="stat-label">Grundlage</div>
+          <div class="stat-label" style="color:#fff;font-size:11px;">Grundlage</div>
           <div style="margin-top:6px;">
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">Ø Herzfrequenz</div>
             <div class="trend-row">
@@ -326,17 +326,20 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="card" style="margin-bottom:10px;">
       <div style="padding:14px 16px;" onclick="showZonenModal()" class="tappable">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <div class="stat-label">Herzfrequenzzonen</div>
+          <div class="stat-label" style="color:#fff;font-size:11px;">Herzfrequenzzonen</div>
           <div style="display:flex;align-items:center;gap:8px;">
             <div style="font-size:12px;font-weight:700;color:var(--text2);">HRmax <span style="color:var(--text);font-size:15px;font-weight:800;" id="hrmax-display">–</span> bpm</div>
           </div>
         </div>
-        <div style="display:flex;gap:3px;height:10px;border-radius:5px;overflow:hidden;">
-          <div style="flex:1;background:#4FC3F7;"></div>
-          <div style="flex:1;background:#30D158;"></div>
-          <div style="flex:1;background:#FFD60A;"></div>
-          <div style="flex:1;background:#FF6B35;"></div>
-          <div style="flex:1;background:#FF453A;"></div>
+        <div style="position:relative;">
+          <div style="display:flex;gap:3px;height:10px;border-radius:5px;overflow:hidden;">
+            <div style="flex:1;background:#4FC3F7;"></div>
+            <div style="flex:1;background:#30D158;"></div>
+            <div style="flex:1;background:#FFD60A;"></div>
+            <div style="flex:1;background:#FF6B35;"></div>
+            <div style="flex:1;background:#FF453A;"></div>
+          </div>
+          <div id="zone-marker" style="display:none;position:absolute;top:-3px;width:2px;height:16px;background:#fff;border-radius:1px;box-shadow:0 0 4px rgba(0,0,0,0.5);"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:5px;">
           <span style="font-size:8px;color:var(--text3);" id="zone-label-0">–</span>
@@ -353,14 +356,14 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="card tappable" onclick="showAllRunsModal()">
       <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Letzte Läufe</div>
+          <div style="font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Letzte Läufe</div>
           <div style="font-size:16px;font-weight:700;color:#fff;" id="runs-preview">– Läufe</div>
         </div>
         <div style="font-size:24px;color:var(--orange);">→</div>
       </div>
     </div>
 
-    <div class="section-label">Weg zum Ziel</div>
+    <div class="section-label">Ziele</div>
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
@@ -675,6 +678,11 @@ function renderDashboard(activities) {
     const z = window._zones && window._zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
     if (z) document.getElementById('zone-last-run').innerHTML =
       'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
+    // Weißer Marker auf dem Zonen-Balken
+    const hrMin = Math.round(hm*0.5);
+    const markerPct = Math.min(99, Math.max(0, (lastHR - hrMin) / (hm - hrMin) * 100));
+    const marker = document.getElementById('zone-marker');
+    if (marker && lastHR > 0) { marker.style.display='block'; marker.style.left=markerPct+'%'; }
   }
   // Runs Preview
   if (_runs.length) {
@@ -897,16 +905,16 @@ function showGrundlageModal() {
     const zone=getZone(hr);
     const pct=Math.min(100,Math.max(0,(160-hr)/(160-120)*100));
     const ef=(r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
-    html+='<div style="margin-bottom:14px">'
-      +'<div style="display:flex;justify-content:space-between;margin-bottom:4px">'
-      +'<span style="font-size:12px;color:var(--text2)">'+fmtDate(r.start_date_local)+' · '+(r.distance/1000).toFixed(1)+'km · '+fmtPace(r.distance,r.moving_time)+'/km</span>'
-      +'<div style="text-align:right">'
-      +'<span style="font-size:13px;font-weight:700;color:'+zone.color+'">'+hr+' bpm</span>'
-      +'<br><span style="font-size:9px;color:'+zone.color+';font-weight:600">'+zone.name+'</span>'
-      +'<br><span style="font-size:10px;color:var(--text3)">EF '+ef+'</span>'
+    html+='<div style="margin-bottom:10px;background:var(--bg3);border-radius:8px;padding:8px 10px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+      +'<span style="font-size:11px;color:var(--text2)">'+fmtDate(r.start_date_local)+' · '+(r.distance/1000).toFixed(1)+'km · '+fmtPace(r.distance,r.moving_time)+'/km</span>'
+      +'<div style="text-align:right;line-height:1.2;">'
+      +'<span style="font-size:12px;font-weight:700;color:'+zone.color+'">'+hr+' bpm · '+zone.name.split('·')[0].trim()+'</span>'
+      +'<br><span style="font-size:9px;color:var(--text3)">EF '+ef+'</span>'
       +'</div></div>'
-      +'<div style="background:var(--bg3);height:6px;border-radius:3px">'
-      +'<div style="background:'+zone.color+';height:6px;border-radius:3px;width:'+pct+'%"></div></div></div>';
+      +'<div style="background:var(--bg2);height:5px;border-radius:3px">'
+      +'<div style="background:'+zone.color+';height:5px;border-radius:3px;width:'+pct+'%"></div></div>'
+      +'</div>';
   });
   openModal('Grundlagen-Trend', html);
 }
