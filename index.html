@@ -333,15 +333,13 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="sort-card" data-id="grundlage">
     <div class="card tappable" onclick="showGrundlageModal()">
       <div style="padding:14px 16px;">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;">
-          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Grundlagenausdauer</div>
-          <div style="font-size:9px;color:var(--text3);" id="grundlage-pace-label">Pace 6:00–7:30/km</div>
-        </div>
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Grundlagenausdauer</div>
         <!-- Aktueller HR-Wert -->
-        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
           <div style="font-size:28px;font-weight:800;color:#fff;line-height:1;" id="grundlage-hr-now">–</div>
           <div style="font-size:12px;color:var(--text2);">bpm</div>
-          <div style="margin-left:4px;font-size:12px;font-weight:600;" id="grundlage-trend-inline">–</div>
+          <div style="font-size:12px;font-weight:600;" id="grundlage-trend-inline">–</div>
+          <div style="font-size:10px;color:var(--text3);" id="grundlage-pace-label">· 6:00–7:30/km</div>
         </div>
         <!-- Fortschrittsbalken von 160 → 135 -->
         <div style="position:relative;margin-bottom:6px;">
@@ -810,19 +808,23 @@ function renderDashboard(activities) {
       _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local)+' · '+(_runs[0].distance/1000).toFixed(1)+' km';
   }
 
-  // Schuh-Kilometer — korrekte gear_ids aus Strava
+  // Schuh-Kilometer — direkt aus gear_id der geladenen Läufe
   const shoes = [
-    {id:'31249544', name:'Adidas EVO SL',     sub:'Tempolauf',      elId:'shoe-evosl'},
+    {id:'31249544', name:'Adidas EVO SL',     sub:'Tempolauf',       elId:'shoe-evosl'},
     {id:'32465392', name:'ASICS Superblast 3', sub:'Easy · Long Run', elId:'shoe-superblast'},
     {id:'19493999', name:'Adidas SL2',         sub:'Training',        elId:'shoe-sl2'},
   ];
   const MAX_SHOE_KM = 800;
+  const allRuns = _runs; // alle geladenen Aktivitäten (Runs gefiltert)
   shoes.forEach(shoe => {
-    const km = _runs.filter(r=>r.gear_id===shoe.id).reduce((s,r)=>s+r.distance/1000,0);
+    const km = allRuns.filter(r=>r.gear_id===shoe.id).reduce((s,r)=>s+r.distance/1000,0);
     const el = document.getElementById(shoe.elId+'-km');
     const lb = document.getElementById(shoe.elId+'-bar-label');
     if (el) el.textContent = Math.round(km)+' km';
-    if (lb) lb.textContent = Math.round(km/MAX_SHOE_KM*100)+'% der Lebensdauer';
+    if (lb) {
+      const pct = Math.round(km/MAX_SHOE_KM*100);
+      lb.textContent = pct+'% der Lebensdauer · '+Math.round(MAX_SHOE_KM-km)+' km übrig';
+    }
   });
 
   // Meilenstein für Jahr-Modal
@@ -1411,7 +1413,7 @@ async function init() {
   if(!token){show('login-screen');return;}
   show('loading-screen');
   try {
-    const activities=await callAPI({action:'activities',access_token:token});
+    const activities=await callAPI({action:'activities',access_token:token,per_page:100});
     if(!Array.isArray(activities)){localStorage.removeItem('strava_tokens');show('login-screen');return;}
     show('app');
     window._lastActivities = activities;
@@ -1437,7 +1439,7 @@ async function init() {
     // PTR
     initPTR(async()=>{
       const t=await getValidToken();
-      if(t){const a=await callAPI({action:'activities',access_token:t});if(Array.isArray(a))renderDashboard(a);}
+      if(t){const a=await callAPI({action:'activities',access_token:t,per_page:100});if(Array.isArray(a))renderDashboard(a);}
     });
   } catch(err) {
     console.error(err);
