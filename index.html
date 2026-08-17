@@ -183,6 +183,12 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .analyse-line:last-child { border-bottom:none; }
 
 footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px; }
+.sort-card { margin-bottom:10px; touch-action:pan-y; user-select:none; }
+.sort-card.dragging { opacity:.5; transform:scale(.97); }
+.sort-card.drag-over { border-top:2px solid var(--orange); border-radius:2px; }
+.sort-card.wiggle { animation:wiggle .35s ease-in-out infinite; }
+@keyframes wiggle { 0%,100%{transform:rotate(0deg)} 25%{transform:rotate(-.6deg)} 75%{transform:rotate(.6deg)} }
+#sort-edit-bar { display:none;position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;font-size:13px;font-weight:700;padding:10px 28px;border-radius:20px;z-index:300;box-shadow:0 4px 20px rgba(255,107,53,.5);cursor:pointer;white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -213,21 +219,27 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     </div>
     <div class="divider"></div>
 
+    <div id="sortable-cards">
+    <div class="sort-card" data-id="status">
     <div class="status-bar">
       <div class="status-last-run tappable" onclick="if(_runs.length)showRunDetail(0)" style="flex:1;cursor:pointer;">
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Letzter Lauf</div>
-        <strong id="last-run-name">–</strong>
-        <div id="last-run-days" style="font-size:11px;color:var(--text2);margin-top:1px;">–</div>
+        <div style="font-size:10px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Letzter Lauf</div>
+        <strong id="last-run-name" style="color:#fff;">–</strong>
+        <div id="last-run-days" style="font-size:11px;color:rgba(255,255,255,.7);margin-top:1px;">–</div>
       </div>
       <div class="streak-badge" id="streak-badge">🔥 <span id="streak-count">0</span> Wochen ≥25km</div>
     </div>
-
-    <div id="today-run-bar" style="display:none;background:var(--orange);border-radius:12px;padding:10px 14px;margin-bottom:10px;">
-      <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Heute trainieren</div>
-      <div style="font-size:14px;font-weight:700;color:#fff;" id="today-run-text">–</div>
     </div>
 
-    <div class="card" style="margin-bottom:10px;margin-top:8px;">
+    <div class="sort-card" data-id="today">
+    <div id="today-run-bar" style="display:none;background:var(--orange);border-radius:12px;padding:10px 14px;">
+      <div style="font-size:10px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Heute trainieren</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;" id="today-run-text">–</div>
+    </div>
+    </div>
+
+    <div class="sort-card" data-id="wochenplan">
+    <div class="card">
       <div style="padding:12px 14px 10px;">
         <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Wochenplan</div>
         <div class="week-grid">
@@ -241,8 +253,10 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         </div>
       </div>
     </div>
+    </div>
 
-    <div class="card swipe-card" id="vol-card" style="margin-top:8px;">
+    <div class="sort-card" data-id="volumen">
+    <div class="card swipe-card" id="vol-card">
       <div class="swipe-track" id="swipe-track">
         <!-- Woche -->
         <div class="swipe-slide">
@@ -292,7 +306,9 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div class="dot" id="dot-2"></div>
       </div>
     </div>
+    </div>
 
+    <div class="sort-card" data-id="fortschritt">
     <div class="card" style="margin-bottom:10px;margin-top:8px;">
       <div class="split">
         <div class="split-half tappable" onclick="showPRModal()" style="padding:14px 16px;">
@@ -323,8 +339,9 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         </div>
       </div>
     </div>
+    </div>
 
-    <!-- ZONEN KACHEL -->
+    <div class="sort-card" data-id="herzfrequenz">
     <div class="card" style="margin-bottom:10px;">
       <div style="padding:14px 16px;" onclick="showZonenModal()" class="tappable">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -354,7 +371,9 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div id="zone-last-run" style="font-size:10px;color:var(--text2);margin-top:8px;"></div>
       </div>
     </div>
+    </div>
 
+    <div class="sort-card" data-id="laeufe">
     <div class="card tappable" onclick="showAllRunsModal()">
       <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
@@ -364,8 +383,10 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div style="font-size:24px;color:var(--orange);">→</div>
       </div>
     </div>
+    </div>
 
-    <div class="card" style="margin-bottom:10px;overflow:visible;">
+    <div class="sort-card" data-id="ziele">
+    <div class="card" style="overflow:visible;">
       <div style="padding:12px 14px 0;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
           <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Ziele</div>
@@ -396,7 +417,10 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div id="custom-ziele"></div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:10px;">
+    </div>
+
+    <div class="sort-card" data-id="equipment">
+    <div class="card">
       <div style="padding:12px 14px 14px;">
         <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Equipment</div>
         <div id="shoes-list">
@@ -429,10 +453,14 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         </div>
       </div>
     </div>
+    </div>
 
+    </div><!-- end sortable-cards -->
     <footer>Strava Live · <span id="last-updated">–</span></footer>
   </div>
 </div>
+
+<div id="sort-edit-bar" onclick="exitSortMode()">✓ Fertig</div>
 
 <button class="claude-fab" id="claude-fab" title="Lauf analysieren">
   <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1230,6 +1258,103 @@ function initPTR(loadFn) {
   },{passive:true});
 }
 
+// ── Sortierung ──
+let _sortMode = false, _dragEl = null, _longPressTimer = null;
+
+function initSortable() {
+  const container = document.getElementById('sortable-cards');
+  if (!container) return;
+
+  // Gespeicherte Reihenfolge wiederherstellen
+  const saved = JSON.parse(localStorage.getItem('card_order') || '[]');
+  if (saved.length) {
+    saved.forEach(id => {
+      const el = container.querySelector('[data-id="'+id+'"]');
+      if (el) container.appendChild(el);
+    });
+  }
+
+  // Long Press auf jeder Kachel
+  container.querySelectorAll('.sort-card').forEach(card => {
+    card.addEventListener('touchstart', e => {
+      if (_sortMode) return;
+      _longPressTimer = setTimeout(() => {
+        if (navigator.vibrate) navigator.vibrate([20,50,20]);
+        enterSortMode();
+        startDrag(card, e.touches[0]);
+      }, 600);
+    }, {passive:true});
+    card.addEventListener('touchend', () => {
+      clearTimeout(_longPressTimer);
+    }, {passive:true});
+    card.addEventListener('touchmove', () => {
+      if (!_sortMode) clearTimeout(_longPressTimer);
+    }, {passive:true});
+  });
+
+  // Touch drag
+  container.addEventListener('touchmove', e => {
+    if (!_sortMode || !_dragEl) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _dragEl.style.transform = 'rotate(.6deg) scale(1.03)';
+    const els = [...container.querySelectorAll('.sort-card:not(.dragging)')];
+    const over = els.find(el => {
+      const r = el.getBoundingClientRect();
+      return touch.clientY > r.top && touch.clientY < r.bottom;
+    });
+    container.querySelectorAll('.sort-card').forEach(c => c.classList.remove('drag-over'));
+    if (over) over.classList.add('drag-over');
+  }, {passive:false});
+
+  container.addEventListener('touchend', e => {
+    if (!_sortMode || !_dragEl) return;
+    const touch = e.changedTouches[0];
+    const els = [...container.querySelectorAll('.sort-card:not(.dragging)')];
+    const over = els.find(el => {
+      const r = el.getBoundingClientRect();
+      return touch.clientY > r.top && touch.clientY < r.bottom;
+    });
+    if (over) container.insertBefore(_dragEl, over);
+    container.querySelectorAll('.sort-card').forEach(c => {
+      c.classList.remove('dragging','drag-over');
+      c.style.transform = '';
+    });
+    _dragEl = null;
+    saveOrder();
+  }, {passive:true});
+}
+
+function startDrag(card, touch) {
+  _dragEl = card;
+  card.classList.add('dragging');
+  card.style.transform = 'rotate(.6deg) scale(1.03)';
+}
+
+function enterSortMode() {
+  _sortMode = true;
+  document.getElementById('sort-edit-bar').style.display = 'block';
+  document.getElementById('claude-fab').style.display = 'none';
+  document.querySelectorAll('.sort-card').forEach(c => c.classList.add('wiggle'));
+}
+
+function exitSortMode() {
+  _sortMode = false;
+  _dragEl = null;
+  document.getElementById('sort-edit-bar').style.display = 'none';
+  document.getElementById('claude-fab').style.display = 'flex';
+  document.querySelectorAll('.sort-card').forEach(c => {
+    c.classList.remove('wiggle','dragging','drag-over');
+    c.style.transform = '';
+  });
+  saveOrder();
+}
+
+function saveOrder() {
+  const order = [...document.querySelectorAll('.sort-card')].map(c => c.dataset.id);
+  localStorage.setItem('card_order', JSON.stringify(order));
+}
+
 // ── Init ──
 async function init() {
   const params=new URLSearchParams(window.location.search);
@@ -1251,6 +1376,7 @@ async function init() {
     window._lastActivities = activities;
     renderDashboard(activities);
     renderCustomZiele();
+    initSortable();
     // Heutiger Tag
     const todayEl=document.getElementById('day-'+new Date().getDay());
     if(todayEl) todayEl.classList.add('today');
