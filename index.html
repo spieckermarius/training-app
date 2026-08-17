@@ -62,7 +62,8 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .streak-badge { background:linear-gradient(135deg,#FF6B35,#FF453A); border-radius:20px; padding:4px 10px; font-size:12px; font-weight:700; color:white; display:flex; align-items:center; gap:4px; }
 
 .week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:6px; }
-.day { background:var(--bg2); border-radius:10px; padding:8px 4px; text-align:center; min-height:70px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.day { background:var(--bg3); border-radius:10px; padding:8px 4px; text-align:center; min-height:70px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.day.run-day { border:1.5px solid var(--orange); }
 .day.long { background:var(--bg3); border:1.5px solid var(--orange); }
 .day.rest { opacity:.4; }
 .day.today { background:var(--orange) !important; border:none !important; opacity:1 !important; }
@@ -226,15 +227,19 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       <div style="font-size:14px;font-weight:700;color:#fff;" id="today-run-text">–</div>
     </div>
 
-    <div class="section-label">Wochenplan</div>
-    <div class="week-grid">
-      <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Kraft</div></div>
-      <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
-      <div class="day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
-      <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
-      <div class="day" id="day-5"><div class="d-label">FR</div><div class="d-name">Easy</div><div class="d-sub">8–10km</div></div>
-      <div class="day rest" id="day-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
-      <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">12–16km</div></div>
+    <div class="card" style="margin-bottom:10px;margin-top:8px;">
+      <div style="padding:12px 14px 10px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Wochenplan</div>
+        <div class="week-grid">
+          <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Kraft</div></div>
+          <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
+          <div class="day run-day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
+          <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
+          <div class="day run-day" id="day-5"><div class="d-label">FR</div><div class="d-name">Easy</div><div class="d-sub">8–10km</div></div>
+          <div class="day rest" id="day-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
+          <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">12–16km</div></div>
+        </div>
+      </div>
     </div>
 
     <div class="card swipe-card" id="vol-card" style="margin-top:8px;">
@@ -310,7 +315,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div id="grundlage-trend-arrow" style="font-size:36px;line-height:1;margin-bottom:4px;">–</div>
           <div id="grundlage-trend-text" style="font-size:13px;font-weight:700;margin-bottom:2px;">–</div>
           <div id="grundlage-trend-sub" style="font-size:10px;color:var(--text2);margin-bottom:10px;">–</div>
-          <svg id="grundlage-sparkline" viewBox="0 0 80 30" width="100%" height="30" preserveAspectRatio="none"></svg>
+          <svg id="grundlage-sparkline" viewBox="0 0 80 24" width="100%" height="24" preserveAspectRatio="none" style="margin-top:6px;border-radius:4px;overflow:hidden;"></svg>
           <span id="hr-prev" style="display:none"></span>
           <span id="hr-now" style="display:none"></span>
           <span id="pace-curr-row" style="display:none"></span>
@@ -360,37 +365,40 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       </div>
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;" class="section-label">
-      <span>Ziele</span>
-      <button onclick="showAddZielModal()" style="background:none;border:none;color:var(--orange);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;" title="Ziel hinzufügen">+</button>
+    <div class="card" style="margin-bottom:10px;overflow:visible;">
+      <div style="padding:12px 14px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Ziele</div>
+          <button onclick="showAddZielModal()" style="background:none;border:none;color:var(--orange);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;">+</button>
+        </div>
+      </div>
+      <div class="steps" id="ziele-steps" style="border-radius:0 0 14px 14px;">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div style="flex:1"><div class="step-title">Grundlagenausdauer verbessern</div><div class="step-sub" id="step1-sub">HR bei Easy Runs &lt;135 bpm</div></div>
+          <div class="step-status" style="color:var(--orange)">LÄUFT</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div style="flex:1"><div class="step-title">Long Run · alle 2 Wochen</div><div class="step-sub">Ziel 12–16 km</div></div>
+          <div class="step-status" style="color:var(--green)">AKTIV</div>
+        </div>
+        <div class="step amber">
+          <div class="step-num">3</div>
+          <div style="flex:1"><div class="step-title">25 km/Woche stabil</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
+          <div class="step-status" style="color:var(--orange)">AUFBAU</div>
+        </div>
+        <div class="step tappable" onclick="showZielModal()">
+          <div class="step-num">4</div>
+          <div style="flex:1"><div class="step-title">Halbmarathon offiziell</div><div class="step-sub">Ziel 2:20–2:30h</div></div>
+          <div class="step-status" style="color:#fff">ZIEL →</div>
+        </div>
+        <div id="custom-ziele"></div>
+      </div>
     </div>
-    <div class="steps" id="ziele-steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div style="flex:1"><div class="step-title">Grundlagenausdauer verbessern</div><div class="step-sub" id="step1-sub">HR bei Easy Runs &lt;135 bpm</div></div>
-        <div class="step-status" style="color:var(--orange)">LÄUFT</div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div style="flex:1"><div class="step-title">Long Run · alle 2 Wochen</div><div class="step-sub">Ziel 12–16 km</div></div>
-        <div class="step-status" style="color:var(--green)">AKTIV</div>
-      </div>
-      <div class="step amber">
-        <div class="step-num">3</div>
-        <div style="flex:1"><div class="step-title">25 km/Woche stabil</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
-        <div class="step-status" style="color:var(--orange)">AUFBAU</div>
-      </div>
-      <div class="step tappable" onclick="showZielModal()">
-        <div class="step-num">4</div>
-        <div style="flex:1"><div class="step-title">Halbmarathon offiziell</div><div class="step-sub">Ziel 2:20–2:30h</div></div>
-        <div class="step-status" style="color:#fff">ZIEL →</div>
-      </div>
-      <div id="custom-ziele"></div>
-    </div>
-    <div class="section-label">Equipment</div>
     <div class="card" style="margin-bottom:10px;">
-      <div style="padding:14px 16px;">
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Schuhe</div>
+      <div style="padding:12px 14px 14px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Equipment</div>
         <div id="shoes-list">
           <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -652,13 +660,16 @@ function renderDashboard(activities) {
       const hrs = last5.map(r=>r.average_heartrate);
       const minHR = Math.min(...hrs)-2, maxHR = Math.max(...hrs)+2;
       const pts = hrs.map((h,i) => {
-        const x = i/(hrs.length-1)*78+1;
-        const y = 28 - (h-minHR)/(maxHR-minHR)*26;
+        const x = i/(hrs.length-1)*76+2;
+        const y = 20 - (h-minHR)/(maxHR-minHR)*16;
         return x+','+y;
       });
       const col = improving ? '#30D158' : stable ? '#AEAEB2' : '#FF453A';
-      svg.innerHTML = '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-        + pts.map((p,i) => '<circle cx="'+p.split(',')[0]+'" cy="'+p.split(',')[1]+'" r="2" fill="'+col+'"/>').join('');
+      // Fläche unter der Linie
+      const areaPath = 'M'+pts[0]+' '+pts.slice(1).map(p=>'L'+p).join(' ')+' L'+pts[pts.length-1].split(',')[0]+',22 L'+pts[0].split(',')[0]+',22 Z';
+      svg.innerHTML = '<path d="'+areaPath+'" fill="'+col+'" opacity="0.15"/>'
+        + '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+        + pts.map(p => '<circle cx="'+p.split(',')[0]+'" cy="'+p.split(',')[1]+'" r="2.5" fill="'+col+'"/>').join('');
     }
   }
 
