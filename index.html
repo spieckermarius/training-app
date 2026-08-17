@@ -309,37 +309,47 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     </div>
     </div>
 
-    <div class="sort-card" data-id="fortschritt">
-    <div class="card" style="margin-bottom:10px;margin-top:8px;">
-      <div class="split">
-        <div class="split-half tappable" onclick="showPRModal()" style="padding:14px 16px;">
-          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Bestzeiten ♛</div>
-          <div style="margin-bottom:14px;">
+    <div class="sort-card" data-id="bestzeiten">
+    <div class="card tappable" onclick="showPRModal()">
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Bestzeiten ♛</div>
+        <div style="display:flex;gap:0;">
+          <div style="flex:1;">
             <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">5 km</div>
-            <div style="font-size:24px;font-weight:800;color:#fff;line-height:1;" id="pr-5k-time">–</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;line-height:1;" id="pr-5k-time">–</div>
             <div style="font-size:10px;color:var(--text2);margin-top:3px;" id="pr-5k-pace">–</div>
           </div>
-          <div style="height:1px;background:var(--border);margin:10px 0;"></div>
-          <div>
+          <div style="width:1px;background:var(--border);margin:0 16px;flex-shrink:0;"></div>
+          <div style="flex:1;">
             <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Halbmarathon</div>
-            <div style="font-size:24px;font-weight:800;color:#fff;line-height:1;" id="pr-hm">–</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;line-height:1;" id="pr-hm">–</div>
             <div style="font-size:10px;color:var(--text2);margin-top:3px;" id="pr-hm-pace">–</div>
           </div>
         </div>
-        <div class="split-div"></div>
-        <div class="split-half tappable" onclick="showGrundlageModal()" style="padding:12px 14px;">
-          <div class="stat-label" style="color:#fff;font-size:11px;margin-bottom:10px;">Grundlage</div>
-          <div id="grundlage-trend-arrow" style="font-size:36px;line-height:1;margin-bottom:4px;">–</div>
-          <div id="grundlage-trend-text" style="font-size:13px;font-weight:700;margin-bottom:2px;">–</div>
-          <div id="grundlage-trend-sub" style="font-size:10px;color:var(--text2);margin-bottom:10px;">–</div>
-          <svg id="grundlage-sparkline" viewBox="0 0 80 24" width="100%" height="24" preserveAspectRatio="none" style="margin-top:6px;border-radius:4px;overflow:hidden;"></svg>
-          <span id="hr-prev" style="display:none"></span>
-          <span id="hr-now" style="display:none"></span>
-          <span id="pace-curr-row" style="display:none"></span>
-          <span id="pace-prev-row" style="display:none"></span>
+      </div>
+    </div>
+    </div>
+
+    <div class="sort-card" data-id="grundlage">
+    <div class="card tappable" onclick="showGrundlageModal()">
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Grundlage</div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="flex-shrink:0;">
+            <div id="grundlage-trend-arrow" style="font-size:28px;line-height:1;">–</div>
+            <div id="grundlage-trend-text" style="font-size:12px;font-weight:700;margin-top:4px;">–</div>
+            <div id="grundlage-trend-sub" style="font-size:10px;color:var(--text2);margin-top:2px;max-width:110px;">–</div>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <svg id="grundlage-sparkline" viewBox="0 0 100 44" width="100%" height="44" preserveAspectRatio="none" style="border-radius:6px;display:block;"></svg>
+          </div>
         </div>
       </div>
     </div>
+    <span id="hr-prev" style="display:none"></span>
+    <span id="hr-now" style="display:none"></span>
+    <span id="pace-curr-row" style="display:none"></span>
+    <span id="pace-prev-row" style="display:none"></span>
     </div>
 
     <div class="sort-card" data-id="herzfrequenz">
@@ -687,18 +697,22 @@ function renderDashboard(activities) {
     const svg = document.getElementById('grundlage-sparkline');
     if (svg && last5.length >= 2) {
       const hrs = last5.map(r=>r.average_heartrate);
-      const minHR = Math.min(...hrs)-2, maxHR = Math.max(...hrs)+2;
+      const minHR = Math.min(...hrs)-3, maxHR = Math.max(...hrs)+3;
       const pts = hrs.map((h,i) => {
-        const x = i/(hrs.length-1)*76+2;
-        const y = 20 - (h-minHR)/(maxHR-minHR)*16;
-        return x+','+y;
+        const x = i/(hrs.length-1)*92+4;
+        const y = 38 - (h-minHR)/(maxHR-minHR)*30;
+        return {x, y};
       });
       const col = improving ? '#30D158' : stable ? '#AEAEB2' : '#FF453A';
-      // Fläche unter der Linie
-      const areaPath = 'M'+pts[0]+' '+pts.slice(1).map(p=>'L'+p).join(' ')+' L'+pts[pts.length-1].split(',')[0]+',22 L'+pts[0].split(',')[0]+',22 Z';
-      svg.innerHTML = '<path d="'+areaPath+'" fill="'+col+'" opacity="0.15"/>'
-        + '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-        + pts.map(p => '<circle cx="'+p.split(',')[0]+'" cy="'+p.split(',')[1]+'" r="2.5" fill="'+col+'"/>').join('');
+      const ptStr = pts.map(p=>p.x+','+p.y).join(' ');
+      const areaPath = 'M'+pts[0].x+','+pts[0].y
+        +pts.slice(1).map(p=>' L'+p.x+','+p.y).join('')
+        +' L'+pts[pts.length-1].x+',42 L'+pts[0].x+',42 Z';
+      svg.innerHTML =
+        '<rect x="0" y="0" width="100" height="44" fill="var(--bg3)" rx="4"/>'
+        +'<path d="'+areaPath+'" fill="'+col+'" opacity="0.12"/>'
+        +'<polyline points="'+ptStr+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+        +pts.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3" fill="'+col+'" stroke="var(--bg3)" stroke-width="1.5"/>').join('');
     }
   }
 
@@ -1278,7 +1292,10 @@ function initSortable() {
   // Long Press auf jeder Kachel
   container.querySelectorAll('.sort-card').forEach(card => {
     card.addEventListener('touchstart', e => {
-      if (_sortMode) return;
+      if (_sortMode) {
+        startDrag(card, e.touches[0]);
+        return;
+      }
       _longPressTimer = setTimeout(() => {
         if (navigator.vibrate) navigator.vibrate([20,50,20]);
         enterSortMode();
