@@ -333,23 +333,39 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="sort-card" data-id="grundlage">
     <div class="card tappable" onclick="showGrundlageModal()">
       <div style="padding:14px 16px;">
-        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Grundlage</div>
-        <div style="display:flex;align-items:center;gap:16px;">
-          <div style="flex-shrink:0;">
-            <div id="grundlage-trend-arrow" style="font-size:28px;line-height:1;">–</div>
-            <div id="grundlage-trend-text" style="font-size:12px;font-weight:700;margin-top:4px;">–</div>
-            <div id="grundlage-trend-sub" style="font-size:10px;color:var(--text2);margin-top:2px;max-width:110px;">–</div>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <svg id="grundlage-sparkline" viewBox="0 0 100 44" width="100%" height="44" preserveAspectRatio="none" style="border-radius:6px;display:block;"></svg>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Grundlagenausdauer</div>
+          <div style="font-size:9px;color:var(--text3);" id="grundlage-pace-label">Pace 6:00–7:30/km</div>
         </div>
+        <!-- Aktueller HR-Wert -->
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
+          <div style="font-size:28px;font-weight:800;color:#fff;line-height:1;" id="grundlage-hr-now">–</div>
+          <div style="font-size:12px;color:var(--text2);">bpm</div>
+          <div style="margin-left:4px;font-size:12px;font-weight:600;" id="grundlage-trend-inline">–</div>
+        </div>
+        <!-- Fortschrittsbalken von 160 → 135 -->
+        <div style="position:relative;margin-bottom:6px;">
+          <div style="background:var(--bg3);height:8px;border-radius:4px;overflow:hidden;">
+            <div id="grundlage-hr-bar" style="height:8px;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange));width:0%;transition:width .8s ease;"></div>
+          </div>
+          <!-- Marker aktuelle Position -->
+          <div id="grundlage-hr-marker" style="display:none;position:absolute;top:-3px;width:3px;height:14px;background:#fff;border-radius:2px;box-shadow:0 0 4px rgba(0,0,0,.5);transform:translateX(-50%);"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-size:9px;color:var(--text3);">Start 160 bpm</span>
+          <span style="font-size:9px;color:var(--green);font-weight:600;">Ziel 135 bpm</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:8px;" id="grundlage-trend-sub">–</div>
       </div>
     </div>
     <span id="hr-prev" style="display:none"></span>
     <span id="hr-now" style="display:none"></span>
     <span id="pace-curr-row" style="display:none"></span>
     <span id="pace-prev-row" style="display:none"></span>
+    <!-- IDs für Sparkline (wird nicht mehr angezeigt aber JS schreibt noch rein) -->
+    <span id="grundlage-trend-arrow" style="display:none"></span>
+    <span id="grundlage-trend-text" style="display:none"></span>
+    <span id="grundlage-sparkline" style="display:none"></span>
     </div>
 
     <div class="sort-card" data-id="herzfrequenz">
@@ -439,7 +455,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
             <div style="display:flex;align-items:center;gap:10px;">
               <span style="font-size:20px;">👟</span>
               <div>
-                <div style="font-size:13px;font-weight:600;">Adidas Evo SL</div>
+                <div style="font-size:13px;font-weight:600;">Adidas EVO SL</div>
                 <div style="font-size:10px;color:var(--text3);">Tempolauf</div>
               </div>
             </div>
@@ -448,7 +464,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
               <div style="font-size:9px;color:var(--text3);" id="shoe-evosl-bar-label">–</div>
             </div>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
             <div style="display:flex;align-items:center;gap:10px;">
               <span style="font-size:20px;">👟</span>
               <div>
@@ -459,6 +475,19 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
             <div style="text-align:right;">
               <div style="font-size:14px;font-weight:700;" id="shoe-superblast-km">– km</div>
               <div style="font-size:9px;color:var(--text3);" id="shoe-superblast-bar-label">–</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:20px;">👟</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;">Adidas SL2</div>
+                <div style="font-size:10px;color:var(--text3);">Training</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:14px;font-weight:700;" id="shoe-sl2-km">– km</div>
+              <div style="font-size:9px;color:var(--text3);" id="shoe-sl2-bar-label">–</div>
             </div>
           </div>
         </div>
@@ -651,68 +680,62 @@ function renderDashboard(activities) {
   window._pr5k=pr5k; window._pr10k=pr10k; window._prHM=prHM;
 
   // Grundlage + EF
-  _easyRuns = _runs.filter(r=>r.distance>5000&&r.average_heartrate&&r.average_heartrate<160)
-    .sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
-  if (_easyRuns.length>=2) {
+  // Pace-Fenster: 6:00–7:30/km = 400–450s/km
+  const PACE_MIN = 360, PACE_MAX = 450; // s/km
+  const HR_START = 160, HR_ZIEL = 135;
+
+  _easyRuns = _runs.filter(r => {
+    if (!r.average_heartrate || r.distance < 5000) return false;
+    const pacePerKm = r.moving_time / (r.distance/1000);
+    return pacePerKm >= PACE_MIN && pacePerKm <= PACE_MAX;
+  }).sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
+
+  // Fallback: alle Easy Runs wenn Pace-Fenster leer
+  if (_easyRuns.length < 2) {
+    _easyRuns = _runs.filter(r=>r.distance>5000&&r.average_heartrate&&r.average_heartrate<160)
+      .sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
+    const lbl = document.getElementById('grundlage-pace-label');
+    if (lbl) lbl.textContent = 'Alle Easy Runs';
+  }
+
+  if (_easyRuns.length >= 2) {
     const prev=_easyRuns[_easyRuns.length-2], curr=_easyRuns[_easyRuns.length-1];
-    // HR Trend
+
+    // HR hidden elements (für Modal)
     const hrNow = document.getElementById('hr-now');
-    if (hrNow) {
-      hrNow.textContent = Math.round(curr.average_heartrate)+' bpm';
-      hrNow.style.color = curr.average_heartrate<prev.average_heartrate ? 'var(--green)' : curr.average_heartrate>prev.average_heartrate ? 'var(--red)' : 'var(--text)';
-    }
+    if (hrNow) { hrNow.textContent=Math.round(curr.average_heartrate)+' bpm'; }
     const hrPrevEl = document.getElementById('hr-prev');
-    if (hrPrevEl) hrPrevEl.textContent = Math.round(prev.average_heartrate);
-    // EF
+    if (hrPrevEl) hrPrevEl.textContent=Math.round(prev.average_heartrate);
     const ef = r => (r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
     const efCurr=ef(curr), efPrev=ef(prev), efDiff=(efCurr-efPrev).toFixed(2);
     const efEl = document.getElementById('pace-curr-row');
-    if (efEl) { efEl.textContent='EF '+efCurr+(efDiff>0?' ↑ +'+efDiff:efDiff<0?' ↓ '+efDiff:''); efEl.style.color=efDiff>0?'var(--green)':efDiff<0?'var(--red)':'var(--text)'; }
+    if (efEl) { efEl.textContent='EF '+efCurr; efEl.style.color=efDiff>0?'var(--green)':efDiff<0?'var(--red)':'var(--text)'; }
     const efPrevEl = document.getElementById('pace-prev-row');
     if (efPrevEl) efPrevEl.textContent='Vorher EF '+efPrev;
 
-    // Grundlagen-Kachel: Trend-Pfeil + Sparkline
-    const last5 = _easyRuns.slice(-5);
-    const hrFirst = last5[0].average_heartrate;
-    const hrLast = last5[last5.length-1].average_heartrate;
-    const improving = hrLast < hrFirst;
-    const stable = Math.abs(hrLast-hrFirst) < 2;
-    const arrow = document.getElementById('grundlage-trend-arrow');
-    const trendText = document.getElementById('grundlage-trend-text');
-    const trendSub = document.getElementById('grundlage-trend-sub');
-    if (arrow && trendText && trendSub) {
-      if (stable) {
-        arrow.textContent = '→'; arrow.style.color = 'var(--text2)';
-        trendText.textContent = 'Stabil'; trendText.style.color = 'var(--text2)';
-      } else if (improving) {
-        arrow.textContent = '↘'; arrow.style.color = 'var(--green)';
-        trendText.textContent = 'Verbessert'; trendText.style.color = 'var(--green)';
-      } else {
-        arrow.textContent = '↗'; arrow.style.color = 'var(--red)';
-        trendText.textContent = 'Steigt'; trendText.style.color = 'var(--red)';
-      }
-      trendSub.textContent = 'Ø HR: '+Math.round(hrLast)+' bpm (letzte Easy Runs)';
+    // HR-Fortschrittsbalken
+    const hrCurr = Math.round(curr.average_heartrate);
+    const hrPrev = Math.round(prev.average_heartrate);
+    const diff = hrPrev - hrCurr; // positiv = besser (HR gesunken)
+    const pct = Math.min(100, Math.max(0, (HR_START - hrCurr) / (HR_START - HR_ZIEL) * 100));
+    const col = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text2)';
+
+    const hrNowEl = document.getElementById('grundlage-hr-now');
+    if (hrNowEl) hrNowEl.textContent = hrCurr;
+    const trendInline = document.getElementById('grundlage-trend-inline');
+    if (trendInline) {
+      trendInline.style.color = col;
+      trendInline.textContent = diff > 0 ? '↓ −'+diff+' bpm' : diff < 0 ? '↑ +'+Math.abs(diff)+' bpm' : '→ stabil';
     }
-    // Sparkline SVG
-    const svg = document.getElementById('grundlage-sparkline');
-    if (svg && last5.length >= 2) {
-      const hrs = last5.map(r=>r.average_heartrate);
-      const minHR = Math.min(...hrs)-3, maxHR = Math.max(...hrs)+3;
-      const pts = hrs.map((h,i) => {
-        const x = i/(hrs.length-1)*92+4;
-        const y = 38 - (h-minHR)/(maxHR-minHR)*30;
-        return {x, y};
-      });
-      const col = improving ? '#30D158' : stable ? '#AEAEB2' : '#FF453A';
-      const ptStr = pts.map(p=>p.x+','+p.y).join(' ');
-      const areaPath = 'M'+pts[0].x+','+pts[0].y
-        +pts.slice(1).map(p=>' L'+p.x+','+p.y).join('')
-        +' L'+pts[pts.length-1].x+',42 L'+pts[0].x+',42 Z';
-      svg.innerHTML =
-        '<rect x="0" y="0" width="100" height="44" fill="var(--bg3)" rx="4"/>'
-        +'<path d="'+areaPath+'" fill="'+col+'" opacity="0.12"/>'
-        +'<polyline points="'+ptStr+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-        +pts.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3" fill="'+col+'" stroke="var(--bg3)" stroke-width="1.5"/>').join('');
+    const bar = document.getElementById('grundlage-hr-bar');
+    if (bar) bar.style.width = pct.toFixed(0)+'%';
+    const marker = document.getElementById('grundlage-hr-marker');
+    if (marker) { marker.style.display='block'; marker.style.left=pct.toFixed(0)+'%'; }
+    const sub = document.getElementById('grundlage-trend-sub');
+    if (sub) {
+      const pace = fmtPace(curr.distance, curr.moving_time);
+      const trend = diff>0?'Verbessert':diff<0?'Gestiegen':'Stabil';
+      sub.textContent = 'Letzter Lauf '+fmtDate(curr.start_date_local)+' · '+pace+'/km · '+trend;
     }
   }
 
@@ -787,23 +810,20 @@ function renderDashboard(activities) {
       _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local)+' · '+(_runs[0].distance/1000).toFixed(1)+' km';
   }
 
-  // Schuh-Kilometer (Strava gear_id basiert)
-  // gear_id '32465392' = ASICS Superblast 3 (Easy/Long)
-  // Alle anderen = Adidas Evo SL (Tempo)
-  const superblastId = '32465392';
-  const superblastKm = _runs.filter(r=>r.gear_id===superblastId).reduce((s,r)=>s+r.distance/1000,0);
-  const evoSlKm = _runs.filter(r=>r.gear_id&&r.gear_id!==superblastId).reduce((s,r)=>s+r.distance/1000,0);
+  // Schuh-Kilometer — korrekte gear_ids aus Strava
+  const shoes = [
+    {id:'31249544', name:'Adidas EVO SL',     sub:'Tempolauf',      elId:'shoe-evosl'},
+    {id:'32465392', name:'ASICS Superblast 3', sub:'Easy · Long Run', elId:'shoe-superblast'},
+    {id:'19493999', name:'Adidas SL2',         sub:'Training',        elId:'shoe-sl2'},
+  ];
   const MAX_SHOE_KM = 800;
-  if (document.getElementById('shoe-superblast-km')) {
-    document.getElementById('shoe-superblast-km').textContent = Math.round(superblastKm)+' km';
-    const pctS = Math.round(superblastKm/MAX_SHOE_KM*100);
-    document.getElementById('shoe-superblast-bar-label').textContent = pctS+'% der Lebensdauer ('+Math.round(MAX_SHOE_KM-superblastKm)+' km übrig)';
-  }
-  if (document.getElementById('shoe-evosl-km')) {
-    document.getElementById('shoe-evosl-km').textContent = Math.round(evoSlKm)+' km';
-    const pctE = Math.round(evoSlKm/MAX_SHOE_KM*100);
-    document.getElementById('shoe-evosl-bar-label').textContent = pctE+'% der Lebensdauer ('+Math.round(MAX_SHOE_KM-evoSlKm)+' km übrig)';
-  }
+  shoes.forEach(shoe => {
+    const km = _runs.filter(r=>r.gear_id===shoe.id).reduce((s,r)=>s+r.distance/1000,0);
+    const el = document.getElementById(shoe.elId+'-km');
+    const lb = document.getElementById(shoe.elId+'-bar-label');
+    if (el) el.textContent = Math.round(km)+' km';
+    if (lb) lb.textContent = Math.round(km/MAX_SHOE_KM*100)+'% der Lebensdauer';
+  });
 
   // Meilenstein für Jahr-Modal
   const MILESTONES = [100,250,500,750,1000,1200,1500,2000];
