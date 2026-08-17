@@ -237,8 +237,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">12–16km</div></div>
     </div>
 
-    <div class="section-label" id="vol-label">Diese Woche</div>
-    <div class="card swipe-card" id="vol-card">
+    <div class="card swipe-card" id="vol-card" style="margin-top:8px;">
       <div class="swipe-track" id="swipe-track">
         <!-- Woche -->
         <div class="swipe-slide">
@@ -289,25 +288,20 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       </div>
     </div>
 
-    <div class="section-label">Fortschritt</div>
-    <div class="card">
+    <div class="card" style="margin-bottom:10px;margin-top:8px;">
       <div class="split">
-        <div class="split-half tappable" onclick="showPRModal()" style="padding:12px 14px;">
-          <div class="stat-label" style="color:#fff;font-size:11px;margin-bottom:10px;">Bestzeiten ♛</div>
-          <div style="margin-bottom:10px;">
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">5 km</div>
-            <div style="font-size:20px;font-weight:800;color:#fff;line-height:1;" id="pr-5k-time">–</div>
-            <div style="font-size:10px;color:var(--text2);margin-top:2px;" id="pr-5k-pace">–</div>
+        <div class="split-half tappable" onclick="showPRModal()" style="padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Bestzeiten ♛</div>
+          <div style="margin-bottom:14px;">
+            <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">5 km</div>
+            <div style="font-size:24px;font-weight:800;color:#fff;line-height:1;" id="pr-5k-time">–</div>
+            <div style="font-size:10px;color:var(--text2);margin-top:3px;" id="pr-5k-pace">–</div>
           </div>
-          <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+          <div style="height:1px;background:var(--border);margin:10px 0;"></div>
           <div>
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Halbmarathon</div>
-            <div style="font-size:20px;font-weight:800;color:#fff;line-height:1;" id="pr-hm">–</div>
-            <div style="font-size:10px;color:var(--text2);margin-top:2px;" id="pr-hm-pace">–</div>
-          </div>
-          <div style="margin-top:10px;background:var(--bg3);border-radius:6px;padding:6px 8px;">
-            <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">Ziel · 2:20h</div>
-            <div class="prog-bar-track" style="margin:0;"><div id="pr-hm-progress" class="prog-bar-fill" style="width:0%"></div></div>
+            <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Halbmarathon</div>
+            <div style="font-size:24px;font-weight:800;color:#fff;line-height:1;" id="pr-hm">–</div>
+            <div style="font-size:10px;color:var(--text2);margin-top:3px;" id="pr-hm-pace">–</div>
           </div>
         </div>
         <div class="split-div"></div>
@@ -606,12 +600,6 @@ function renderDashboard(activities) {
   if (prHM) {
     document.getElementById('pr-hm').innerHTML = fmtTime(prHM.moving_time)+' <span class="pr-crown">♛</span>';
     document.getElementById('pr-hm-pace').textContent = fmtPace(prHM.distance,prHM.moving_time)+'/km · '+fmtDate(prHM.start_date_local);
-    // Fortschrittsbalken Richtung 2:20h
-    const ziel = 140*60; // 2:20h in Sekunden
-    const start = 200*60; // Startpunkt ~3:20h
-    const pct = Math.min(100, Math.max(0, (start - prHM.moving_time)/(start - ziel)*100));
-    const progEl = document.getElementById('pr-hm-progress');
-    if (progEl) progEl.style.width = pct.toFixed(0)+'%';
   }
   window._pr5k=pr5k; window._pr10k=pr10k; window._prHM=prHM;
 
@@ -1187,7 +1175,6 @@ function initSwipe() {
       dot.className='dot'+(i===idx?' active':'');
       dot.style.width=i===idx?'16px':'6px';
     });
-    document.getElementById('vol-label').textContent=labels[idx];
   }
   card.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;dragging=true;track.style.transition='none';},{passive:true});
   card.addEventListener('touchmove',e=>{
