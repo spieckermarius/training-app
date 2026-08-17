@@ -22,14 +22,12 @@
 ::-webkit-scrollbar { display:none; }
 html { scrollbar-width:none; -ms-overflow-style:none; }
 body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; }
-
 #login-screen,#loading-screen {
   position:fixed; inset:0; z-index:900; background:var(--bg);
   display:none; flex-direction:column; align-items:center; justify-content:center;
 }
 #login-screen { padding:40px 24px; text-align:center; }
 #app { display:none; padding-bottom:80px; }
-
 #login-screen h1 { font-size:42px; font-weight:800; margin-bottom:12px; }
 #login-screen p { font-size:15px; color:var(--text2); margin-bottom:40px; }
 .strava-btn {
@@ -44,23 +42,18 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
   border-radius:50%; animation:spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform:rotate(360deg); } }
-
 .wrap { max-width:680px; margin:0 auto; padding:20px 16px 40px; padding-top:max(env(safe-area-inset-top,20px),20px); }
 .app-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-top:8px; }
 .app-title { font-size:26px; font-weight:800; }
 .app-title span { color:var(--orange); }
 .logout-btn { background:var(--bg2); border:none; color:var(--text2); font-size:12px; padding:6px 12px; cursor:pointer; font-family:inherit; border-radius:8px; }
 .divider { height:1px; background:var(--border); margin-bottom:20px; }
-.section-label { font-size:11px; font-weight:600; color:var(--text); letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; margin-top:20px; }
-
 .ptr-indicator { text-align:center; font-size:11px; color:var(--text3); height:0; overflow:hidden; transition:height .2s; display:flex; align-items:center; justify-content:center; gap:6px; }
 .ptr-indicator.visible { height:40px; }
-
 .status-bar { background:var(--bg2); border-radius:14px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
 .status-last-run { font-size:12px; color:var(--text2); }
 .status-last-run strong { color:var(--text); font-size:14px; font-weight:700; }
 .streak-badge { background:linear-gradient(135deg,#FF6B35,#FF453A); border-radius:20px; padding:4px 10px; font-size:12px; font-weight:700; color:white; display:flex; align-items:center; gap:4px; }
-
 .week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:6px; }
 .day { background:var(--bg3); border-radius:10px; padding:8px 4px; text-align:center; min-height:70px; display:flex; flex-direction:column; align-items:center; gap:3px; }
 .day.run-day { border:1.5px solid var(--orange); }
@@ -73,25 +66,15 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .d-name { font-size:9px; font-weight:700; color:var(--text); }
 .day.today .d-name,.day.today .d-sub { color:white !important; }
 .d-sub { font-size:8px; color:var(--text3); }
-
 .card { background:var(--bg2); border-radius:14px; margin-bottom:10px; overflow:hidden; }
 .tappable { cursor:pointer; transition:transform .08s,opacity .08s; }
 .tappable:active { transform:scale(.95); opacity:.85; }
 .split { display:flex; }
-.split-half { flex:1; padding:14px 16px; min-width:0; }
-.split-div { width:1px; background:var(--border); flex-shrink:0; }
 .stat-label { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
 .stat-value { font-size:20px; font-weight:700; }
 .stat-value small { font-size:11px; font-weight:400; color:var(--text2); }
-.stat-delta { font-size:11px; margin-top:4px; font-weight:500; }
-.delta-good { color:var(--green); }
-.delta-warn { color:var(--red); }
 .pr-crown { color:var(--yellow); }
 .check-done { color:var(--green); }
-.trend-row { display:flex; align-items:baseline; gap:5px; }
-.trend-prev { font-size:13px; color:var(--text3); text-decoration:line-through; }
-.trend-good { color:var(--green); font-weight:700; }
-
 .prog-km { font-size:20px; font-weight:700; color:var(--text); }
 .prog-km small { font-size:11px; font-weight:400; color:var(--text2); }
 .vol-inner { padding:14px 16px 10px; }
@@ -99,31 +82,22 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .sessions-bar { display:flex; gap:3px; margin-top:6px; height:4px; }
 .sessions-seg { flex:1; border-radius:2px; background:var(--bg3); transition:background .3s; }
 .sessions-seg.done { background:var(--green); }
-
 .prog-bar-track { background:var(--bg3); height:5px; border-radius:3px; }
 .prog-bar-fill { background:var(--orange); height:5px; border-radius:3px; transition:width .6s ease; }
 .prog-sessions { font-size:10px; color:var(--text3); margin-top:6px; }
-
 .swipe-card { overflow:hidden; touch-action:pan-y; }
 .swipe-track { display:flex; transition:transform .35s cubic-bezier(.25,.46,.45,.94); }
 .swipe-slide { min-width:100%; flex-shrink:0; }
 .swipe-dots { display:flex; justify-content:center; gap:6px; padding:10px 0 12px; }
 .dot { width:6px; height:6px; border-radius:50%; background:var(--bg3); transition:all .2s; }
 .dot.active { background:var(--orange); width:16px; border-radius:3px; }
-
 .kw-bars { display:flex; align-items:flex-end; gap:6px; height:64px; margin-top:8px; }
-.kw-col { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; flex:1; height:100%; }
-.kw-bar-wrap { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; flex:1; width:100%; }
 .kw-bar { width:100%; min-height:18px; border-radius:4px 4px 0 0; display:flex; align-items:center; justify-content:center; }
-.kw-bar-label { font-size:7px; font-weight:700; color:rgba(255,255,255,.85); text-align:center; line-height:1.1; }
-.kw-label-text { font-size:8px; color:var(--text3); margin-top:3px; }
-
 .pill { font-size:9px; font-weight:600; padding:3px 7px; border-radius:6px; display:inline-block; white-space:nowrap; }
 .pill-high { background:rgba(255,69,58,.15); color:var(--red); }
 .pill-mid { background:rgba(255,107,53,.15); color:var(--orange); }
 .pill-pr { background:var(--yellow); color:#000; }
 .pill-best { background:rgba(48,209,88,.15); color:var(--green); }
-
 .steps { background:var(--bg2); border-radius:14px; overflow:hidden; margin-bottom:10px; }
 .step { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--border); }
 .step:last-child { border-bottom:none; background:var(--orange); border-radius:0 0 14px 14px; }
@@ -135,7 +109,6 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .step-sub { font-size:10px; color:var(--text2); margin-top:2px; }
 .step:last-child .step-sub { color:rgba(255,255,255,.7); }
 .step-status { font-size:9px; font-weight:700; margin-left:auto; white-space:nowrap; }
-
 .claude-fab {
   position:fixed; bottom:32px; right:24px;
   width:62px; height:62px; border-radius:50%;
@@ -147,7 +120,6 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 }
 .claude-fab.visible { opacity:1; pointer-events:auto; }
 .claude-fab:active { transform:scale(.88); }
-
 .modal-overlay {
   display:none; position:fixed; inset:0;
   background:rgba(0,0,0,.7); z-index:800;
@@ -169,20 +141,17 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
   42% { transform: scale(1.1); }
   56% { transform: scale(1); }
 }
-.modal-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 16px; }
 .modal-header { margin-bottom:16px; }
 .modal-title { font-size:17px; font-weight:700; }
 .modal-stat { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); font-size:14px; }
 .modal-stat:last-child { border-bottom:none; }
 .modal-stat-label { color:var(--text2); }
 .modal-stat-value { font-weight:600; }
-
 .analyse-run-info { background:var(--bg3); border-radius:10px; padding:10px 14px; margin-bottom:16px; display:flex; gap:16px; flex-wrap:wrap; }
 .analyse-run-stat { font-size:11px; color:var(--text2); }
 .analyse-run-stat strong { color:var(--text); font-weight:700; display:block; font-size:13px; }
 .analyse-line { font-size:14px; padding:8px 0; border-bottom:1px solid var(--border); line-height:1.4; }
 .analyse-line:last-child { border-bottom:none; }
-
 footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px; }
 .sort-card { margin-bottom:10px; touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
 .sort-card.dragging { opacity:.5; transform:scale(.97); }
@@ -391,7 +360,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <span style="font-size:8px;color:var(--text3);" id="zone-label-4">–</span>
           <span style="font-size:8px;color:var(--text3);" id="zone-label-5">–</span>
         </div>
-        <div id="zone-last-run" style="font-size:10px;color:var(--text2);margin-top:8px;"></div>
+        <span id="hrmax-display" style="display:none"></span><div id="zone-last-run" style="font-size:10px;color:var(--text2);margin-top:8px;"></div>
       </div>
     </div>
     </div>
@@ -573,12 +542,6 @@ function isoWeek(d) {
   dt.setDate(dt.getDate()+3-(dt.getDay()||7)+1);
   const w=new Date(dt.getFullYear(),0,4);
   return Math.round(((dt-w)/86400000+(w.getDay()||7)-1)/7)+1;
-}
-function hrPill(hr, isPR) {
-  if (isPR) return '<span class="pill pill-pr">♛ PR</span>';
-  if (hr<137) return '<span class="pill pill-best">Bestwert</span>';
-  if (hr<143) return '<span class="pill pill-mid">Ok</span>';
-  return '<span class="pill pill-high">Hoch</span>';
 }
 function renderHBars(containerId, data) {
   const max = Math.max(...data.map(d=>d.km), 1);
