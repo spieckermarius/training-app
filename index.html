@@ -292,32 +292,35 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="section-label">Fortschritt</div>
     <div class="card">
       <div class="split">
-        <div class="split-half tappable" onclick="showPRModal()">
-          <div class="stat-label" style="color:#fff;font-size:11px;">Bestzeiten ♛</div>
-          <div style="margin-top:6px;">
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">5 km</div>
-            <div style="font-size:16px;font-weight:700;" id="pr-5k-time">–</div>
-            <div style="font-size:10px;color:var(--text2);" id="pr-5k-pace">–</div>
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin:8px 0 2px;">Halbmarathon</div>
-            <div style="font-size:16px;font-weight:700;" id="pr-hm">–</div>
-            <div style="font-size:10px;color:var(--text2);" id="pr-hm-pace">–</div>
+        <div class="split-half tappable" onclick="showPRModal()" style="padding:12px 14px;">
+          <div class="stat-label" style="color:#fff;font-size:11px;margin-bottom:10px;">Bestzeiten ♛</div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">5 km</div>
+            <div style="font-size:20px;font-weight:800;color:#fff;line-height:1;" id="pr-5k-time">–</div>
+            <div style="font-size:10px;color:var(--text2);margin-top:2px;" id="pr-5k-pace">–</div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+          <div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Halbmarathon</div>
+            <div style="font-size:20px;font-weight:800;color:#fff;line-height:1;" id="pr-hm">–</div>
+            <div style="font-size:10px;color:var(--text2);margin-top:2px;" id="pr-hm-pace">–</div>
+          </div>
+          <div style="margin-top:10px;background:var(--bg3);border-radius:6px;padding:6px 8px;">
+            <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">Ziel · 2:20h</div>
+            <div class="prog-bar-track" style="margin:0;"><div id="pr-hm-progress" class="prog-bar-fill" style="width:0%"></div></div>
           </div>
         </div>
         <div class="split-div"></div>
-        <div class="split-half tappable" onclick="showGrundlageModal()">
-          <div class="stat-label" style="color:#fff;font-size:11px;">Grundlage</div>
-          <div style="margin-top:6px;">
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">Ø Herzfrequenz</div>
-            <div class="trend-row">
-              <span class="trend-prev" id="hr-prev">–</span>
-              <span style="color:var(--text3);margin:0 4px;">→</span>
-              <span style="font-size:16px;font-weight:700;" id="hr-now">–</span>
-            </div>
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin:8px 0 2px;">Effizienzfaktor</div>
-            <div style="font-size:16px;font-weight:700;" id="pace-curr-row">–</div>
-            <div style="font-size:10px;color:var(--text2);margin-top:2px;" id="pace-prev-row">–</div>
-            <div style="font-size:9px;color:var(--text3);margin-top:4px;">m/min ÷ HR · höher = besser</div>
-          </div>
+        <div class="split-half tappable" onclick="showGrundlageModal()" style="padding:12px 14px;">
+          <div class="stat-label" style="color:#fff;font-size:11px;margin-bottom:10px;">Grundlage</div>
+          <div id="grundlage-trend-arrow" style="font-size:36px;line-height:1;margin-bottom:4px;">–</div>
+          <div id="grundlage-trend-text" style="font-size:13px;font-weight:700;margin-bottom:2px;">–</div>
+          <div id="grundlage-trend-sub" style="font-size:10px;color:var(--text2);margin-bottom:10px;">–</div>
+          <svg id="grundlage-sparkline" viewBox="0 0 80 30" width="100%" height="30" preserveAspectRatio="none"></svg>
+          <span id="hr-prev" style="display:none"></span>
+          <span id="hr-now" style="display:none"></span>
+          <span id="pace-curr-row" style="display:none"></span>
+          <span id="pace-prev-row" style="display:none"></span>
         </div>
       </div>
     </div>
@@ -603,6 +606,12 @@ function renderDashboard(activities) {
   if (prHM) {
     document.getElementById('pr-hm').innerHTML = fmtTime(prHM.moving_time)+' <span class="pr-crown">♛</span>';
     document.getElementById('pr-hm-pace').textContent = fmtPace(prHM.distance,prHM.moving_time)+'/km · '+fmtDate(prHM.start_date_local);
+    // Fortschrittsbalken Richtung 2:20h
+    const ziel = 140*60; // 2:20h in Sekunden
+    const start = 200*60; // Startpunkt ~3:20h
+    const pct = Math.min(100, Math.max(0, (start - prHM.moving_time)/(start - ziel)*100));
+    const progEl = document.getElementById('pr-hm-progress');
+    if (progEl) progEl.style.width = pct.toFixed(0)+'%';
   }
   window._pr5k=pr5k; window._pr10k=pr10k; window._prHM=prHM;
 
@@ -611,16 +620,58 @@ function renderDashboard(activities) {
     .sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
   if (_easyRuns.length>=2) {
     const prev=_easyRuns[_easyRuns.length-2], curr=_easyRuns[_easyRuns.length-1];
-    document.getElementById('hr-prev').textContent = Math.round(prev.average_heartrate);
+    // HR Trend
     const hrNow = document.getElementById('hr-now');
-    hrNow.textContent = Math.round(curr.average_heartrate)+' bpm';
-    hrNow.style.color = curr.average_heartrate<prev.average_heartrate ? 'var(--green)' : curr.average_heartrate>prev.average_heartrate ? 'var(--red)' : 'var(--text)';
+    if (hrNow) {
+      hrNow.textContent = Math.round(curr.average_heartrate)+' bpm';
+      hrNow.style.color = curr.average_heartrate<prev.average_heartrate ? 'var(--green)' : curr.average_heartrate>prev.average_heartrate ? 'var(--red)' : 'var(--text)';
+    }
+    const hrPrevEl = document.getElementById('hr-prev');
+    if (hrPrevEl) hrPrevEl.textContent = Math.round(prev.average_heartrate);
+    // EF
     const ef = r => (r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
     const efCurr=ef(curr), efPrev=ef(prev), efDiff=(efCurr-efPrev).toFixed(2);
     const efEl = document.getElementById('pace-curr-row');
-    efEl.textContent = 'EF '+efCurr+(efDiff>0?' ↑ +'+efDiff:efDiff<0?' ↓ '+efDiff:'');
-    efEl.style.color = efDiff>0 ? 'var(--green)' : efDiff<0 ? 'var(--red)' : 'var(--text)';
-    document.getElementById('pace-prev-row').textContent = 'Vorher EF '+efPrev;
+    if (efEl) { efEl.textContent='EF '+efCurr+(efDiff>0?' ↑ +'+efDiff:efDiff<0?' ↓ '+efDiff:''); efEl.style.color=efDiff>0?'var(--green)':efDiff<0?'var(--red)':'var(--text)'; }
+    const efPrevEl = document.getElementById('pace-prev-row');
+    if (efPrevEl) efPrevEl.textContent='Vorher EF '+efPrev;
+
+    // Grundlagen-Kachel: Trend-Pfeil + Sparkline
+    const last5 = _easyRuns.slice(-5);
+    const hrFirst = last5[0].average_heartrate;
+    const hrLast = last5[last5.length-1].average_heartrate;
+    const improving = hrLast < hrFirst;
+    const stable = Math.abs(hrLast-hrFirst) < 2;
+    const arrow = document.getElementById('grundlage-trend-arrow');
+    const trendText = document.getElementById('grundlage-trend-text');
+    const trendSub = document.getElementById('grundlage-trend-sub');
+    if (arrow && trendText && trendSub) {
+      if (stable) {
+        arrow.textContent = '→'; arrow.style.color = 'var(--text2)';
+        trendText.textContent = 'Stabil'; trendText.style.color = 'var(--text2)';
+      } else if (improving) {
+        arrow.textContent = '↘'; arrow.style.color = 'var(--green)';
+        trendText.textContent = 'Verbessert'; trendText.style.color = 'var(--green)';
+      } else {
+        arrow.textContent = '↗'; arrow.style.color = 'var(--red)';
+        trendText.textContent = 'Steigt'; trendText.style.color = 'var(--red)';
+      }
+      trendSub.textContent = 'Ø HR: '+Math.round(hrLast)+' bpm (letzte Easy Runs)';
+    }
+    // Sparkline SVG
+    const svg = document.getElementById('grundlage-sparkline');
+    if (svg && last5.length >= 2) {
+      const hrs = last5.map(r=>r.average_heartrate);
+      const minHR = Math.min(...hrs)-2, maxHR = Math.max(...hrs)+2;
+      const pts = hrs.map((h,i) => {
+        const x = i/(hrs.length-1)*78+1;
+        const y = 28 - (h-minHR)/(maxHR-minHR)*26;
+        return x+','+y;
+      });
+      const col = improving ? '#30D158' : stable ? '#AEAEB2' : '#FF453A';
+      svg.innerHTML = '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+        + pts.map((p,i) => '<circle cx="'+p.split(',')[0]+'" cy="'+p.split(',')[1]+'" r="2" fill="'+col+'"/>').join('');
+    }
   }
 
   // Status Bar
@@ -915,11 +966,17 @@ function showHRmaxSettings() {
     +'Optional kannst du deine maximale Herzfrequenz auch manuell anpassen.'
     +'</div>'
     +'<div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px;">'
-    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Manuell anpassen</div>'
-    +'<div style="display:flex;gap:8px;align-items:center;">'
-    +'<input id="hrmax-input" type="number" min="150" max="230" value="'+current+'" '
-    +'style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:16px;font-family:inherit;">'
-    +'<span style="font-size:13px;color:var(--text2);">bpm</span>'
+    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Manuell anpassen</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+    +'<span style="font-size:13px;color:var(--text2);">Maximale HR</span>'
+    +'<span style="font-size:22px;font-weight:800;color:var(--text);" id="hrmax-slider-val">'+current+'</span>'
+    +'</div>'
+    +'<input id="hrmax-input" type="range" min="150" max="230" value="'+current+'" '
+    +'style="width:100%;accent-color:var(--orange);cursor:pointer;" '
+    +'oninput="document.getElementById(\'hrmax-slider-val\').textContent=this.value">'
+    +'<div style="display:flex;justify-content:space-between;margin-top:4px;">'
+    +'<span style="font-size:9px;color:var(--text3);">150</span>'
+    +'<span style="font-size:9px;color:var(--text3);">230</span>'
     +'</div></div>'
     +'<div style="display:flex;gap:8px;">'
     +'<button onclick="saveHRmax()" style="flex:1;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Speichern</button>'
