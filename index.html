@@ -6,12 +6,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Trainingsstand">
+<meta name="apple-mobile-web-app-title" content="Alldure">
 <meta name="theme-color" content="#1C1C1E">
 <link rel="apple-touch-icon" href="training_icon.png">
 <link rel="icon" type="image/png" href="training_icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<title>Trainingsstand</title>
+<title>Alldure</title>
 <style>
 :root {
   --bg:#1C1C1E; --bg2:#2C2C2E; --bg3:#3A3A3C; --border:#48484A;
@@ -28,6 +28,40 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 }
 #login-screen { padding:40px 24px; text-align:center; }
 #app { display:none; padding-bottom:80px; }
+
+/* ── Bottom Navigation ── */
+.nav-bar {
+  position:fixed; bottom:0; left:0; right:0; z-index:400;
+  background:rgba(28,28,30,0.95); backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-around;
+  padding:8px 0 max(8px,env(safe-area-inset-bottom));
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-bar.collapsed {
+  width:52px; right:auto; left:16px; bottom:16px;
+  border-radius:26px; border:1px solid var(--border);
+  padding:12px; justify-content:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+.nav-bar.collapsed .nav-item:not(.nav-item-active) { display:none; }
+.nav-bar.collapsed .nav-item-active { opacity:1; }
+.nav-item {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  cursor:pointer; padding:4px 12px; border-radius:12px;
+  transition:opacity .2s;
+  border:none; background:none; font-family:inherit;
+}
+.nav-item svg { transition:transform .2s; }
+.nav-item.nav-item-active svg { transform:scale(1.1); }
+.nav-label { font-size:9px; font-weight:600; color:var(--text3); letter-spacing:.03em; }
+.nav-item.nav-item-active .nav-label { color:var(--orange); }
+.nav-icon { color:var(--text3); }
+.nav-item.nav-item-active .nav-icon { color:var(--orange); }
+
+/* ── Tab Screens ── */
+.tab-screen { display:none; }
+.tab-screen.active { display:block; }
 #login-screen h1 { font-size:42px; font-weight:800; margin-bottom:12px; }
 #login-screen p { font-size:15px; color:var(--text2); margin-bottom:40px; }
 .strava-btn {
@@ -183,13 +217,15 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="spinner" id="ptr-spinner" style="display:none;width:14px;height:14px;border-width:2px;"></div>
     <span id="ptr-text"></span>
   </div>
+
+  <!-- ── TAB: START ── -->
+  <div class="tab-screen active" id="tab-start">
   <div class="wrap">
     <div class="app-header">
-      <div class="app-title">TRAININGS<span>STAND.</span></div>
+      <div class="app-title">ALL<span>DURE.</span></div>
       <button class="logout-btn" onclick="logout()">Abmelden</button>
     </div>
     <div class="divider"></div>
-
     <div id="sortable-cards">
     <div class="sort-card" data-id="status">
     <div class="status-bar">
@@ -463,15 +499,190 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     </div><!-- end sortable-cards -->
     <footer>Strava Live · <span id="last-updated">–</span></footer>
   </div>
+  </div><!-- end tab-start -->
+
+  <!-- ── TAB: WOCHENPLAN ── -->
+  <div class="tab-screen" id="tab-wochenplan">
+  <div class="wrap">
+    <div class="app-header">
+      <div class="app-title">ALL<span>DURE.</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="card" style="margin-bottom:10px;">
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Wochenplan</div>
+        <div class="week-grid" id="week-grid-2">
+          <div class="day" id="day2-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Kraft</div></div>
+          <div class="day" id="day2-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
+          <div class="day run-day" id="day2-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
+          <div class="day" id="day2-4"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
+          <div class="day run-day" id="day2-5"><div class="d-label">FR</div><div class="d-name">Easy</div><div class="d-sub">8–10km</div></div>
+          <div class="day rest" id="day2-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
+          <div class="day long" id="day2-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">12–16km</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:10px;">
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Trainingseinheiten</div>
+        <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">🏃 Mittwoch · Tempolauf</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;">5–6 km bei Z4 (159–179 bpm). Intervalle oder gleichmäßiges Tempo. Gibt den Intensitätsreiz für die Woche.</div>
+        </div>
+        <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">🚶 Freitag · Easy Run</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;">8–10 km locker bei Z2 (119–139 bpm). Aktive Erholung nach Tempo, Vorbereitung für Long Run.</div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:4px;">🏆 Sonntag · Long Run</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;">12–16 km locker bei Z2–Z3 (bis 159 bpm). Die wichtigste Einheit für die Ausdauerentwicklung.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div><!-- end tab-wochenplan -->
+
+  <!-- ── TAB: ZIELE ── -->
+  <div class="tab-screen" id="tab-ziele">
+  <div class="wrap">
+    <div class="app-header">
+      <div class="app-title">ALL<span>DURE.</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="card" style="overflow:visible;margin-bottom:10px;">
+      <div style="padding:12px 14px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Ziele</div>
+          <button onclick="showAddZielModal()" style="background:none;border:none;color:var(--orange);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;">+</button>
+        </div>
+      </div>
+      <div class="steps" id="ziele-steps-2" style="border-radius:0 0 14px 14px;">
+        <div class="step tappable" onclick="showFixedZielModal(0)">
+          <div class="step-num">1</div>
+          <div style="flex:1"><div class="step-title">Grundlagenausdauer</div><div class="step-sub" id="step1-sub-2">HR bei Easy Runs &lt;135 bpm</div></div>
+          <div style="color:var(--text3);font-size:16px;">›</div>
+        </div>
+        <div class="step tappable" onclick="showFixedZielModal(1)">
+          <div class="step-num">2</div>
+          <div style="flex:1"><div class="step-title">Long Run</div><div class="step-sub">Alle 2 Wochen · 12–16 km</div></div>
+          <div style="color:var(--text3);font-size:16px;">›</div>
+        </div>
+        <div class="step tappable" onclick="showFixedZielModal(2)">
+          <div class="step-num">3</div>
+          <div style="flex:1"><div class="step-title">25 km/Woche</div><div class="step-sub" id="step3-sub-2">Wochenvolumen aufbauen</div></div>
+          <div style="color:var(--text3);font-size:16px;">›</div>
+        </div>
+        <div class="step tappable" onclick="showZielModal()" style="background:var(--orange);border-radius:0 0 14px 14px;">
+          <div class="step-num" style="color:rgba(255,255,255,.7);">4</div>
+          <div style="flex:1"><div class="step-title" style="color:#fff;">Halbmarathon offiziell</div><div class="step-sub" style="color:rgba(255,255,255,.7);">Ziel 2:20–2:30h</div></div>
+          <div style="color:#fff;font-size:18px;">›</div>
+        </div>
+        <div id="custom-ziele-2"></div>
+      </div>
+    </div>
+  </div>
+  </div><!-- end tab-ziele -->
+
+  <!-- ── TAB: STATISTIKEN ── -->
+  <div class="tab-screen" id="tab-stats">
+  <div class="wrap">
+    <div class="app-header">
+      <div class="app-title">ALL<span>DURE.</span></div>
+    </div>
+    <div class="divider"></div>
+    <!-- Bestzeiten -->
+    <div class="card tappable" onclick="showPRModal()" style="margin-bottom:10px;">
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Bestzeiten ♛</div>
+        <div style="display:flex;gap:0;">
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">5 km</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;line-height:1;" id="pr-5k-time-s">–</div>
+            <div style="font-size:10px;color:var(--text2);margin-top:3px;" id="pr-5k-pace-s">–</div>
+          </div>
+          <div style="width:1px;background:var(--border);margin:0 16px;flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Halbmarathon</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;line-height:1;" id="pr-hm-s">–</div>
+            <div style="font-size:10px;color:var(--text2);margin-top:3px;" id="pr-hm-pace-s">–</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Grundlagenausdauer -->
+    <div class="card tappable" onclick="showGrundlageModal()" style="margin-bottom:10px;">
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Grundlagenausdauer</div>
+        <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+          <div style="font-size:28px;font-weight:800;color:#fff;" id="grundlage-hr-now-s">–</div>
+          <div style="font-size:12px;color:var(--text2);">bpm</div>
+          <div style="font-size:12px;font-weight:600;" id="grundlage-trend-inline-s">–</div>
+        </div>
+        <div style="background:var(--bg3);height:8px;border-radius:4px;overflow:hidden;">
+          <div id="grundlage-hr-bar-s" style="height:8px;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange));width:0%;transition:width .8s ease;"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Herzfrequenzzonen -->
+    <div class="card tappable" onclick="showZonenModal()" style="margin-bottom:10px;">
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Herzfrequenzzonen</div>
+        <div style="display:flex;gap:3px;height:10px;border-radius:5px;overflow:hidden;">
+          <div style="flex:1;background:#4FC3F7;"></div>
+          <div style="flex:1;background:#30D158;"></div>
+          <div style="flex:1;background:#FFD60A;"></div>
+          <div style="flex:1;background:#FF6B35;"></div>
+          <div style="flex:1;background:#FF453A;"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Letzte Läufe -->
+    <div class="card tappable" onclick="showAllRunsModal()" style="margin-bottom:10px;">
+      <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Letzte Läufe</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;" id="runs-preview-s">– Läufe</div>
+        </div>
+        <div style="font-size:24px;color:var(--orange);">→</div>
+      </div>
+    </div>
+    <!-- Laufanalyse -->
+    <div class="card tappable" onclick="openAnalyse()" style="margin-bottom:10px;">
+      <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Laufanalyse</div>
+          <div style="font-size:13px;color:var(--text2);">KI-Analyse deines letzten Laufs</div>
+        </div>
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--orange)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+    </div>
+  </div>
+  </div><!-- end tab-stats -->
+
+  <div id="sort-edit-bar" onclick="exitSortMode()">✓ Fertig</div>
+  <button id="claude-fab" style="display:none;"></button>
+
+  <!-- ── Bottom Navigation ── -->
+  <nav class="nav-bar" id="nav-bar">
+    <button class="nav-item nav-item-active" onclick="switchTab('start')" id="nav-start">
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">Start</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('wochenplan')" id="nav-wochenplan">
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="nav-label">Plan</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('ziele')" id="nav-ziele">
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      <span class="nav-label">Ziele</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('stats')" id="nav-stats">
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span class="nav-label">Statistiken</span>
+    </button>
+  </nav>
+
 </div>
-
-<div id="sort-edit-bar" onclick="exitSortMode()">✓ Fertig</div>
-
-<button class="claude-fab" id="claude-fab" title="Lauf analysieren">
-  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-  </svg>
-</button>
 
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
@@ -1407,6 +1618,95 @@ function saveOrder() {
   localStorage.setItem('card_order', JSON.stringify(order));
 }
 
+// ── Tab Navigation ──
+let _activeTab = 'start';
+
+function switchTab(tab) {
+  _activeTab = tab;
+  document.querySelectorAll('.tab-screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('nav-item-active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('nav-'+tab).classList.add('nav-item-active');
+  // Nav wieder ausklappen beim Tab-Wechsel
+  const nav = document.getElementById('nav-bar');
+  nav.classList.remove('collapsed');
+  // Stats Tab updaten
+  if (tab === 'stats') updateStatsTab();
+  if (tab === 'ziele') updateZieleTab();
+  window.scrollTo(0,0);
+}
+
+function updateStatsTab() {
+  if (!_runs.length) return;
+  // Bestzeiten
+  if (window._pr5k) {
+    document.getElementById('pr-5k-time-s').innerHTML = fmtTime(window._pr5k.moving_time)+' <span class="pr-crown">♛</span>';
+    document.getElementById('pr-5k-pace-s').textContent = fmtPace(window._pr5k.distance,window._pr5k.moving_time)+'/km';
+  }
+  if (window._prHM) {
+    document.getElementById('pr-hm-s').innerHTML = fmtTime(window._prHM.moving_time)+' <span class="pr-crown">♛</span>';
+    document.getElementById('pr-hm-pace-s').textContent = fmtPace(window._prHM.distance,window._prHM.moving_time)+'/km';
+  }
+  // Grundlage
+  const hrEl = document.getElementById('grundlage-hr-now-s');
+  const trendEl = document.getElementById('grundlage-trend-inline-s');
+  const barEl = document.getElementById('grundlage-hr-bar-s');
+  if (_easyRuns.length >= 2) {
+    const curr = _easyRuns[_easyRuns.length-1];
+    const prev = _easyRuns[_easyRuns.length-2];
+    const hrCurr = Math.round(curr.average_heartrate);
+    const diff = Math.round(prev.average_heartrate) - hrCurr;
+    const col = diff>0?'var(--green)':diff<0?'var(--red)':'var(--text2)';
+    if (hrEl) hrEl.textContent = hrCurr;
+    if (trendEl) { trendEl.style.color=col; trendEl.textContent=diff>0?'↓ −'+diff+' bpm':diff<0?'↑ +'+Math.abs(diff)+' bpm':'→ stabil'; }
+    const pct = Math.min(100,Math.max(0,(160-hrCurr)/(160-135)*100));
+    if (barEl) barEl.style.width = pct+'%';
+  }
+  // Runs Preview
+  const rp = document.getElementById('runs-preview-s');
+  if (rp) rp.textContent = _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local);
+}
+
+function updateZieleTab() {
+  // Step-Subs synchron halten
+  const s1 = document.getElementById('step1-sub');
+  const s1b = document.getElementById('step1-sub-2');
+  if (s1 && s1b) s1b.textContent = s1.textContent;
+  const s3 = document.getElementById('step3-sub');
+  const s3b = document.getElementById('step3-sub-2');
+  if (s3 && s3b) s3b.textContent = s3.textContent;
+  // Custom Ziele synchron
+  const cz = document.getElementById('custom-ziele');
+  const cz2 = document.getElementById('custom-ziele-2');
+  if (cz && cz2) cz2.innerHTML = cz.innerHTML;
+  // Wochenplan Tag markieren
+  const today = new Date().getDay();
+  [0,1,2,3,4,5,6].forEach(d => {
+    const el = document.getElementById('day2-'+d);
+    if (el) { el.classList.remove('today'); if(d===today) el.classList.add('today'); }
+  });
+}
+
+// ── Nav Collapse beim Scrollen ──
+function initNavCollapse() {
+  const nav = document.getElementById('nav-bar');
+  let lastY = 0, ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      if (y > lastY && y > 60) {
+        nav.classList.add('collapsed');
+      } else if (y < lastY) {
+        nav.classList.remove('collapsed');
+      }
+      lastY = y;
+      ticking = false;
+    });
+  }, {passive:true});
+}
+
 // ── Init ──
 async function init() {
   const params=new URLSearchParams(window.location.search);
@@ -1429,9 +1729,12 @@ async function init() {
     renderDashboard(activities);
     renderCustomZiele();
     initSortable();
+    initNavCollapse();
     // Heutiger Tag
     const todayEl=document.getElementById('day-'+new Date().getDay());
     if(todayEl) todayEl.classList.add('today');
+    const todayEl2=document.getElementById('day2-'+new Date().getDay());
+    if(todayEl2) todayEl2.classList.add('today');
     initSwipe();
     // FAB
     const fab=document.getElementById('claude-fab');
