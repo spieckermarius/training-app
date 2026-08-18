@@ -386,25 +386,25 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         </div>
       </div>
       <div class="steps" id="ziele-steps" style="border-radius:0 0 14px 14px;">
-        <div class="step">
+        <div class="step tappable" onclick="showFixedZielModal(0)">
           <div class="step-num">1</div>
-          <div style="flex:1"><div class="step-title">Grundlagenausdauer verbessern</div><div class="step-sub" id="step1-sub">HR bei Easy Runs &lt;135 bpm</div></div>
-          <div class="step-status" style="color:var(--orange)">LÄUFT</div>
+          <div style="flex:1"><div class="step-title">Grundlagenausdauer</div><div class="step-sub" id="step1-sub">HR bei Easy Runs &lt;135 bpm</div></div>
+          <div style="color:var(--text3);font-size:16px;">›</div>
         </div>
-        <div class="step">
+        <div class="step tappable" onclick="showFixedZielModal(1)">
           <div class="step-num">2</div>
-          <div style="flex:1"><div class="step-title">Long Run · alle 2 Wochen</div><div class="step-sub">Ziel 12–16 km</div></div>
-          <div class="step-status" style="color:var(--green)">AKTIV</div>
+          <div style="flex:1"><div class="step-title">Long Run</div><div class="step-sub">Alle 2 Wochen · 12–16 km</div></div>
+          <div style="color:var(--text3);font-size:16px;">›</div>
         </div>
-        <div class="step amber">
+        <div class="step tappable" onclick="showFixedZielModal(2)">
           <div class="step-num">3</div>
-          <div style="flex:1"><div class="step-title">25 km/Woche stabil</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
-          <div class="step-status" style="color:var(--orange)">AUFBAU</div>
+          <div style="flex:1"><div class="step-title">25 km/Woche</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
+          <div style="color:var(--text3);font-size:16px;">›</div>
         </div>
-        <div class="step tappable" onclick="showZielModal()">
-          <div class="step-num">4</div>
-          <div style="flex:1"><div class="step-title">Halbmarathon offiziell</div><div class="step-sub">Ziel 2:20–2:30h</div></div>
-          <div class="step-status" style="color:#fff">ZIEL →</div>
+        <div class="step tappable" onclick="showZielModal()" style="background:var(--orange);border-radius:0 0 14px 14px;">
+          <div class="step-num" style="color:rgba(255,255,255,.7);">4</div>
+          <div style="flex:1"><div class="step-title" style="color:#fff;">Halbmarathon offiziell</div><div class="step-sub" style="color:rgba(255,255,255,.7);">Ziel 2:20–2:30h</div></div>
+          <div style="color:#fff;font-size:18px;">›</div>
         </div>
         <div id="custom-ziele"></div>
       </div>
@@ -851,36 +851,67 @@ function renderCustomZiele() {
   const now = new Date();
   container.innerHTML = ziele.map((z, i) => {
     const date = new Date(z.datum);
-    const diff = date - now;
-    const days = Math.ceil(diff / 86400000);
+    const days = Math.ceil((date - now) / 86400000);
     const months = Math.floor(days / 30);
     const restDays = days % 30;
-    let countdown = '';
-    if (days < 0) countdown = 'Vergangen';
-    else if (days === 0) countdown = 'Heute!';
-    else if (months > 0) countdown = months+'M '+restDays+'T';
-    else countdown = days+' Tage';
-    const typeEmoji = z.typ==='Marathon'?'🏅':z.typ==='Halbmarathon'?'🏃':z.typ==='10km'?'⚡':z.typ==='5km'?'💨':'🎯';
-    return '<div class="step tappable" onclick="deleteZiel('+i+')" style="border-top:1px solid var(--border);">'
-      +'<div class="step-num" style="font-size:14px;">'+typeEmoji+'</div>'
+    const countdown = days < 0 ? 'Vergangen' : days === 0 ? 'Heute!' : months > 0 ? months+'M '+restDays+'T' : days+' Tage';
+    const isRace = ['Marathon','Halbmarathon','10km','5km','Ironman'].includes(z.typ);
+    const emoji = z.typ==='Marathon'?'🏅':z.typ==='Halbmarathon'?'🏃':z.typ==='10km'?'⚡':z.typ==='5km'?'💨':z.typ==='Ironman'?'🦺':'🎯';
+    if (isRace) {
+      // Orange-Overlay für Wettkampf-Ziele
+      return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="border-top:1px solid var(--border);background:var(--orange);border-radius:0 0 14px 14px;">'
+        +'<div class="step-num" style="color:rgba(255,255,255,.7);font-size:14px;">'+emoji+'</div>'
+        +'<div style="flex:1">'
+        +'<div class="step-title" style="color:#fff;">'+z.typ+' · '+z.name+'</div>'
+        +'<div class="step-sub" style="color:rgba(255,255,255,.7);">'+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+(z.zielzeit?' · Ziel '+z.zielzeit:'')+'</div>'
+        +'</div>'
+        +'<div style="color:#fff;font-weight:700;font-size:11px;text-align:right;">'+countdown+'</div>'
+        +'</div>';
+    }
+    return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="border-top:1px solid var(--border);">'
+      +'<div class="step-num" style="font-size:14px;">'+emoji+'</div>'
       +'<div style="flex:1">'
       +'<div class="step-title">'+z.typ+' · '+z.name+'</div>'
       +'<div class="step-sub">'+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+(z.zielzeit?' · Ziel '+z.zielzeit:'')+'</div>'
       +'</div>'
-      +'<div class="step-status" style="color:var(--orange);font-size:11px;">'+countdown+'</div>'
+      +'<div style="color:var(--orange);font-weight:700;font-size:11px;">'+countdown+'</div>'
       +'</div>';
   }).join('');
 }
 
-function deleteZiel(idx) {
+function showCustomZielModal(idx) {
   const ziele = JSON.parse(localStorage.getItem('custom_ziele') || '[]');
-  if (!confirm) { ziele.splice(idx,1); localStorage.setItem('custom_ziele',JSON.stringify(ziele)); renderCustomZiele(); return; }
-  openModal('Ziel löschen?',
-    '<div style="padding:8px 0;color:var(--text2);font-size:14px;margin-bottom:16px;">Ziel "'+ziele[idx].name+'" wirklich löschen?</div>'
-    +'<div style="display:flex;gap:8px;">'
+  const z = ziele[idx]; if (!z) return;
+  const date = new Date(z.datum);
+  const days = Math.ceil((date - new Date()) / 86400000);
+  const months = Math.floor(days / 30);
+  const countdown = days < 0 ? 'Vergangen' : days === 0 ? 'Heute!' : months > 0 ? months+' Monate · '+days+' Tage' : days+' Tage';
+  const isRace = ['Marathon','Halbmarathon','10km','5km','Ironman'].includes(z.typ);
+  let html = '';
+  if (isRace) {
+    html += '<div style="background:var(--orange);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">'
+      +'<div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">'+z.typ+'</div>'
+      +(z.zielzeit?'<div style="font-size:32px;font-weight:800;color:#fff">'+z.zielzeit+'</div>':'')
+      +'<div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px">'+z.name+'</div>'
+      +'</div>';
+  }
+  html += '<div class="modal-stat"><span class="modal-stat-label">Datum</span><span class="modal-stat-value">'+date.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+'</span></div>'
+    +'<div class="modal-stat"><span class="modal-stat-label">Noch bis dahin</span><span class="modal-stat-value" style="color:var(--orange)">'+countdown+'</span></div>'
+    +(z.zielzeit?'<div class="modal-stat"><span class="modal-stat-label">Zielzeit</span><span class="modal-stat-value">'+z.zielzeit+'</span></div>':'')
+    +'<div style="display:flex;gap:8px;margin-top:20px;">'
+    +'<button onclick="editZiel('+idx+')" style="flex:1;background:var(--bg3);color:var(--text);border:none;border-radius:10px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;">Bearbeiten</button>'
     +'<button onclick="doDeleteZiel('+idx+')" style="flex:1;background:var(--red);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Löschen</button>'
-    +'<button onclick="closeModal()" style="background:var(--bg3);color:var(--text2);border:none;border-radius:10px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;">Abbrechen</button>'
-    +'</div>');
+    +'</div>';
+  openModal(z.name, html);
+}
+
+function editZiel(idx) {
+  closeModal();
+  const ziele = JSON.parse(localStorage.getItem('custom_ziele') || '[]');
+  const z = ziele[idx];
+  setTimeout(() => {
+    showAddZielModal(idx, z);
+  }, 300);
 }
 
 function doDeleteZiel(idx) {
@@ -891,37 +922,56 @@ function doDeleteZiel(idx) {
   renderCustomZiele();
 }
 
-function showAddZielModal() {
+function showFixedZielModal(idx) {
+  const fixed = [
+    {title:'Grundlagenausdauer', desc:'HR bei Easy Runs dauerhaft unter 135 bpm', detail:'Ziel ist es, die Herzfrequenz bei lockeren Läufen im Pace-Fenster 6:00–7:30/km auf unter 135 bpm zu senken. Das zeigt echte Grundlagenentwicklung.'},
+    {title:'Long Run', desc:'Alle 2 Wochen ein langer Lauf', detail:'12–16 km locker, maximal 145 bpm. Der Long Run ist die wichtigste Einheit für die Ausdauerentwicklung Richtung Halbmarathon.'},
+    {title:'25 km/Woche', desc:'Stabiles Wochenvolumen aufbauen', detail:'3 Läufe pro Woche (Mi Tempo, Fr Easy, So Long Run) ergeben 25 km Minimum. Das ist die Basis für den Halbmarathon im Frühjahr 2027.'},
+  ];
+  const z = fixed[idx];
+  openModal(z.title,
+    '<div style="color:var(--text2);font-size:14px;margin-bottom:16px;line-height:1.6">'+z.detail+'</div>'
+    +'<div class="modal-stat"><span class="modal-stat-label">Aktueller Status</span><span class="modal-stat-value" id="fixed-status-'+idx+'">–</span></div>'
+  );
+}
+
+function showAddZielModal(editIdx, existing) {
+  const isEdit = editIdx !== undefined;
+  const z = existing || {};
   const html =
     '<div style="margin-bottom:14px;">'
     +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Art des Wettkampfs</div>'
     +'<select id="ziel-typ" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;">'
-    +'<option>Marathon</option><option>Halbmarathon</option><option>10km</option><option>5km</option><option>Ironman</option><option>Anderes</option>'
+    +['Marathon','Halbmarathon','10km','5km','Ironman','Anderes'].map(t=>'<option'+(z.typ===t?' selected':'')+'>'+t+'</option>').join('')
     +'</select></div>'
     +'<div style="margin-bottom:14px;">'
     +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Name des Events</div>'
-    +'<input id="ziel-name" type="text" placeholder="z.B. Marathon Lüdinghausen" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;">'
+    +'<input id="ziel-name" type="text" placeholder="z.B. Marathon Lüdinghausen" value="'+(z.name||'')+'" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;">'
     +'</div>'
     +'<div style="margin-bottom:14px;">'
     +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Datum</div>'
-    +'<input id="ziel-datum" type="date" value="2027-04-18" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;">'
+    +'<input id="ziel-datum" type="date" value="'+(z.datum||'2027-04-18')+'" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;">'
     +'</div>'
     +'<div style="margin-bottom:16px;">'
     +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Zielzeit (optional)</div>'
-    +'<input id="ziel-zeit" type="text" placeholder="z.B. 4:30h" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;">'
+    +'<input id="ziel-zeit" type="text" placeholder="z.B. 4:30h" value="'+(z.zielzeit||'')+'" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;">'
     +'</div>'
-    +'<button onclick="saveZiel()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">Ziel speichern</button>';
-  openModal('Ziel hinzufügen', html);
+    +'<button onclick="saveZiel('+(isEdit?editIdx:'undefined')+')" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">'+(isEdit?'Speichern':'Ziel hinzufügen')+'</button>';
+  openModal(isEdit?'Ziel bearbeiten':'Ziel hinzufügen', html);
 }
 
-function saveZiel() {
+function saveZiel(editIdx) {
   const typ = document.getElementById('ziel-typ').value;
   const name = document.getElementById('ziel-name').value.trim();
   const datum = document.getElementById('ziel-datum').value;
   const zielzeit = document.getElementById('ziel-zeit').value.trim();
   if (!name || !datum) return;
   const ziele = JSON.parse(localStorage.getItem('custom_ziele') || '[]');
-  ziele.push({typ, name, datum, zielzeit});
+  if (editIdx !== undefined && editIdx >= 0) {
+    ziele[editIdx] = {typ, name, datum, zielzeit};
+  } else {
+    ziele.push({typ, name, datum, zielzeit});
+  }
   localStorage.setItem('custom_ziele', JSON.stringify(ziele));
   closeModal();
   renderCustomZiele();
@@ -929,21 +979,20 @@ function saveZiel() {
 
 function showZielModal() {
   const prHM = window._prHM;
-  const hmTime = prHM ? fmtTime(prHM.moving_time) : '2:46 h';
-  const hmPace = prHM ? fmtPace(prHM.distance, prHM.moving_time)+'/km' : '7:49/km';
+  const hmTime = prHM ? fmtTime(prHM.moving_time) : '2:31 h';
+  const hmPace = prHM ? fmtPace(prHM.distance, prHM.moving_time)+'/km' : '7:09/km';
   const html =
     '<div style="background:var(--orange);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Dein Ziel</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Halbmarathon · Dein Ziel</div>'
     +'<div style="font-size:32px;font-weight:800;color:#fff">2:20–2:30h</div>'
     +'<div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px">Offizieller Halbmarathon · 21,1 km</div>'
     +'</div>'
     +'<div class="modal-stat"><span class="modal-stat-label">Aktueller PR</span><span class="modal-stat-value">'+hmTime+'</span></div>'
     +'<div class="modal-stat"><span class="modal-stat-label">Aktuelle Pace</span><span class="modal-stat-value">'+hmPace+'</span></div>'
     +'<div class="modal-stat"><span class="modal-stat-label">Ziel-Pace</span><span class="modal-stat-value">6:38–7:06/km</span></div>'
-    +'<div class="modal-stat"><span class="modal-stat-label">Noch zu verbessern</span><span class="modal-stat-value" style="color:var(--orange)">~16–26 min</span></div>'
+    +'<div class="modal-stat"><span class="modal-stat-label">Noch zu verbessern</span><span class="modal-stat-value" style="color:var(--orange)">~1–11 min</span></div>'
     +'<div style="background:var(--bg3);border-radius:10px;padding:14px;margin-top:16px;font-size:12px;color:var(--text2);line-height:1.6">'
-    +'💡 Mit konsequenten 3 Läufen/Woche und steigendem Long Run bist du auf einem guten Weg. '
-    +'Dein VO2max von ~43 reicht für 2:20–2:30h — der Schlüssel ist jetzt Grundlagenausdauer und Konsistenz.'
+    +'💡 Dein letzter HM war 2:31h — du bist bereits am unteren Rand deines Ziels. Mit konsequentem Training sind 2:20h bis Frühjahr 2027 absolut realistisch.'
     +'</div>';
   openModal('Halbmarathon · Ziel', html);
 }
