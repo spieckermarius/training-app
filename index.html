@@ -143,6 +143,7 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .pill-pr { background:var(--yellow); color:#000; }
 .pill-best { background:rgba(48,209,88,.15); color:var(--green); }
 .steps { background:var(--bg2); border-radius:14px; overflow:hidden; margin-bottom:10px; }
+.steps .step:last-child { border-radius:0 0 14px 14px; }
 .step { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--border); }
 .step:last-child { border-bottom:none; background:var(--orange); border-radius:0 0 14px 14px; }
 .step.amber { background:rgba(255,107,53,.08); }
@@ -431,7 +432,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <button onclick="showAddZielModal()" style="background:none;border:none;color:var(--orange);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;">+</button>
         </div>
       </div>
-      <div class="steps" id="ziele-steps" style="border-radius:0 0 14px 14px;">
+      <div class="steps" id="ziele-steps">
         <div class="step tappable" onclick="showFixedZielModal(0)">
           <div class="step-num">1</div>
           <div style="flex:1"><div class="step-title">Grundlagenausdauer</div><div class="step-sub" id="step1-sub">HR bei Easy Runs &lt;135 bpm</div></div>
@@ -447,7 +448,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div style="flex:1"><div class="step-title">25 km/Woche</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
           <div style="color:var(--text3);font-size:16px;">›</div>
         </div>
-        <div class="step tappable" onclick="showZielModal()" style="background:var(--orange);border-radius:0 0 14px 14px;">
+        <div class="step tappable" onclick="showZielModal()" style="background:var(--orange);">
           <div class="step-num" style="color:rgba(255,255,255,.7);">4</div>
           <div style="flex:1"><div class="step-title" style="color:#fff;">Halbmarathon offiziell</div><div class="step-sub" style="color:rgba(255,255,255,.7);">Ziel 2:20–2:30h</div></div>
           <div style="color:#fff;font-size:18px;">›</div>
@@ -566,7 +567,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <button onclick="showAddZielModal()" style="background:none;border:none;color:var(--orange);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;">+</button>
         </div>
       </div>
-      <div class="steps" id="ziele-steps-2" style="border-radius:0 0 14px 14px;">
+      <div class="steps" id="ziele-steps-2">
         <div class="step tappable" onclick="showFixedZielModal(0)">
           <div class="step-num">1</div>
           <div style="flex:1"><div class="step-title">Grundlagenausdauer</div><div class="step-sub" id="step1-sub-2">HR bei Easy Runs &lt;135 bpm</div></div>
@@ -582,7 +583,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div style="flex:1"><div class="step-title">25 km/Woche</div><div class="step-sub" id="step3-sub-2">Wochenvolumen aufbauen</div></div>
           <div style="color:var(--text3);font-size:16px;">›</div>
         </div>
-        <div class="step tappable" onclick="showZielModal()" style="background:var(--orange);border-radius:0 0 14px 14px;">
+        <div class="step tappable" onclick="showZielModal()" style="background:var(--orange);">
           <div class="step-num" style="color:rgba(255,255,255,.7);">4</div>
           <div style="flex:1"><div class="step-title" style="color:#fff;">Halbmarathon offiziell</div><div class="step-sub" style="color:rgba(255,255,255,.7);">Ziel 2:20–2:30h</div></div>
           <div style="color:#fff;font-size:18px;">›</div>
@@ -686,19 +687,19 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
   <!-- ── Bottom Navigation ── -->
   <nav class="nav-bar" id="nav-bar">
     <button class="nav-item nav-item-active" onclick="switchTab('start')" id="nav-start">
-      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg class="nav-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span class="nav-label">Start</span>
     </button>
     <button class="nav-item" onclick="switchTab('wochenplan')" id="nav-wochenplan">
-      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <svg class="nav-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span class="nav-label">Plan</span>
     </button>
     <button class="nav-item" onclick="switchTab('ziele')" id="nav-ziele">
-      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      <svg class="nav-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
       <span class="nav-label">Ziele</span>
     </button>
     <button class="nav-item" onclick="switchTab('stats')" id="nav-stats">
-      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <svg class="nav-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       <span class="nav-label">Statistiken</span>
     </button>
   </nav>
@@ -924,7 +925,7 @@ function renderDashboard(activities) {
     if (sub) {
       const pace = fmtPace(curr.distance, curr.moving_time);
       const trend = diff>0?'Verbessert':diff<0?'Gestiegen':'Stabil';
-      sub.textContent = pace+'/km · '+trend;
+      if (sub) sub.textContent = '';
     }
   }
 
@@ -1365,21 +1366,71 @@ function showGrundlageModal() {
 }
 
 function showWeekModal() {
-  const now=new Date(), curKW=isoWeek(now);
+  const now=new Date(), curKW=isoWeek(now), nm=now.getMonth(), ny=now.getFullYear();
+  // KW Daten
   const weekMap={};
   _runs.forEach(r=>{const k=isoWeek(r.start_date_local);weekMap[k]=(weekMap[k]||0)+r.distance/1000;});
-  // Immer die letzten 4 KW anzeigen (aktuelle + 3 davor), egal ob Daten
-  const kwKeys=[curKW-3, curKW-2, curKW-1, curKW];
-  let html='<div style="margin-bottom:16px"><div class="stat-label" style="margin-bottom:8px">KW-Trend</div><div id="modal-kw-bars"></div></div>';
-  html+='<div class="stat-label" style="margin-bottom:8px">Diese Woche · Läufe</div>';
-  _thisWeekRuns.forEach(r=>{
-    html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px">'
-      +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-      +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
-  });
-  if(!_thisWeekRuns.length) html+='<div style="padding:16px;text-align:center;color:var(--text3)">Noch keine Läufe</div>';
-  openModal('Diese Woche', html);
-  setTimeout(()=>renderHBars('modal-kw-bars', kwKeys.map(k=>({km:weekMap[k]||0,label:'KW'+k+(k===curKW?'↗':''),current:k===curKW}))),50);
+  const kwKeys=[curKW-3,curKW-2,curKW-1,curKW];
+  // Monat Daten
+  const mRuns=_runs.filter(r=>{const d=new Date(r.start_date_local);return d.getMonth()===nm&&d.getFullYear()===ny;})
+    .sort((a,b)=>new Date(b.start_date_local)-new Date(a.start_date_local));
+  const mKm=mRuns.reduce((s,r)=>s+r.distance/1000,0);
+  const mMap=window._mMap||{};
+  const mn_s=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const last4m=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
+  // Jahr Daten
+  const qMap=window._qMap||{1:0,2:0,3:0,4:0}, curQ=window._curQ||1;
+  const yRuns=_runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
+  const yKm=yRuns.reduce((s,r)=>s+r.distance/1000,0);
+
+  const tabs=['Woche','Monat','Jahr'];
+  let activeTab=0;
+
+  function renderTab(idx) {
+    const c=document.getElementById('vol-modal-content');
+    if(!c)return;
+    if(idx===0){
+      let h='<div id="modal-kw-bars" style="margin-bottom:16px;"></div>';
+      _thisWeekRuns.forEach(r=>{h+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
+        +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
+        +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';});
+      if(!_thisWeekRuns.length) h+='<div style="text-align:center;padding:16px;color:var(--text3)">Noch keine Läufe</div>';
+      c.innerHTML=h;
+      setTimeout(()=>renderHBars('modal-kw-bars',kwKeys.map(k=>({km:weekMap[k]||0,label:'KW'+k,current:k===curKW}))),50);
+    } else if(idx===1){
+      let h='<div id="modal-month-bars" style="margin-bottom:16px;"></div>';
+      h+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">'+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>';
+      mRuns.forEach(r=>{h+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
+        +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
+        +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';});
+      c.innerHTML=h;
+      setTimeout(()=>renderHBars('modal-month-bars',last4m.map(m=>({km:mMap[m]||0,label:mn_s[m],current:m===nm}))),50);
+    } else {
+      let h='<div id="modal-year-bars" style="margin-bottom:16px;"></div>';
+      h+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">'+Math.round(yKm)+' km · '+yRuns.length+' Läufe</div>';
+      [1,2,3,4].forEach(q=>{const qR=yRuns.filter(r=>Math.floor(new Date(r.start_date_local).getMonth()/3)+1===q);
+        if(qR.length) h+='<div class="modal-stat"><span class="modal-stat-label">Q'+q+(q===curQ?' · aktuell':'')+' · '+qR.length+' Läufe</span><span class="modal-stat-value">'+(qMap[q]||0).toFixed(0)+' km</span></div>';});
+      c.innerHTML=h;
+      setTimeout(()=>renderHBars('modal-year-bars',[1,2,3,4].map(q=>({km:qMap[q]||0,label:'Q'+q,current:q===curQ}))),50);
+    }
+    // Tab-Buttons updaten
+    tabs.forEach((_,i)=>{
+      const b=document.getElementById('vol-tab-'+i);
+      if(b){b.style.background=i===idx?'var(--orange)':'var(--bg3)';b.style.color=i===idx?'#fff':'var(--text2)';}
+    });
+  }
+
+  const tabBtns=tabs.map((_,i)=>'<button id="vol-tab-'+i+'" onclick="void(0)" style="flex:1;padding:8px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;background:'+(i===0?'var(--orange)':'var(--bg3)')+';color:'+(i===0?'#fff':'var(--text2)')+'">'+tabs[i]+'</button>').join('');
+  const html='<div style="display:flex;gap:6px;margin-bottom:16px;">'+tabBtns+'</div><div id="vol-modal-content"></div>';
+  openModal('Volumen', html);
+  // Tab-Klicks binden
+  setTimeout(()=>{
+    tabs.forEach((_,i)=>{
+      const b=document.getElementById('vol-tab-'+i);
+      if(b) b.onclick=()=>{activeTab=i;renderTab(i);};
+    });
+    renderTab(0);
+  },50);
 }
 
 function showMonthModal() {
@@ -1717,21 +1768,20 @@ function updateZieleTab() {
 // ── Nav Collapse beim Scrollen ──
 function initNavCollapse() {
   const nav = document.getElementById('nav-bar');
-  let lastY = 0, ticking = false;
+  let ticking = false;
+  const check = () => {
+    if (window.scrollY === 0) {
+      nav.classList.remove('collapsed');
+    } else {
+      nav.classList.add('collapsed');
+    }
+  };
   window.addEventListener('scroll', () => {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(() => {
-      const y = window.scrollY;
-      if (y > lastY && y > 60) {
-        nav.classList.add('collapsed');
-      } else if (y < lastY) {
-        nav.classList.remove('collapsed');
-      }
-      lastY = y;
-      ticking = false;
-    });
+    requestAnimationFrame(() => { check(); ticking = false; });
   }, {passive:true});
+  check();
 }
 
 // ── Init ──
