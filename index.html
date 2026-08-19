@@ -6,12 +6,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Alldure">
+<meta name="apple-mobile-web-app-title" content="Allindure">
 <meta name="theme-color" content="#1C1C1E">
 <link rel="apple-touch-icon" href="training_icon.png">
 <link rel="icon" type="image/png" href="training_icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<title>Alldure</title>
+<title>Allindure</title>
 <style>
 :root {
   --bg:#1C1C1E; --bg2:#2C2C2E; --bg3:#3A3A3C; --border:#48484A;
@@ -31,36 +31,48 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 
 /* ── Bottom Navigation ── */
 .nav-bar {
-  position:fixed; bottom:0; left:0; right:0; z-index:400;
-  background:rgba(28,28,30,0.95); backdrop-filter:blur(20px);
-  border-top:1px solid var(--border);
+  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+  z-index:400; width:calc(100% - 32px); max-width:480px;
+  background:rgba(28,28,30,0.85); backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:28px;
   display:flex; align-items:center; justify-content:space-around;
-  padding:8px 0 max(8px,env(safe-area-inset-bottom));
-  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  padding:10px 8px max(10px,env(safe-area-inset-bottom));
+  transition:width .4s cubic-bezier(.34,1.2,.64,1),
+             bottom .4s cubic-bezier(.34,1.2,.64,1),
+             left .4s cubic-bezier(.34,1.2,.64,1),
+             transform .4s cubic-bezier(.34,1.2,.64,1),
+             padding .4s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:0 8px 32px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.06) inset;
 }
 .nav-bar.collapsed {
-  width:52px; right:auto; left:16px; bottom:16px;
-  border-radius:26px; border:1px solid var(--border);
-  padding:12px; justify-content:center;
-  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  width:52px; left:24px; bottom:24px;
+  transform:translateX(0);
+  padding:14px; justify-content:center;
+  border-radius:26px;
 }
-.nav-bar.collapsed .nav-item:not(.nav-item-active) { display:none; }
+.nav-bar.collapsed .nav-item:not(.nav-item-active) {
+  width:0; overflow:hidden; padding:0; opacity:0;
+  transition:width .3s ease, opacity .2s ease;
+}
 .nav-bar.collapsed .nav-item-active { opacity:1; }
+.nav-bar.collapsed .nav-label { display:none; }
 .nav-item {
   display:flex; flex-direction:column; align-items:center; gap:3px;
-  cursor:pointer; padding:4px 12px; border-radius:12px;
-  transition:opacity .2s;
+  cursor:pointer; padding:4px 10px; border-radius:16px;
   border:none; background:none; font-family:inherit;
+  transition:all .25s ease; min-width:48px;
 }
-.nav-item svg { transition:transform .2s; }
-.nav-item.nav-item-active svg { transform:scale(1.1); }
-.nav-label { font-size:9px; font-weight:600; color:var(--text3); letter-spacing:.03em; }
+.nav-label { font-size:9px; font-weight:600; color:var(--text3); letter-spacing:.04em; transition:color .2s; }
 .nav-item.nav-item-active .nav-label { color:var(--orange); }
-.nav-icon { color:var(--text3); }
-.nav-item.nav-item-active .nav-icon { color:var(--orange); }
+.nav-icon { color:var(--text3); transition:color .2s, transform .25s cubic-bezier(.34,1.56,.64,1); }
+.nav-item.nav-item-active .nav-icon { color:var(--orange); transform:scale(1.15) translateY(-1px); }
+.nav-item:active { transform:scale(.88); }
 
-/* ── Tab Screens ── */
-.tab-screen { display:none; }
+/* Tab padding anpassen für floating nav */
+#app { display:none; }
+.tab-screen { display:none; padding-bottom:100px; }
 .tab-screen.active { display:block; }
 #login-screen h1 { font-size:42px; font-weight:800; margin-bottom:12px; }
 #login-screen p { font-size:15px; color:var(--text2); margin-bottom:40px; }
@@ -222,7 +234,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
   <div class="tab-screen active" id="tab-start">
   <div class="wrap">
     <div class="app-header">
-      <div class="app-title">ALL<span>DURE.</span></div>
+      <div class="app-title">ALLIN<span>DURE.</span></div>
       <button class="logout-btn" onclick="logout()">Abmelden</button>
     </div>
     <div class="divider"></div>
@@ -505,7 +517,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
   <div class="tab-screen" id="tab-wochenplan">
   <div class="wrap">
     <div class="app-header">
-      <div class="app-title">ALL<span>DURE.</span></div>
+      <div class="app-title">ALLIN<span>DURE.</span></div>
     </div>
     <div class="divider"></div>
     <div class="card" style="margin-bottom:10px;">
@@ -546,7 +558,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
   <div class="tab-screen" id="tab-ziele">
   <div class="wrap">
     <div class="app-header">
-      <div class="app-title">ALL<span>DURE.</span></div>
+      <div class="app-title">ALLIN<span>DURE.</span></div>
     </div>
     <div class="divider"></div>
     <div class="card" style="overflow:visible;margin-bottom:10px;">
@@ -587,7 +599,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
   <div class="tab-screen" id="tab-stats">
   <div class="wrap">
     <div class="app-header">
-      <div class="app-title">ALL<span>DURE.</span></div>
+      <div class="app-title">ALLIN<span>DURE.</span></div>
     </div>
     <div class="divider"></div>
     <!-- Bestzeiten -->
@@ -617,9 +629,16 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div style="font-size:28px;font-weight:800;color:#fff;" id="grundlage-hr-now-s">–</div>
           <div style="font-size:12px;color:var(--text2);">bpm</div>
           <div style="font-size:12px;font-weight:600;" id="grundlage-trend-inline-s">–</div>
+          <div style="font-size:10px;color:var(--text3);" id="grundlage-pace-label-s">· 6:00–7:30/km</div>
         </div>
-        <div style="background:var(--bg3);height:8px;border-radius:4px;overflow:hidden;">
-          <div id="grundlage-hr-bar-s" style="height:8px;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange));width:0%;transition:width .8s ease;"></div>
+        <div style="position:relative;margin-bottom:6px;">
+          <div style="background:var(--bg3);height:8px;border-radius:4px;overflow:hidden;">
+            <div id="grundlage-hr-bar-s" style="height:8px;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange));width:0%;transition:width .8s ease;"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-size:9px;color:var(--text3);">Start 160 bpm</span>
+          <span style="font-size:9px;color:var(--green);font-weight:600;">Ziel 135 bpm</span>
         </div>
       </div>
     </div>
@@ -627,13 +646,16 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="card tappable" onclick="showZonenModal()" style="margin-bottom:10px;">
       <div style="padding:14px 16px;">
         <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Herzfrequenzzonen</div>
-        <div style="display:flex;gap:3px;height:10px;border-radius:5px;overflow:hidden;">
-          <div style="flex:1;background:#4FC3F7;"></div>
-          <div style="flex:1;background:#30D158;"></div>
-          <div style="flex:1;background:#FFD60A;"></div>
-          <div style="flex:1;background:#FF6B35;"></div>
-          <div style="flex:1;background:#FF453A;"></div>
+        <div style="position:relative;">
+          <div style="display:flex;gap:3px;height:10px;border-radius:5px;overflow:hidden;">
+            <div style="flex:1;background:#4FC3F7;"></div>
+            <div style="flex:1;background:#30D158;"></div>
+            <div style="flex:1;background:#FFD60A;"></div>
+            <div style="flex:1;background:#FF6B35;"></div>
+            <div style="flex:1;background:#FF453A;"></div>
+          </div>
         </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:8px;" id="zone-last-run-s"></div>
       </div>
     </div>
     <!-- Letzte Läufe -->
@@ -1664,7 +1686,14 @@ function updateStatsTab() {
   }
   // Runs Preview
   const rp = document.getElementById('runs-preview-s');
-  if (rp) rp.textContent = _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local);
+  if (rp && _runs.length) rp.textContent = _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local);
+  // Zonen last run
+  if (_runs.length) {
+    const lastHR = Math.round(_runs[0].average_heartrate||0);
+    const z = window._zones && window._zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
+    const zlr = document.getElementById('zone-last-run-s');
+    if (zlr && z) zlr.innerHTML = 'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
+  }
 }
 
 function updateZieleTab() {
