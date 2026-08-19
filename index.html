@@ -33,7 +33,7 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .nav-bar {
   position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
   z-index:400; width:auto;
-  background:rgba(28,28,30,0.88); backdrop-filter:blur(24px) saturate(180%);
+  background:rgba(28,28,30,0.65); backdrop-filter:blur(24px) saturate(180%);
   -webkit-backdrop-filter:blur(24px) saturate(180%);
   border:1px solid rgba(255,255,255,0.1);
   border-radius:26px;
@@ -407,7 +407,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <span style="font-size:8px;color:var(--text3);" id="zone-label-4">–</span>
           <span style="font-size:8px;color:var(--text3);" id="zone-label-5">–</span>
         </div>
-        <span id="hrmax-display" style="display:none"></span><div id="zone-last-run" style="font-size:10px;color:var(--text2);margin-top:8px;"></div>
+        <span id="hrmax-display" style="display:none"></span><div id="zone-last-run" style="display:none"></div>
       </div>
     </div>
     </div>
@@ -655,7 +655,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           </div>
           <div id="zone-marker-s" style="display:none;position:absolute;top:-4px;width:3px;height:18px;background:#fff;border-radius:2px;box-shadow:0 0 6px rgba(0,0,0,.6);"></div>
         </div>
-        <div style="font-size:10px;color:var(--text2);margin-top:8px;" id="zone-last-run-s"></div>
+        <div id="zone-last-run-s" style="display:none"></div>
       </div>
     </div>
     <!-- Letzte Läufe -->
@@ -1244,11 +1244,13 @@ function showZonenModal() {
 
   zones.forEach(z => {
     const isLastRun = lastHR && lastHR >= z.lo && lastHR < z.hi;
-    html += '<div style="margin-bottom:12px;padding:'+(isLastRun?'10px 12px':'8px 0')+';border-radius:'+(isLastRun?'10px':'0')+';background:'+(isLastRun?'rgba(255,255,255,0.05)':'transparent')+'">'
+    html += '<div style="margin-bottom:12px;padding:8px 0;border-radius:0;">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
-      +'<div><span style="font-size:13px;font-weight:700;color:'+z.color+'">'+z.name+'</span>'
-      +(isLastRun?' <span style="font-size:9px;background:'+z.color+';color:#000;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px;">Letzter Lauf</span>':'')
-      +'</div><span style="font-size:11px;color:var(--text3);">'+z.pct+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<span style="font-size:13px;font-weight:700;color:'+z.color+'">'+z.name+'</span>'
+      +(isLastRun?'<span style="font-size:11px;font-weight:700;color:'+z.color+'">· Letzter Lauf '+lastHR+' bpm</span>':'')
+      +'</div>'
+      +'<span style="font-size:11px;color:var(--text3);">'+z.pct+'</span></div>'
       +'<div style="display:flex;align-items:center;gap:8px;">'
       +'<div style="flex:1;background:var(--bg3);height:6px;border-radius:3px;">'
       +'<div style="background:'+z.color+';height:6px;border-radius:3px;width:100%"></div></div>'
