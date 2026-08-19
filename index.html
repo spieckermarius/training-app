@@ -21,7 +21,7 @@
 *,::-webkit-scrollbar { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; display:revert; }
 ::-webkit-scrollbar { display:none; }
 html { scrollbar-width:none; -ms-overflow-style:none; }
-body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; overscroll-behavior:none; }
 #login-screen,#loading-screen {
   position:fixed; inset:0; z-index:900; background:var(--bg);
   display:none; flex-direction:column; align-items:center; justify-content:center;
@@ -70,7 +70,7 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 
 /* Tab padding anpassen für floating nav */
 #app { display:none; }
-.tab-screen { display:none; padding-bottom:100px; }
+.tab-screen { display:none; padding-bottom:120px; }
 .tab-screen.active { display:block; }
 #login-screen h1 { font-size:42px; font-weight:800; margin-bottom:12px; }
 #login-screen p { font-size:15px; color:var(--text2); margin-bottom:40px; }
@@ -102,7 +102,7 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .day { background:var(--bg3); border-radius:10px; padding:8px 4px; text-align:center; min-height:70px; display:flex; flex-direction:column; align-items:center; gap:3px; }
 .day.run-day { border:1.5px solid var(--orange); }
 .day.long { background:var(--bg3); border:1.5px solid var(--orange); }
-.day.rest { opacity:.4; }
+.day.rest { opacity:.7; }
 .day.today { background:var(--orange) !important; border:none !important; opacity:1 !important; }
 .d-label { font-size:9px; font-weight:700; color:var(--text3); }
 .day.long .d-label { color:var(--orange); }
@@ -144,6 +144,8 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 .pill-best { background:rgba(48,209,88,.15); color:var(--green); }
 .steps { background:var(--bg2); border-radius:14px; overflow:hidden; margin-bottom:10px; }
 .steps .step:last-child { border-radius:0 0 14px 14px; }
+#ziele-container { background:var(--bg2); border-radius:14px; overflow:hidden; }
+#ziele-container .step:last-child, #ziele-container #custom-ziele:last-child .step:last-child { border-radius:0 0 14px 14px; }
 .step { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--border); }
 .step:last-child { border-bottom:none; background:var(--orange); border-radius:0 0 14px 14px; }
 .step.amber { background:rgba(255,107,53,.08); }
@@ -297,7 +299,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         </div>
         <!-- Monat -->
         <div class="swipe-slide">
-          <div class="vol-inner tappable" onclick="showMonthModal()">
+          <div class="vol-inner tappable" onclick="showWeekModal(1)">
             <div class="vol-top">
               <div class="stat-label" style="color:#fff;">Monatsvolumen</div>
               <div class="prog-km" id="month-km" style="color:#fff;">0<small style="color:var(--text2);"> / 100 km</small></div>
@@ -308,7 +310,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         </div>
         <!-- Jahr -->
         <div class="swipe-slide">
-          <div class="vol-inner tappable" onclick="showYearModal()">
+          <div class="vol-inner tappable" onclick="showWeekModal(2)">
             <div class="vol-top">
               <div class="stat-label" style="color:#fff;">Jahresvolumen</div>
               <div class="prog-km" id="year-km" style="color:#fff;">0<small style="color:var(--text2);"> / 1200 km</small></div>
@@ -416,7 +418,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="card tappable" onclick="showAllRunsModal()">
       <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Letzte Läufe</div>
+          <div style="font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Laufhistorie</div>
           <div style="font-size:16px;font-weight:700;color:#fff;" id="runs-preview">– Läufe</div>
         </div>
         <div style="font-size:24px;color:var(--orange);">→</div>
@@ -432,26 +434,28 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <button onclick="showAddZielModal()" style="background:none;border:none;color:var(--orange);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;">+</button>
         </div>
       </div>
-      <div class="steps" id="ziele-steps">
-        <div class="step tappable" onclick="showFixedZielModal(0)">
-          <div class="step-num">1</div>
-          <div style="flex:1"><div class="step-title">Grundlagenausdauer</div><div class="step-sub" id="step1-sub">HR bei Easy Runs &lt;135 bpm</div></div>
-          <div style="color:var(--text3);font-size:16px;">›</div>
-        </div>
-        <div class="step tappable" onclick="showFixedZielModal(1)">
-          <div class="step-num">2</div>
-          <div style="flex:1"><div class="step-title">Long Run</div><div class="step-sub">Alle 2 Wochen · 12–16 km</div></div>
-          <div style="color:var(--text3);font-size:16px;">›</div>
-        </div>
-        <div class="step tappable" onclick="showFixedZielModal(2)">
-          <div class="step-num">3</div>
-          <div style="flex:1"><div class="step-title">25 km/Woche</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
-          <div style="color:var(--text3);font-size:16px;">›</div>
-        </div>
-        <div class="step tappable" onclick="showZielModal()" style="background:var(--orange);">
-          <div class="step-num" style="color:rgba(255,255,255,.7);">4</div>
-          <div style="flex:1"><div class="step-title" style="color:#fff;">Halbmarathon offiziell</div><div class="step-sub" style="color:rgba(255,255,255,.7);">Ziel 2:20–2:30h</div></div>
-          <div style="color:#fff;font-size:18px;">›</div>
+      <div id="ziele-container">
+        <div id="ziele-steps">
+          <div class="step tappable" onclick="showFixedZielModal(0)">
+            <div class="step-num">1</div>
+            <div style="flex:1"><div class="step-title">Grundlagenausdauer</div><div class="step-sub" id="step1-sub">HR bei Easy Runs &lt;135 bpm</div></div>
+            <div style="color:var(--text3);font-size:16px;">›</div>
+          </div>
+          <div class="step tappable" onclick="showFixedZielModal(1)">
+            <div class="step-num">2</div>
+            <div style="flex:1"><div class="step-title">Long Run</div><div class="step-sub">Alle 2 Wochen · 12–16 km</div></div>
+            <div style="color:var(--text3);font-size:16px;">›</div>
+          </div>
+          <div class="step tappable" onclick="showFixedZielModal(2)">
+            <div class="step-num">3</div>
+            <div style="flex:1"><div class="step-title">25 km/Woche</div><div class="step-sub" id="step3-sub">Wochenvolumen aufbauen</div></div>
+            <div style="color:var(--text3);font-size:16px;">›</div>
+          </div>
+          <div class="step tappable" onclick="showZielModal()" style="background:var(--orange);">
+            <div class="step-num" style="color:rgba(255,255,255,.7);">4</div>
+            <div style="flex:1"><div class="step-title" style="color:#fff;">Halbmarathon offiziell</div><div class="step-sub" style="color:rgba(255,255,255,.7);">Ziel 2:20–2:30h</div></div>
+            <div style="color:#fff;font-size:18px;">›</div>
+          </div>
         </div>
         <div id="custom-ziele"></div>
       </div>
@@ -655,6 +659,14 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           </div>
           <div id="zone-marker-s" style="display:none;position:absolute;top:-4px;width:3px;height:18px;background:#fff;border-radius:2px;box-shadow:0 0 6px rgba(0,0,0,.6);"></div>
         </div>
+        <div style="display:flex;justify-content:space-between;margin-top:5px;">
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-s-0">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-s-1">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-s-2">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-s-3">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-s-4">–</span>
+          <span style="font-size:8px;color:var(--text3);" id="zone-label-s-5">–</span>
+        </div>
         <div id="zone-last-run-s" style="display:none"></div>
       </div>
     </div>
@@ -662,7 +674,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     <div class="card tappable" onclick="showAllRunsModal()" style="margin-bottom:10px;">
       <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Letzte Läufe</div>
+          <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Laufhistorie</div>
           <div style="font-size:16px;font-weight:700;color:#fff;" id="runs-preview-s">– Läufe</div>
         </div>
         <div style="font-size:24px;color:var(--orange);">→</div>
@@ -1046,21 +1058,33 @@ function closeAnalyse() {
   document.body.style.overflow = '';
 }
 function enableSwipeDown(el, closeFn) {
-  // Bei centered modal: Klick auf Overlay schließt (bereits via onclick)
-  // Swipe-down weiterhin für mobile Geste
-  let startY=0, dragging=false;
-  el.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;dragging=true;el.style.transition='none';},{passive:true});
+  let startY=0, startScrollTop=0, dragging=false;
+  el.addEventListener('touchstart',e=>{
+    startY=e.touches[0].clientY;
+    startScrollTop=el.scrollTop;
+    dragging=true;
+    el.style.transition='none';
+  },{passive:true});
   el.addEventListener('touchmove',e=>{
     if(!dragging)return;
     const dy=e.touches[0].clientY-startY;
-    if(dy>0){e.preventDefault();el.style.transform='translateY('+dy+'px) scale('+(1-dy/800)+')';}
+    // Nur wenn Modal ganz oben UND Swipe nach unten
+    if(dy>0 && startScrollTop<=0){
+      e.preventDefault();
+      el.style.transform='translateY('+Math.min(dy,300)+'px)';
+    }
   },{passive:false});
   el.addEventListener('touchend',e=>{
     if(!dragging)return; dragging=false;
     const dy=e.changedTouches[0].clientY-startY;
-    el.style.transition='transform .25s ease';
-    if(dy>80){el.style.transform='translateY(120%) scale(.9)';setTimeout(()=>{el.style.transform='';closeFn();},250);}
-    else el.style.transform='';
+    el.style.transition='transform .3s ease';
+    // Erst bei 150px+ Swipe von ganz oben schließen
+    if(dy>150 && startScrollTop<=0){
+      el.style.transform='translateY(110%)';
+      setTimeout(()=>{el.style.transform='';closeFn();},300);
+    } else {
+      el.style.transform='';
+    }
   },{passive:true});
 }
 
@@ -1244,13 +1268,13 @@ function showZonenModal() {
 
   zones.forEach(z => {
     const isLastRun = lastHR && lastHR >= z.lo && lastHR < z.hi;
-    html += '<div style="margin-bottom:12px;padding:8px 0;border-radius:0;">'
+    html += '<div style="margin-bottom:12px;padding:8px 0;">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
-      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
       +'<span style="font-size:13px;font-weight:700;color:'+z.color+'">'+z.name+'</span>'
-      +(isLastRun?'<span style="font-size:11px;font-weight:700;color:'+z.color+'">· Letzter Lauf '+lastHR+' bpm</span>':'')
+      +(isLastRun?'<span style="font-size:9px;background:'+z.color+';color:'+(z.color==='#FFD60A'?'#000':'#fff')+';padding:3px 8px;border-radius:6px;font-weight:700;">Letzter Lauf · '+lastHR+' bpm</span>':'')
       +'</div>'
-      +'<span style="font-size:11px;color:var(--text3);">'+z.pct+'</span></div>'
+      +'<span style="font-size:11px;color:var(--text3);flex-shrink:0;">'+z.pct+'</span></div>'
       +'<div style="display:flex;align-items:center;gap:8px;">'
       +'<div style="flex:1;background:var(--bg3);height:6px;border-radius:3px;">'
       +'<div style="background:'+z.color+';height:6px;border-radius:3px;width:100%"></div></div>'
@@ -1367,7 +1391,7 @@ function showGrundlageModal() {
   openModal('Grundlagen-Trend', html);
 }
 
-function showWeekModal() {
+function showWeekModal(startTab) {
   const now=new Date(), curKW=isoWeek(now), nm=now.getMonth(), ny=now.getFullYear();
   // KW Daten
   const weekMap={};
@@ -1431,62 +1455,12 @@ function showWeekModal() {
       const b=document.getElementById('vol-tab-'+i);
       if(b) b.onclick=()=>{activeTab=i;renderTab(i);};
     });
-    renderTab(0);
+    renderTab(startTab||0);
   },50);
 }
 
-function showMonthModal() {
-  const now=new Date(), nm=now.getMonth(), ny=now.getFullYear();
-  const mn_full=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-  const mn_short=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-  const mRuns=_runs.filter(r=>{const d=new Date(r.start_date_local);return d.getMonth()===nm&&d.getFullYear()===ny;})
-    .sort((a,b)=>new Date(b.start_date_local)-new Date(a.start_date_local));
-  const mKm=mRuns.reduce((s,r)=>s+r.distance/1000,0);
-  const mMap=window._mMap||{};
-  const last4m=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
-  let html='<div style="margin-bottom:16px"><div class="stat-label" style="margin-bottom:8px">Monatstrend</div><div id="modal-month-bars"></div></div>';
-  html+='<div style="font-size:13px;color:var(--text2);margin-bottom:12px">'+mn_full[nm]+' · '+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>';
-  mRuns.forEach(r=>{
-    html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
-      +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-      +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
-  });
-  if(!mRuns.length) html+='<div style="text-align:center;padding:20px;color:var(--text3)">Keine Läufe</div>';
-  openModal(mn_full[nm]+' Rückblick', html);
-  setTimeout(()=>renderHBars('modal-month-bars', last4m.map(m=>({km:mMap[m]||0,label:mn_short[m],current:m===nm}))),50);
-}
-
-function showYearModal() {
-  const qMap=window._qMap||{1:0,2:0,3:0,4:0}, curQ=window._curQ||1;
-  const yRuns=_runs.filter(r=>new Date(r.start_date_local).getFullYear()===new Date().getFullYear());
-  const yKm=yRuns.reduce((s,r)=>s+r.distance/1000,0);
-  const ms = window._nextMilestone;
-
-  let html='<div style="margin-bottom:16px"><div class="stat-label" style="margin-bottom:8px">Quartalstrend</div><div id="modal-year-bars"></div></div>';
-
-  // Meilenstein Box
-  if (ms) {
-    const pct = Math.round((yKm/(ms.km))*100);
-    html += '<div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;">'
-      +'<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">🏅 Nächster Meilenstein</div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">'
-      +'<span style="font-size:18px;font-weight:800;color:var(--text);">'+ms.km+' km</span>'
-      +'<span style="font-size:12px;color:var(--text2);">noch <strong style="color:var(--orange)">'+ms.left+' km</strong></span>'
-      +'</div>'
-      +'<div style="background:var(--bg2);height:6px;border-radius:3px;">'
-      +'<div style="background:var(--orange);height:6px;border-radius:3px;width:'+Math.min(100,pct)+'%"></div></div>'
-      +'<div style="font-size:10px;color:var(--text3);margin-top:4px;">'+pct+'% erreicht · '+Math.round(yKm)+' km bisher</div>'
-      +'</div>';
-  }
-
-  html+='<div style="font-size:13px;color:var(--text2);margin-bottom:12px">'+new Date().getFullYear()+' · '+Math.round(yKm)+' km · '+yRuns.length+' Läufe</div>';
-  [1,2,3,4].forEach(q=>{
-    const qRuns=yRuns.filter(r=>Math.floor(new Date(r.start_date_local).getMonth()/3)+1===q);
-    if(qRuns.length) html+='<div class="modal-stat"><span class="modal-stat-label">Q'+q+(q===curQ?' · aktuell':'')+' · '+qRuns.length+' Läufe</span><span class="modal-stat-value">'+(qMap[q]||0).toFixed(0)+' km</span></div>';
-  });
-  openModal(new Date().getFullYear()+' Jahresrückblick', html);
-  setTimeout(()=>renderHBars('modal-year-bars',[1,2,3,4].map(q=>({km:qMap[q]||0,label:'Q'+q,current:q===curQ}))),50);
-}
+function showMonthModal() { showWeekModal(1); }
+function showYearModal() { showWeekModal(2); }
 
 function showAllRunsModal() {
   let html='';
@@ -1495,7 +1469,7 @@ function showAllRunsModal() {
       +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
       +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
   });
-  openModal('Alle Läufe · '+_runs.length+' gesamt', html);
+  openModal('Laufhistorie · '+_runs.length+' Läufe', html);
 }
 
 // ── Analyse ──
@@ -1734,6 +1708,15 @@ function updateStatsTab() {
   // Runs Preview
   const rp = document.getElementById('runs-preview-s');
   if (rp && _runs.length) rp.textContent = _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local);
+  // Zonen Labels in Stats
+  if (window._hrmax) {
+    const hm = window._hrmax;
+    const labels=[Math.round(hm*.5),Math.round(hm*.6),Math.round(hm*.7),Math.round(hm*.8),Math.round(hm*.9),hm];
+    labels.forEach((v,i)=>{
+      const el=document.getElementById('zone-label-s-'+i);
+      if(el) el.textContent=i===0?v+' bpm':i===5?v+' bpm':v;
+    });
+  }
   // Zonen last run + Marker
   if (_runs.length) {
     const lastHR = Math.round(_runs[0].average_heartrate||0);
