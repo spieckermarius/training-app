@@ -31,43 +31,41 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-syste
 
 /* ── Bottom Navigation ── */
 .nav-bar {
-  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
-  z-index:400; width:calc(100% - 32px); max-width:480px;
-  background:rgba(28,28,30,0.85); backdrop-filter:blur(24px) saturate(180%);
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  z-index:400; width:auto;
+  background:rgba(28,28,30,0.88); backdrop-filter:blur(24px) saturate(180%);
   -webkit-backdrop-filter:blur(24px) saturate(180%);
   border:1px solid rgba(255,255,255,0.1);
-  border-radius:28px;
+  border-radius:26px;
   display:flex; align-items:center; justify-content:space-around;
-  padding:10px 8px max(10px,env(safe-area-inset-bottom));
-  transition:width .4s cubic-bezier(.34,1.2,.64,1),
-             bottom .4s cubic-bezier(.34,1.2,.64,1),
-             left .4s cubic-bezier(.34,1.2,.64,1),
-             transform .4s cubic-bezier(.34,1.2,.64,1),
-             padding .4s cubic-bezier(.34,1.2,.64,1);
-  box-shadow:0 8px 32px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.06) inset;
+  padding:8px 6px;
+  gap:4px;
+  transition:all .4s cubic-bezier(.34,1.15,.64,1);
+  box-shadow:0 8px 32px rgba(0,0,0,.45), 0 1px 0 rgba(255,255,255,.06) inset;
 }
 .nav-bar.collapsed {
-  width:52px; left:24px; bottom:24px;
+  left:20px; bottom:20px;
   transform:translateX(0);
-  padding:14px; justify-content:center;
-  border-radius:26px;
+  padding:10px;
+  width:48px; height:48px;
+  justify-content:center;
+  overflow:hidden;
 }
-.nav-bar.collapsed .nav-item:not(.nav-item-active) {
-  width:0; overflow:hidden; padding:0; opacity:0;
-  transition:width .3s ease, opacity .2s ease;
+.nav-bar.collapsed .nav-item { display:none; }
+.nav-bar.collapsed .nav-item-active {
+  display:flex; padding:0; min-width:unset;
 }
-.nav-bar.collapsed .nav-item-active { opacity:1; }
 .nav-bar.collapsed .nav-label { display:none; }
 .nav-item {
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-  cursor:pointer; padding:4px 10px; border-radius:16px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  cursor:pointer; padding:6px 14px; border-radius:18px;
   border:none; background:none; font-family:inherit;
-  transition:all .25s ease; min-width:48px;
+  transition:all .2s ease;
 }
 .nav-label { font-size:9px; font-weight:600; color:var(--text3); letter-spacing:.04em; transition:color .2s; }
 .nav-item.nav-item-active .nav-label { color:var(--orange); }
 .nav-icon { color:var(--text3); transition:color .2s, transform .25s cubic-bezier(.34,1.56,.64,1); }
-.nav-item.nav-item-active .nav-icon { color:var(--orange); transform:scale(1.15) translateY(-1px); }
+.nav-item.nav-item-active .nav-icon { color:var(--orange); }
 .nav-item:active { transform:scale(.88); }
 
 /* Tab padding anpassen für floating nav */
@@ -654,6 +652,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
             <div style="flex:1;background:#FF6B35;"></div>
             <div style="flex:1;background:#FF453A;"></div>
           </div>
+          <div id="zone-marker-s" style="display:none;position:absolute;top:-4px;width:3px;height:18px;background:#fff;border-radius:2px;box-shadow:0 0 6px rgba(0,0,0,.6);"></div>
         </div>
         <div style="font-size:10px;color:var(--text2);margin-top:8px;" id="zone-last-run-s"></div>
       </div>
@@ -925,7 +924,7 @@ function renderDashboard(activities) {
     if (sub) {
       const pace = fmtPace(curr.distance, curr.moving_time);
       const trend = diff>0?'Verbessert':diff<0?'Gestiegen':'Stabil';
-      sub.textContent = 'Letzter Lauf '+fmtDate(curr.start_date_local)+' · '+pace+'/km · '+trend;
+      sub.textContent = pace+'/km · '+trend;
     }
   }
 
@@ -1078,38 +1077,33 @@ function showRunDetail(idx) {
 
 function renderCustomZiele() {
   const ziele = JSON.parse(localStorage.getItem('custom_ziele') || '[]');
-  const container = document.getElementById('custom-ziele');
-  if (!container) return;
-  if (!ziele.length) { container.innerHTML = ''; return; }
   const now = new Date();
-  container.innerHTML = ziele.map((z, i) => {
+  const makeHtml = (z, i) => {
     const date = new Date(z.datum);
     const days = Math.ceil((date - now) / 86400000);
     const months = Math.floor(days / 30);
     const restDays = days % 30;
-    const countdown = days < 0 ? 'Vergangen' : days === 0 ? 'Heute!' : months > 0 ? months+'M '+restDays+'T' : days+' Tage';
+    const countdown = days < 0 ? 'Vergangen' : days === 0 ? 'Heute!' : months > 0 ? months+'M '+restDays+'T' : days+' T';
     const isRace = ['Marathon','Halbmarathon','10km','5km','Ironman'].includes(z.typ);
     const emoji = z.typ==='Marathon'?'🏅':z.typ==='Halbmarathon'?'🏃':z.typ==='10km'?'⚡':z.typ==='5km'?'💨':z.typ==='Ironman'?'🦺':'🎯';
     if (isRace) {
-      // Orange-Overlay für Wettkampf-Ziele
-      return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="border-top:1px solid var(--border);background:var(--orange);border-radius:0 0 14px 14px;">'
+      return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="background:var(--orange);border-radius:0 0 14px 14px;">'
         +'<div class="step-num" style="color:rgba(255,255,255,.7);font-size:14px;">'+emoji+'</div>'
-        +'<div style="flex:1">'
-        +'<div class="step-title" style="color:#fff;">'+z.typ+' · '+z.name+'</div>'
-        +'<div class="step-sub" style="color:rgba(255,255,255,.7);">'+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+(z.zielzeit?' · Ziel '+z.zielzeit:'')+'</div>'
-        +'</div>'
-        +'<div style="color:#fff;font-weight:700;font-size:11px;text-align:right;">'+countdown+'</div>'
-        +'</div>';
+        +'<div style="flex:1"><div class="step-title" style="color:#fff;">'+z.typ+' · '+z.name+'</div>'
+        +'<div class="step-sub" style="color:rgba(255,255,255,.7);">'+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+(z.zielzeit?' · '+z.zielzeit:'')+'</div></div>'
+        +'<div style="color:#fff;font-weight:700;font-size:11px;">'+countdown+'</div></div>';
     }
-    return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="border-top:1px solid var(--border);">'
+    return '<div class="step tappable" onclick="showCustomZielModal('+i+')">'
       +'<div class="step-num" style="font-size:14px;">'+emoji+'</div>'
-      +'<div style="flex:1">'
-      +'<div class="step-title">'+z.typ+' · '+z.name+'</div>'
-      +'<div class="step-sub">'+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+(z.zielzeit?' · Ziel '+z.zielzeit:'')+'</div>'
-      +'</div>'
-      +'<div style="color:var(--orange);font-weight:700;font-size:11px;">'+countdown+'</div>'
-      +'</div>';
-  }).join('');
+      +'<div style="flex:1"><div class="step-title">'+z.typ+' · '+z.name+'</div>'
+      +'<div class="step-sub">'+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+(z.zielzeit?' · '+z.zielzeit:'')+'</div></div>'
+      +'<div style="color:var(--orange);font-weight:700;font-size:11px;">'+countdown+'</div></div>';
+  };
+  ['custom-ziele','custom-ziele-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = ziele.length ? ziele.map(makeHtml).join('') : '';
+  });
 }
 
 function showCustomZielModal(idx) {
@@ -1687,12 +1681,16 @@ function updateStatsTab() {
   // Runs Preview
   const rp = document.getElementById('runs-preview-s');
   if (rp && _runs.length) rp.textContent = _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local);
-  // Zonen last run
+  // Zonen last run + Marker
   if (_runs.length) {
     const lastHR = Math.round(_runs[0].average_heartrate||0);
     const z = window._zones && window._zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
     const zlr = document.getElementById('zone-last-run-s');
     if (zlr && z) zlr.innerHTML = 'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
+    const hm = window._hrmax || 199;
+    const markerPct = Math.min(99,Math.max(0,(lastHR-Math.round(hm*.5))/(hm-Math.round(hm*.5))*100));
+    const ms = document.getElementById('zone-marker-s');
+    if (ms && lastHR>0) { ms.style.display='block'; ms.style.left=markerPct+'%'; }
   }
 }
 
