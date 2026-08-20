@@ -112,7 +112,7 @@ body { color:var(--text); font-family:'Inter',-apple-system,sans-serif; overscro
 .tappable { cursor:pointer; transition:transform .08s,opacity .08s; }
 .tappable:active { transform:scale(.95); opacity:.85; }
 .split { display:flex; }
-.stat-label { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
+.stat-label { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; }
 .stat-value { font-size:20px; font-weight:700; }
 .stat-value small { font-size:11px; font-weight:400; color:var(--text2); }
 .pr-crown { color:var(--yellow); }
@@ -121,11 +121,11 @@ body { color:var(--text); font-family:'Inter',-apple-system,sans-serif; overscro
 .prog-km small { font-size:11px; font-weight:400; color:var(--text2); }
 .vol-inner { padding:14px 16px 10px; }
 .vol-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-.sessions-bar { display:flex; gap:3px; margin-top:6px; height:4px; }
-.sessions-seg { flex:1; border-radius:2px; background:var(--bg3); transition:background .3s; }
+.sessions-bar { display:flex; gap:3px; margin-top:6px; height:6px; }
+.sessions-seg { flex:1; border-radius:3px; background:var(--bg3); transition:background .3s; }
 .sessions-seg.done { background:var(--green); }
-.prog-bar-track { background:var(--bg3); height:5px; border-radius:3px; }
-.prog-bar-fill { background:var(--orange); height:5px; border-radius:3px; transition:width .6s ease; }
+.prog-bar-track { background:var(--bg3); height:9px; border-radius:5px; position:relative; overflow:hidden; }
+.prog-bar-fill { background:var(--orange); height:9px; border-radius:5px; transition:width .6s ease; position:relative; }
 .prog-sessions { font-size:10px; color:var(--text3); margin-top:6px; }
 .swipe-card { overflow:hidden; touch-action:pan-y; }
 .swipe-track { display:flex; transition:transform .35s cubic-bezier(.25,.46,.45,.94); }
@@ -282,8 +282,11 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div class="swipe-slide">
           <div class="vol-inner tappable" onclick="showWeekModal()">
             <div class="vol-top">
-              <div class="stat-label" style="color:#fff;">Wochenvolumen</div>
-              <div class="prog-km" id="week-km" style="color:#fff;">0<small style="color:var(--text2);"> / 25 km</small></div>
+              <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Wochenvolumen</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button onclick="event.stopPropagation();showVolSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:1;" title="Ziele anpassen">⚙️</button>
+                <div class="prog-km" id="week-km" style="color:#fff;">0<small> / <span id="week-target-label">25</span> km</small></div>
+              </div>
             </div>
             <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
             <div class="sessions-bar">
@@ -301,22 +304,31 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
         <div class="swipe-slide">
           <div class="vol-inner tappable" onclick="showWeekModal(1)">
             <div class="vol-top">
-              <div class="stat-label" style="color:#fff;">Monatsvolumen</div>
-              <div class="prog-km" id="month-km" style="color:#fff;">0<small style="color:var(--text2);"> / 100 km</small></div>
+              <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Monatsvolumen</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button onclick="event.stopPropagation();showVolSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:1;" title="Ziele anpassen">⚙️</button>
+                <div class="prog-km" id="month-km" style="color:#fff;">0<small> / <span id="month-target-label">100</span> km</small></div>
+              </div>
             </div>
-            <div class="prog-bar-track"><div class="prog-bar-fill" id="month-bar" style="width:0%"></div></div>
-            <div class="prog-sessions" id="month-sessions" style="margin-top:6px;">–</div>
+            <div class="prog-bar-track" style="position:relative;overflow:visible;">
+              <div class="prog-bar-fill" id="month-bar" style="width:0%;overflow:hidden;border-radius:5px;"></div>
+              <div id="month-markers" style="position:absolute;top:0;left:0;right:0;height:9px;pointer-events:none;"></div>
+            </div>
+            <div class="prog-sessions" id="month-sessions" style="margin-top:6px;"></div>
           </div>
         </div>
         <!-- Jahr -->
         <div class="swipe-slide">
           <div class="vol-inner tappable" onclick="showWeekModal(2)">
             <div class="vol-top">
-              <div class="stat-label" style="color:#fff;">Jahresvolumen</div>
-              <div class="prog-km" id="year-km" style="color:#fff;">0<small style="color:var(--text2);"> / 1200 km</small></div>
+              <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Jahresvolumen</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button onclick="event.stopPropagation();showVolSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:1;" title="Ziele anpassen">⚙️</button>
+                <div class="prog-km" id="year-km" style="color:#fff;">0<small> / <span id="year-target-label">1200</span> km</small></div>
+              </div>
             </div>
             <div class="prog-bar-track"><div class="prog-bar-fill" id="year-bar" style="width:0%"></div></div>
-            <div class="prog-sessions" id="year-sessions" style="margin-top:6px;">–</div>
+            <div class="prog-sessions" id="year-sessions" style="margin-top:6px;"></div>
           </div>
         </div>
       </div>
@@ -782,19 +794,34 @@ function renderDashboard(activities) {
     vsEl.textContent = prevWeekKm.toFixed(1)+' km letzte Woche';
     vsEl.style.color = 'var(--text3)';
   }
-  document.getElementById('week-km').innerHTML = weekKm.toFixed(1)+'<small> / 25 km</small>'+(sessions>=3?' <span class="check-done">✓</span>':'');
-  document.getElementById('week-bar').style.width = Math.min(100,weekKm/25*100)+'%';
+  // Vol-Targets aus localStorage (mit Defaults)
+  const volT = JSON.parse(localStorage.getItem('vol_targets')||'{"week":25,"month":100,"year":1200}');
+  const tW=volT.week||25, tM=volT.month||100, tY=volT.year||1200;
+
+  document.getElementById('week-km').innerHTML = weekKm.toFixed(1)+'<small> / '+tW+' km</small>'+(sessions>=3?' <span class="check-done">✓</span>':'');
+  document.getElementById('week-bar').style.width = Math.min(100,weekKm/tW*100)+'%';
   document.getElementById('week-sessions').textContent = sessions+'/3 Trainings'+(sessions>=3?' ✓':'');
-  [0,1,2].forEach(i => {
-    document.getElementById('seg-'+i).className = 'sessions-seg'+(i<sessions?' done':'');
-  });
+  const wtl=document.getElementById('week-target-label'); if(wtl) wtl.textContent=tW;
+  [0,1,2].forEach(i => { document.getElementById('seg-'+i).className = 'sessions-seg'+(i<sessions?' done':''); });
 
   // Monat
   const mRuns = _runs.filter(r => { const d=new Date(r.start_date_local); return d.getMonth()===nm&&d.getFullYear()===ny; });
   const mKm = mRuns.reduce((s,r)=>s+r.distance/1000, 0);
-  document.getElementById('month-km').innerHTML = mKm.toFixed(1)+'<small style="color:var(--text2);"> / 100 km</small>';
-  document.getElementById('month-bar').style.width = Math.min(100,mKm/100*100)+'%';
-  document.getElementById('month-sessions').textContent = mRuns.length+' Läufe · Ziel ~100 km';
+  document.getElementById('month-km').innerHTML = mKm.toFixed(1)+'<small> / '+tM+' km</small>';
+  document.getElementById('month-bar').style.width = Math.min(100,mKm/tM*100)+'%';
+  document.getElementById('month-sessions').textContent = '';
+  const mtl=document.getElementById('month-target-label'); if(mtl) mtl.textContent=tM;
+  // Markierungen alle 25km (oder angepasst)
+  const mMark = document.getElementById('month-markers');
+  if (mMark) {
+    const step = tM <= 50 ? 10 : tM <= 200 ? 25 : 100;
+    let marks = '';
+    for (let km=step; km<tM; km+=step) {
+      const pct = km/tM*100;
+      marks += '<div style="position:absolute;top:0;left:'+pct+'%;width:2px;height:9px;background:rgba(255,255,255,0.25);transform:translateX(-50%);"></div>';
+    }
+    mMark.innerHTML = marks;
+  }
 
   // Monatsdaten für Modal speichern
   const mMap = {};
@@ -806,9 +833,10 @@ function renderDashboard(activities) {
   // Jahr
   const yRuns = _runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
   const yKm = yRuns.reduce((s,r)=>s+r.distance/1000, 0);
-  document.getElementById('year-km').innerHTML = Math.round(yKm)+'<small style="color:var(--text2);"> / 1200 km</small>';
-  document.getElementById('year-bar').style.width = Math.min(100,yKm/1200*100)+'%';
-  document.getElementById('year-sessions').textContent = yRuns.length+' Läufe · Ziel ~1200 km';
+  document.getElementById('year-km').innerHTML = Math.round(yKm)+'<small> / '+tY+' km</small>';
+  document.getElementById('year-bar').style.width = Math.min(100,yKm/tY*100)+'%';
+  document.getElementById('year-sessions').textContent = '';
+  const ytl=document.getElementById('year-target-label'); if(ytl) ytl.textContent=tY;
   // Quartalsdaten für Modal speichern
   const qMap={1:0,2:0,3:0,4:0};
   yRuns.forEach(r=>{ const q=Math.floor(new Date(r.start_date_local).getMonth()/3)+1; qMap[q]+=r.distance/1000; });
@@ -1444,6 +1472,26 @@ function showWeekModal(startTab) {
 
 function showMonthModal() { showWeekModal(1); }
 function showYearModal() { showWeekModal(2); }
+
+function showVolSettings() {
+  const t = JSON.parse(localStorage.getItem('vol_targets')||'{"week":25,"month":100,"year":1200}');
+  const s = 'width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:16px;font-family:inherit;box-sizing:border-box;';
+  const row = (label, id, val) =>
+    '<div style="margin-bottom:12px;"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">'+label+'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;"><input id="vt-'+id+'" type="number" value="'+val+'" style="'+s+'"><span style="color:var(--text2);font-size:13px;">km</span></div></div>';
+  const html = row('Wochenziel','week',t.week||25)+row('Monatsziel','month',t.month||100)+row('Jahresziel','year',t.year||1200)
+    +'<button onclick="saveVolSettings()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px;">Speichern</button>';
+  openModal('Volumen-Ziele anpassen', html);
+}
+
+function saveVolSettings() {
+  const w=parseInt((document.getElementById('vt-week')||{}).value)||25;
+  const m=parseInt((document.getElementById('vt-month')||{}).value)||100;
+  const y=parseInt((document.getElementById('vt-year')||{}).value)||1200;
+  localStorage.setItem('vol_targets', JSON.stringify({week:w,month:m,year:y}));
+  closeModal();
+  if(window._lastActivities) renderDashboard(window._lastActivities);
+}
 
 function showAllRunsModal() {
   let html='';
