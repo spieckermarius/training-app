@@ -259,7 +259,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     </div>
 
     <div class="sort-card" data-id="wochenplan">
-    <div class="card">
+    <div class="card tappable" onclick="switchTab('wochenplan')">
       <div style="padding:12px 14px 10px;">
         <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Wochenplan</div>
         <div class="week-grid">
@@ -500,37 +500,20 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       <div class="app-title">ALLIN<span>DURE.</span></div>
     </div>
     <div class="divider"></div>
-    <div class="card" style="margin-bottom:10px;">
-      <div style="padding:14px 16px;">
-        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Wochenplan</div>
-        <div class="week-grid" id="week-grid-2">
-          <div class="day" id="day2-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Kraft</div></div>
-          <div class="day" id="day2-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
-          <div class="day run-day" id="day2-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
-          <div class="day" id="day2-4"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
-          <div class="day run-day" id="day2-5"><div class="d-label">FR</div><div class="d-name">Easy</div><div class="d-sub">8–10km</div></div>
-          <div class="day rest" id="day2-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
-          <div class="day long" id="day2-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">12–16km</div></div>
-        </div>
+
+    <!-- Tage-Navigation -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;" id="plan-day-nav"></div>
+
+    <!-- Swipeable Tages-Slides -->
+    <div style="overflow:hidden;width:100%;" id="plan-track-wrap">
+      <div id="plan-track" style="display:flex;width:700%;transition:transform .3s ease;">
+        <!-- Slides werden per JS gefüllt -->
       </div>
     </div>
-    <div class="card" style="margin-bottom:10px;">
-      <div style="padding:14px 16px;">
-        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Trainingseinheiten</div>
-        <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">🏃 Mittwoch · Tempolauf</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.6;">5–6 km bei Z4 (159–179 bpm). Intervalle oder gleichmäßiges Tempo. Gibt den Intensitätsreiz für die Woche.</div>
-        </div>
-        <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">🚶 Freitag · Easy Run</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.6;">8–10 km locker bei Z2 (119–139 bpm). Aktive Erholung nach Tempo, Vorbereitung für Long Run.</div>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:4px;">🏆 Sonntag · Long Run</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.6;">12–16 km locker bei Z2–Z3 (bis 159 bpm). Die wichtigste Einheit für die Ausdauerentwicklung.</div>
-        </div>
-      </div>
-    </div>
+
+    <!-- Dot-Indicator -->
+    <div id="plan-dots" style="display:flex;justify-content:center;gap:6px;margin-top:12px;"></div>
+
   </div>
   </div><!-- end tab-wochenplan -->
 
@@ -1159,39 +1142,35 @@ function doDeleteZiel(idx) {
   renderCustomZiele();
 }
 
+let _editZielIdx = -1;
+
 function showAddZielModal(editIdx, existing) {
-  const isEdit = editIdx !== undefined && editIdx >= 0;
+  _editZielIdx = (editIdx !== undefined && editIdx >= 0) ? editIdx : -1;
   const z = existing || {};
-  const s = 'width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:16px;font-family:inherit;box-sizing:border-box;-webkit-appearance:none;appearance:none;';
-  const row = (label, inner) => '<div style="margin-bottom:14px;"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">'+label+'</div>'+inner+'</div>';
+  const s = 'width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:16px;font-family:inherit;box-sizing:border-box;-webkit-appearance:none;';
+  const row = (label, inner) => '<div style="margin-bottom:12px;"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">'+label+'</div>'+inner+'</div>';
+  const cats = ['Wettkampf – Marathon','Wettkampf – Halbmarathon','Wettkampf – 10km','Wettkampf – 5km','Wettkampf – Ironman','Trainingsziel','Anderes'];
+  const selVal = cats.find(o=>o===z.kategorie||o.replace('Wettkampf – ','')=== z.kategorie) || cats[0];
   const html =
-    row('Name des Ziels', '<input id="ziel-name" type="text" placeholder="z.B. Marathon Lüdinghausen" value="'+(z.name||'')+'" style="'+s+'">')
+    row('Name', '<input id="ziel-name" type="text" placeholder="z.B. Marathon Lüdinghausen" value="'+(z.name||'')+'" style="'+s+'">')
     +row('Kategorie', '<select id="ziel-typ" style="'+s+'">'
-      +['Wettkampf – Marathon','Wettkampf – Halbmarathon','Wettkampf – 10km','Wettkampf – 5km','Wettkampf – Ironman','Trainingsziel','Anderes']
-        .map(o=>'<option'+(z.kategorie&&(o===z.kategorie||o.replace('Wettkampf – ','')=== z.kategorie)?' selected':'')+'>'+o+'</option>').join('')
-      +'</select>')
+      +cats.map(o=>'<option'+(o===selVal?' selected':'')+'>'+o+'</option>').join('')+'</select>')
     +row('Datum (optional)', '<input id="ziel-datum" type="date" value="'+(z.datum||'')+'" style="'+s+';color-scheme:dark;">')
     +row('Zielzeit (optional)', '<input id="ziel-zeit" type="text" placeholder="z.B. 2:20h" value="'+(z.zielzeit||'')+'" style="'+s+'">')
-    +row('Notiz (optional)', '<textarea id="ziel-notiz" placeholder="z.B. Pace-Strategie..." rows="2" style="'+s+';resize:none;">'+(z.notiz||'')+'</textarea>')
-    +'<button onclick="saveZiel('+(isEdit?editIdx:'undefined')+')" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;">'+(isEdit?'Speichern':'Ziel hinzufügen')+'</button>';
-  openModal(isEdit?'Ziel bearbeiten':'Neues Ziel', html);
+    +'<button onclick="saveZiel()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px;">'+(_editZielIdx>=0?'Speichern':'Ziel hinzufügen')+'</button>';
+  openModal(_editZielIdx>=0?'Ziel bearbeiten':'Neues Ziel', html);
 }
 
-function saveZiel(editIdx) {
-  const name = document.getElementById('ziel-name').value.trim();
-  if (!name) return;
-  const typRaw = document.getElementById('ziel-typ').value;
+function saveZiel() {
+  const name = (document.getElementById('ziel-name')||{}).value||'';
+  if (!name.trim()) { alert('Bitte einen Namen eingeben'); return; }
+  const typRaw = (document.getElementById('ziel-typ')||{}).value||'Anderes';
   const kategorie = typRaw.replace('Wettkampf – ','');
-  const datum = document.getElementById('ziel-datum').value || '';
-  const zielzeit = document.getElementById('ziel-zeit').value.trim();
-  const notiz = document.getElementById('ziel-notiz').value.trim();
+  const datum = (document.getElementById('ziel-datum')||{}).value||'';
+  const zielzeit = (document.getElementById('ziel-zeit')||{}).value||'';
   const ziele = JSON.parse(localStorage.getItem('custom_ziele') || '[]');
-  const obj = {name, kategorie, datum, zielzeit, notiz};
-  if (editIdx !== undefined && editIdx >= 0) {
-    ziele[editIdx] = obj;
-  } else {
-    ziele.push(obj);
-  }
+  const obj = {name:name.trim(), kategorie, datum, zielzeit};
+  if (_editZielIdx >= 0) { ziele[_editZielIdx] = obj; } else { ziele.push(obj); }
   localStorage.setItem('custom_ziele', JSON.stringify(ziele));
   closeModal();
   renderCustomZiele();
@@ -1395,17 +1374,17 @@ function showWeekModal(startTab) {
     if(qR.length) yHtml+='<div class="modal-stat"><span class="modal-stat-label">Q'+q+(q===curQ?' · aktuell':'')+' · '+qR.length+' Läufe</span><span class="modal-stat-value">'+(qMap[q]||0).toFixed(0)+' km</span></div>';});
 
   const idx = startTab||0;
-  const labels = ['Diese Woche','Diesen Monat','Dieses Jahr'];
+  const labels = ['Woche','Monat','Jahr'];
   const html =
-    '<div id="vol-dots" style="display:flex;justify-content:center;gap:6px;margin-bottom:14px;">'
-    +[0,1,2].map(i=>'<div id="vdot-'+i+'" style="width:'+(i===idx?'16px':'6px')+';height:6px;border-radius:3px;background:'+(i===idx?'var(--orange)':'var(--bg3)')+';transition:all .2s;"></div>').join('')
-    +'</div>'
-    +'<div id="vol-modal-track-wrap" style="overflow:hidden;width:100%;position:relative;">'
-    +'<div id="vol-modal-track" style="display:flex;width:300%;transition:transform .35s cubic-bezier(.25,.46,.45,.94);">'
-    +'<div style="flex:1;min-width:0;box-sizing:border-box;">'+wHtml+'</div>'
-    +'<div style="flex:1;min-width:0;box-sizing:border-box;">'+mHtml+'</div>'
-    +'<div style="flex:1;min-width:0;box-sizing:border-box;">'+yHtml+'</div>'
-    +'</div></div>';
+    '<div id="vol-modal-track-wrap" style="overflow:hidden;width:100%;margin-bottom:12px;">'
+    +'<div id="vol-modal-track" style="display:flex;width:300%;transition:transform .3s ease;">'
+    +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;">'+wHtml+'</div>'
+    +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;">'+mHtml+'</div>'
+    +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;">'+yHtml+'</div>'
+    +'</div></div>'
+    +'<div id="vol-dots" style="display:flex;justify-content:center;gap:8px;padding-top:4px;">'
+    +[0,1,2].map(i=>'<div id="vdot-'+i+'" onclick="volGoTo('+i+')" style="height:6px;border-radius:3px;cursor:pointer;transition:all .2s;width:'+(i===idx?'20px':'6px')+';background:'+(i===idx?'var(--orange)':'var(--bg3)')+';"></div>').join('')
+    +'</div>';
 
   openModal(labels[idx], html);
 
@@ -1418,36 +1397,36 @@ function showWeekModal(startTab) {
     const track = document.getElementById('vol-modal-track');
     const titleEl = document.getElementById('modal-title');
     if (!wrap||!track) return;
-    let cur=idx, startX=0, dragging=false;
+    window._volCur = idx;
+    window._volLabels = labels;
 
-    const goTo = n => {
-      cur=Math.max(0,Math.min(2,n));
-      // Prozent-basiert: 0%, 33.33%, 66.66%
-      track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
-      track.style.transform='translateX(-'+(cur*100/3)+'%)';
-      if(titleEl) titleEl.textContent=labels[cur];
+    window.volGoTo = n => {
+      n = Math.max(0,Math.min(2,n));
+      window._volCur = n;
+      track.style.transition = 'transform .3s ease';
+      track.style.transform = 'translateX(-'+(n*100/3)+'%)';
+      if(titleEl) titleEl.textContent = labels[n];
       [0,1,2].forEach(i=>{
         const d=document.getElementById('vdot-'+i);
-        if(d){d.style.width=i===cur?'16px':'6px';d.style.background=i===cur?'var(--orange)':'var(--bg3)';}
+        if(d){d.style.width=i===n?'20px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';}
       });
     };
-    // Initiale Position
-    goTo(idx);
+    volGoTo(idx);
 
+    let startX=0, dragging=false;
     wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;dragging=true;track.style.transition='none';},{passive:true});
     wrap.addEventListener('touchmove',e=>{
       if(!dragging)return;
       const dx=e.touches[0].clientX-startX;
-      const base = cur*100/3;
-      const pctShift = dx/wrap.offsetWidth*100/3;
-      track.style.transform='translateX('+(-base+pctShift)+'%)';
+      const pct = window._volCur*100/3 - dx/wrap.offsetWidth*100/3;
+      track.style.transform='translateX(-'+Math.max(0,Math.min(200/3,pct))+'%)';
     },{passive:true});
     wrap.addEventListener('touchend',e=>{
       if(!dragging)return; dragging=false;
       const dx=e.changedTouches[0].clientX-startX;
-      if(dx<-40&&cur<2) goTo(cur+1);
-      else if(dx>40&&cur>0) goTo(cur-1);
-      else goTo(cur);
+      if(dx<-50&&window._volCur<2) volGoTo(window._volCur+1);
+      else if(dx>50&&window._volCur>0) volGoTo(window._volCur-1);
+      else volGoTo(window._volCur);
     },{passive:true});
   },150);
 }
@@ -1668,7 +1647,8 @@ function switchTab(tab) {
   nav.classList.remove('collapsed');
   // Stats Tab updaten
   if (tab === 'stats') updateStatsTab();
-  if (tab === 'ziele') updateZieleTab();
+  if (tab === 'wochenplan') initPlanTab();
+  if (tab === 'ziele') renderCustomZiele();
   window.scrollTo(0,0);
 }
 
@@ -1723,24 +1703,153 @@ function updateStatsTab() {
   }
 }
 
-function updateZieleTab() {
-  // Step-Subs synchron halten
-  const s1 = document.getElementById('step1-sub');
-  const s1b = document.getElementById('step1-sub-2');
-  if (s1 && s1b) s1b.textContent = s1.textContent;
-  const s3 = document.getElementById('step3-sub');
-  const s3b = document.getElementById('step3-sub-2');
-  if (s3 && s3b) s3b.textContent = s3.textContent;
-  // Custom Ziele synchron
-  const cz = document.getElementById('custom-ziele');
-  const cz2 = document.getElementById('custom-ziele-2');
-  if (cz && cz2) cz2.innerHTML = cz.innerHTML;
-  // Wochenplan Tag markieren
-  const today = new Date().getDay();
-  [0,1,2,3,4,5,6].forEach(d => {
-    const el = document.getElementById('day2-'+d);
-    if (el) { el.classList.remove('today'); if(d===today) el.classList.add('today'); }
-  });
+function initPlanTab() {
+  const TAGE = [
+    { tag:'Montag', kürzel:'MO', emoji:'💪', typ:'kraft',
+      titel:'Push · Kraft', sub:'Brust, Schultern, Trizeps',
+      einheiten:[
+        {name:'Bankdrücken',detail:'4×8–10 Wdh. · Fokus: Brustmuskel'},
+        {name:'Schulterdrücken (OHP)',detail:'3×10 Wdh. · Stehend oder sitzend'},
+        {name:'Schrägbandrücken',detail:'3×12 Wdh. · Obere Brust'},
+        {name:'Trizeps Pushdown',detail:'3×15 Wdh. · Kabel oder Bänder'},
+        {name:'Dips',detail:'3×12 Wdh. · Körpergewicht'},
+      ]},
+    { tag:'Dienstag', kürzel:'DI', emoji:'🔱', typ:'kraft',
+      titel:'Pull · Kraft', sub:'Rücken, Bizeps',
+      einheiten:[
+        {name:'Klimmzüge',detail:'4×8 Wdh. · Enger oder weiter Griff'},
+        {name:'Rudern Kabel',detail:'3×12 Wdh. · Rücken, nicht Arme'},
+        {name:'Bizeps Curl',detail:'3×12 Wdh. · Kurzhantel oder Kabel'},
+        {name:'Face Pulls',detail:'3×15 Wdh. · Schultergesundheit'},
+        {name:'Unterarmcurl',detail:'3×15 Wdh. · Optional'},
+      ]},
+    { tag:'Mittwoch', kürzel:'MI', emoji:'🏃', typ:'lauf',
+      titel:'Tempolauf', sub:'5–6 km · Intensiv',
+      einheiten:[
+        {name:'Aufwärmen',detail:'10 Min lockeres Einlaufen bei Z2'},
+        {name:'Hauptteil',detail:'5–6 km bei Z4 (159–179 bpm) · 4:30–5:30/km Ziel'},
+        {name:'Variante A: Intervalle',detail:'5×1 km bei Z4 · 2 Min Trabpause'},
+        {name:'Variante B: Tempo',detail:'20–25 Min gleichmäßiges Z4-Tempo'},
+        {name:'Auslaufen',detail:'5 Min lockeres Auslaufen · Dehnen'},
+      ]},
+    { tag:'Donnerstag', kürzel:'DO', emoji:'🦵', typ:'kraft',
+      titel:'Push · Beine', sub:'Quadrizeps, Gesäß, Waden',
+      einheiten:[
+        {name:'Kniebeugen',detail:'4×8–10 Wdh. · Tiefe Ausführung'},
+        {name:'Beinpresse',detail:'3×12 Wdh. · Füße schulterbreit'},
+        {name:'Ausfallschritte',detail:'3×10 pro Bein · Vorwärts oder Rückwärts'},
+        {name:'Wadenheben',detail:'4×15 Wdh. · Stehend oder sitzend'},
+        {name:'Bein Curl',detail:'3×12 Wdh. · Ischio'},
+      ]},
+    { tag:'Freitag', kürzel:'FR', emoji:'🚶', typ:'lauf',
+      titel:'Easy Run', sub:'8–10 km · Locker',
+      einheiten:[
+        {name:'Pace-Ziel',detail:'6:00–7:30/km · Konversationstempo'},
+        {name:'HR-Ziel',detail:'Z2 · 119–139 bpm · Nie darüber'},
+        {name:'Fokus Grundlage',detail:'Aerobe Basis aufbauen · EF verbessern'},
+        {name:'Tipp',detail:'Wenn HR steigt → Tempo runter. Lieber zu langsam als zu schnell'},
+      ]},
+    { tag:'Samstag', kürzel:'SA', emoji:'😴', typ:'rest',
+      titel:'Aktive Erholung', sub:'Kein intensives Training',
+      einheiten:[
+        {name:'Dehnen / Mobility',detail:'15–20 Min · Hüfte, Waden, Ischio'},
+        {name:'Spaziergang',detail:'Optional · 20–30 Min locker'},
+        {name:'Schlaf-Priorität',detail:'Long Run morgen braucht volle Energie'},
+        {name:'Ernährung',detail:'Ausreichend Kohlenhydrate für morgen tanken'},
+      ]},
+    { tag:'Sonntag', kürzel:'SO', emoji:'🏆', typ:'long',
+      titel:'Long Run', sub:'12–16 km · Grundlage',
+      einheiten:[
+        {name:'Distanz',detail:'12–16 km · Alle 2 Wochen steigern'},
+        {name:'Pace',detail:'7:00–8:00/km · Deutlich unter Wettkampftempo'},
+        {name:'HR-Limit',detail:'Maximal Z3 (159 bpm) · Lieber langsamer'},
+        {name:'Verpflegung',detail:'Ab 12 km: 1 Gel nach 45 Min · Wasser mitnehmen'},
+        {name:'Tipp',detail:'Dieser Lauf ist die wichtigste Einheit der Woche'},
+      ]},
+  ];
+
+  // Heute = JS getDay() 0=So,1=Mo,...,6=Sa → wir zeigen Mo–So als 0–6
+  const jsDay = new Date().getDay(); // 0=So
+  // Unser Index: 0=Mo,1=Di,...,5=Sa,6=So
+  const todayIdx = jsDay === 0 ? 6 : jsDay - 1;
+
+  // Nav-Buttons rendern
+  const nav = document.getElementById('plan-day-nav');
+  if (nav) {
+    nav.innerHTML = TAGE.map((t,i)=>`
+      <button onclick="planGoTo(${i})" id="plannav-${i}" style="flex-shrink:0;padding:6px 12px;border-radius:14px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;background:${i===todayIdx?'var(--orange)':'var(--bg3)'};color:${i===todayIdx?'#fff':'var(--text2)'};">${t.kürzel}</button>
+    `).join('');
+  }
+
+  // Slides rendern
+  const track = document.getElementById('plan-track');
+  if (track) {
+    track.innerHTML = TAGE.map((t,i)=>{
+      const isToday = i === todayIdx;
+      const col = t.typ==='lauf'?'var(--orange)':t.typ==='long'?'var(--orange)':t.typ==='rest'?'var(--text3)':'#4FC3F7';
+      return `<div style="width:${100/7}%;flex-shrink:0;box-sizing:border-box;padding-right:0;">
+        <div class="card" style="margin-bottom:10px;${isToday?'border:1.5px solid var(--orange);':''}">
+          <div style="padding:16px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <span style="font-size:28px;">${t.emoji}</span>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#fff;">${t.tag}${isToday?' <span style="font-size:10px;background:var(--orange);color:#fff;padding:2px 6px;border-radius:6px;vertical-align:middle;">Heute</span>':''}</div>
+                <div style="font-size:11px;color:${col};font-weight:600;">${t.titel}</div>
+                <div style="font-size:10px;color:var(--text3);">${t.sub}</div>
+              </div>
+            </div>
+            ${t.einheiten.map((e,j)=>`
+              <div style="${j<t.einheiten.length-1?'border-bottom:1px solid var(--border);':''}padding:10px 0;">
+                <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:3px;">${e.name}</div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.5;">${e.detail}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Dots
+  const dots = document.getElementById('plan-dots');
+  if (dots) {
+    dots.innerHTML = TAGE.map((_,i)=>`<div id="plandot-${i}" style="height:6px;border-radius:3px;transition:all .2s;cursor:pointer;width:6px;background:var(--bg3);" onclick="planGoTo(${i})"></div>`).join('');
+  }
+
+  // Swipe
+  window._planCur = todayIdx;
+  window.planGoTo = n => {
+    n = Math.max(0,Math.min(6,n));
+    window._planCur = n;
+    const track = document.getElementById('plan-track');
+    if(track) { track.style.transition='transform .3s ease'; track.style.transform='translateX(-'+(n*100/7)+'%)'; }
+    TAGE.forEach((_,i)=>{
+      const b=document.getElementById('plannav-'+i);
+      if(b){b.style.background=i===n?'var(--orange)':'var(--bg3)';b.style.color=i===n?'#fff':'var(--text2)';}
+      const d=document.getElementById('plandot-'+i);
+      if(d){d.style.width=i===n?'16px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';}
+    });
+  };
+  planGoTo(todayIdx);
+
+  const wrap = document.getElementById('plan-track-wrap');
+  if (!wrap) return;
+  let startX=0, dragging=false;
+  wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;dragging=true;const t=document.getElementById('plan-track');if(t)t.style.transition='none';},{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    const dx=e.touches[0].clientX-startX;
+    const pct=window._planCur*100/7-dx/wrap.offsetWidth*100/7;
+    const t=document.getElementById('plan-track');
+    if(t) t.style.transform='translateX(-'+Math.max(0,Math.min(600/7,pct))+'%)';
+  },{passive:true});
+  wrap.addEventListener('touchend',e=>{
+    if(!dragging)return; dragging=false;
+    const dx=e.changedTouches[0].clientX-startX;
+    if(dx<-40&&window._planCur<6) planGoTo(window._planCur+1);
+    else if(dx>40&&window._planCur>0) planGoTo(window._planCur-1);
+    else planGoTo(window._planCur);
+  },{passive:true});
 }
 
 // ── Nav Collapse beim Scrollen ──
