@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -144,6 +144,7 @@ body { color:var(--text); font-family:'Inter',-apple-system,sans-serif; overscro
 .steps .step:last-child { border-radius:0 0 14px 14px; }
 #ziele-container { background:var(--bg2); border-radius:14px; overflow:hidden; }
 #ziele-container .step:last-child, #ziele-container #custom-ziele:last-child .step:last-child { border-radius:0 0 14px 14px; }
+.vol-slide { flex:0 0 100%; width:100%; min-width:100%; box-sizing:border-box; }
 .step { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--border); }
 .step:last-child { border-bottom:none; background:var(--orange); border-radius:0 0 14px 14px; }
 .step.amber { background:rgba(255,107,53,.08); }
@@ -197,6 +198,7 @@ body { color:var(--text); font-family:'Inter',-apple-system,sans-serif; overscro
 .analyse-run-stat strong { color:var(--text); font-weight:700; display:block; font-size:13px; }
 .analyse-line { font-size:14px; padding:8px 0; border-bottom:1px solid var(--border); line-height:1.4; }
 .analyse-line:last-child { border-bottom:none; }
+input, select, textarea { font-size:16px !important; }
 footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px; }
 .sort-card { margin-bottom:10px; touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
 .sort-card.dragging { opacity:.5; transform:scale(.97); }
@@ -1160,31 +1162,18 @@ function doDeleteZiel(idx) {
 function showAddZielModal(editIdx, existing) {
   const isEdit = editIdx !== undefined && editIdx >= 0;
   const z = existing || {};
-  const inp = (id, label, type, val, ph) =>
-    '<div style="margin-bottom:14px;">'
-    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">'+label+'</div>'
-    +'<input id="'+id+'" type="'+type+'" placeholder="'+ph+'" value="'+(val||'')+'" '
-    +'style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">'
-    +'</div>';
-  const sel = (id, label, opts, val) =>
-    '<div style="margin-bottom:14px;">'
-    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">'+label+'</div>'
-    +'<select id="'+id+'" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;">'
-    +opts.map(o=>'<option'+(o===val?' selected':'')+'>'+o+'</option>').join('')
-    +'</select></div>';
+  const s = 'width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:16px;font-family:inherit;box-sizing:border-box;-webkit-appearance:none;appearance:none;';
+  const row = (label, inner) => '<div style="margin-bottom:14px;"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">'+label+'</div>'+inner+'</div>';
   const html =
-    inp('ziel-name','Name des Ziels','text',z.name,'z.B. Marathon Lüdinghausen')
-    +sel('ziel-typ','Kategorie',['Wettkampf – Marathon','Wettkampf – Halbmarathon','Wettkampf – 10km','Wettkampf – 5km','Wettkampf – Ironman','Trainingsziel','Anderes'],z.kategorie)
-    +inp('ziel-datum','Datum (optional)','date',z.datum,'')
-    +inp('ziel-zeit','Zielzeit (optional)','text',z.zielzeit,'z.B. 2:20h')
-    +'<div style="margin-bottom:16px;">'
-    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Notiz (optional)</div>'
-    +'<textarea id="ziel-notiz" placeholder="z.B. Pace-Strategie, Vorbereitung..." rows="3" '
-    +'style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;font-family:inherit;resize:none;box-sizing:border-box;">'+(z.notiz||'')+'</textarea>'
-    +'</div>'
-    +'<button onclick="saveZiel('+(isEdit?editIdx:'undefined')+')" '
-    +'style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">'
-    +(isEdit?'Speichern':'Ziel hinzufügen')+'</button>';
+    row('Name des Ziels', '<input id="ziel-name" type="text" placeholder="z.B. Marathon Lüdinghausen" value="'+(z.name||'')+'" style="'+s+'">')
+    +row('Kategorie', '<select id="ziel-typ" style="'+s+'">'
+      +['Wettkampf – Marathon','Wettkampf – Halbmarathon','Wettkampf – 10km','Wettkampf – 5km','Wettkampf – Ironman','Trainingsziel','Anderes']
+        .map(o=>'<option'+(z.kategorie&&(o===z.kategorie||o.replace('Wettkampf – ','')=== z.kategorie)?' selected':'')+'>'+o+'</option>').join('')
+      +'</select>')
+    +row('Datum (optional)', '<input id="ziel-datum" type="date" value="'+(z.datum||'')+'" style="'+s+';color-scheme:dark;">')
+    +row('Zielzeit (optional)', '<input id="ziel-zeit" type="text" placeholder="z.B. 2:20h" value="'+(z.zielzeit||'')+'" style="'+s+'">')
+    +row('Notiz (optional)', '<textarea id="ziel-notiz" placeholder="z.B. Pace-Strategie..." rows="2" style="'+s+';resize:none;">'+(z.notiz||'')+'</textarea>')
+    +'<button onclick="saveZiel('+(isEdit?editIdx:'undefined')+')" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;">'+(isEdit?'Speichern':'Ziel hinzufügen')+'</button>';
   openModal(isEdit?'Ziel bearbeiten':'Neues Ziel', html);
 }
 
@@ -1408,56 +1397,59 @@ function showWeekModal(startTab) {
   const idx = startTab||0;
   const labels = ['Diese Woche','Diesen Monat','Dieses Jahr'];
   const html =
-    // Dots
     '<div id="vol-dots" style="display:flex;justify-content:center;gap:6px;margin-bottom:14px;">'
     +[0,1,2].map(i=>'<div id="vdot-'+i+'" style="width:'+(i===idx?'16px':'6px')+';height:6px;border-radius:3px;background:'+(i===idx?'var(--orange)':'var(--bg3)')+';transition:all .2s;"></div>').join('')
     +'</div>'
-    // Swipe Track
-    +'<div id="vol-modal-track-wrap" style="overflow:hidden;">'
-    +'<div id="vol-modal-track" style="display:flex;transition:transform .35s cubic-bezier(.25,.46,.45,.94);transform:translateX(-'+idx*100+'%);width:300%;">'
-    +'<div style="width:33.333%;flex-shrink:0;padding-right:2px;">'+wHtml+'</div>'
-    +'<div style="width:33.333%;flex-shrink:0;padding:0 1px;">'+mHtml+'</div>'
-    +'<div style="width:33.333%;flex-shrink:0;padding-left:2px;">'+yHtml+'</div>'
+    +'<div id="vol-modal-track-wrap" style="overflow:hidden;width:100%;position:relative;">'
+    +'<div id="vol-modal-track" style="display:flex;width:300%;transition:transform .35s cubic-bezier(.25,.46,.45,.94);">'
+    +'<div style="flex:1;min-width:0;box-sizing:border-box;">'+wHtml+'</div>'
+    +'<div style="flex:1;min-width:0;box-sizing:border-box;">'+mHtml+'</div>'
+    +'<div style="flex:1;min-width:0;box-sizing:border-box;">'+yHtml+'</div>'
     +'</div></div>';
 
   openModal(labels[idx], html);
 
   setTimeout(()=>{
-    // Bars rendern
     renderHBars('vol-kw-bars', kwKeys.map(k=>({km:weekMap[k]||0,label:'KW'+k,current:k===curKW})));
     renderHBars('vol-month-bars', last4m.map(m=>({km:mMap[m]||0,label:mn_s[m],current:m===nm})));
     renderHBars('vol-year-bars', [1,2,3,4].map(q=>({km:qMap[q]||0,label:'Q'+q,current:q===curQ})));
 
-    // Swipe initialisieren
     const wrap = document.getElementById('vol-modal-track-wrap');
     const track = document.getElementById('vol-modal-track');
     const titleEl = document.getElementById('modal-title');
     if (!wrap||!track) return;
     let cur=idx, startX=0, dragging=false;
+
     const goTo = n => {
-      cur=n;
-      track.style.transform='translateX(-'+n*100+'%)';
-      if(titleEl) titleEl.textContent=labels[n];
+      cur=Math.max(0,Math.min(2,n));
+      // Prozent-basiert: 0%, 33.33%, 66.66%
+      track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
+      track.style.transform='translateX(-'+(cur*100/3)+'%)';
+      if(titleEl) titleEl.textContent=labels[cur];
       [0,1,2].forEach(i=>{
         const d=document.getElementById('vdot-'+i);
-        if(d){d.style.width=i===n?'16px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';}
+        if(d){d.style.width=i===cur?'16px':'6px';d.style.background=i===cur?'var(--orange)':'var(--bg3)';}
       });
     };
+    // Initiale Position
+    goTo(idx);
+
     wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;dragging=true;track.style.transition='none';},{passive:true});
     wrap.addEventListener('touchmove',e=>{
       if(!dragging)return;
       const dx=e.touches[0].clientX-startX;
-      track.style.transform='translateX(calc(-'+cur*100+'% + '+dx+'px))';
+      const base = cur*100/3;
+      const pctShift = dx/wrap.offsetWidth*100/3;
+      track.style.transform='translateX('+(-base+pctShift)+'%)';
     },{passive:true});
     wrap.addEventListener('touchend',e=>{
       if(!dragging)return; dragging=false;
       const dx=e.changedTouches[0].clientX-startX;
-      track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
       if(dx<-40&&cur<2) goTo(cur+1);
       else if(dx>40&&cur>0) goTo(cur-1);
       else goTo(cur);
     },{passive:true});
-  },100);
+  },150);
 }
 
 function showMonthModal() { showWeekModal(1); }
