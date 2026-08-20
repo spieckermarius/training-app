@@ -638,10 +638,10 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
   <span id="step3-sub" style="display:none;"></span>
   <span id="step1-sub-2" style="display:none;"></span>
   <span id="step3-sub-2" style="display:none;"></span>
-  <span id="ziel-name" style="display:none;"></span>
-  <span id="ziel-typ" style="display:none;"></span>
-  <span id="ziel-datum" style="display:none;"></span>
-  <span id="ziel-zeit" style="display:none;"></span>
+  <span id="_hidden_ziel_name" style="display:none;"></span>
+  <span id="_hidden_ziel_typ" style="display:none;"></span>
+  <span id="_hidden_ziel_datum" style="display:none;"></span>
+  <span id="_hidden_ziel_zeit" style="display:none;"></span>
 
   <!-- ── Bottom Navigation ── -->
   <nav class="nav-bar" id="nav-bar">
@@ -1353,23 +1353,34 @@ function showWeekModal(startTab) {
   const yRuns=_runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
   const yKm=yRuns.reduce((s,r)=>s+r.distance/1000,0);
 
-  // Woche HTML
-  let wHtml='<div id="vol-kw-bars" style="margin-bottom:14px;"></div>';
-  _thisWeekRuns.forEach(r=>{wHtml+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
+  // Hilfsfunktion: Lauf-Row HTML
+  const runRow = r => '<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
     +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-    +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';});
-  if(!_thisWeekRuns.length) wHtml+='<div style="text-align:center;padding:12px;color:var(--text3)">Noch keine Läufe</div>';
+    +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
+
+  const collapsible = (runs, id) => {
+    if (!runs.length) return '<div style="text-align:center;padding:12px;color:var(--text3)">Noch keine Läufe</div>';
+    let h = runs.slice(0,4).map(runRow).join('');
+    if (runs.length > 4) {
+      h += '<div id="'+id+'-more" style="display:none;">'+runs.slice(4).map(runRow).join('')+'</div>'
+        +'<div onclick="const e=document.getElementById(\''+id+'-more\');const b=document.getElementById(\''+id+'-btn\');if(e.style.display===\'none\'){e.style.display=\'block\';b.textContent=\'Weniger anzeigen\';}else{e.style.display=\'none\';b.textContent=\'+'+(runs.length-4)+' weitere\'}" id="'+id+'-btn" style="text-align:center;padding:10px;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer;">+'+(runs.length-4)+' weitere</div>';
+    }
+    return h;
+  };
+
+  // Woche HTML
+  let wHtml='<div id="vol-kw-bars" style="margin-bottom:14px;"></div>'
+    +collapsible(_thisWeekRuns,'vol-w');
+  if(!_thisWeekRuns.length) wHtml+='';
 
   // Monat HTML
-  let mHtml='<div id="vol-month-bars" style="margin-bottom:14px;"></div>';
-  mHtml+='<div style="font-size:11px;color:var(--text2);margin-bottom:10px;">'+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>';
-  mRuns.forEach(r=>{mHtml+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
-    +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-    +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';});
+  let mHtml='<div id="vol-month-bars" style="margin-bottom:14px;"></div>'
+    +'<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">'+mKm.toFixed(1)+' km · '+mRuns.length+' Läufe</div>'
+    +collapsible(mRuns,'vol-m');
 
   // Jahr HTML
-  let yHtml='<div id="vol-year-bars" style="margin-bottom:14px;"></div>';
-  yHtml+='<div style="font-size:11px;color:var(--text2);margin-bottom:10px;">'+Math.round(yKm)+' km · '+yRuns.length+' Läufe</div>';
+  let yHtml='<div id="vol-year-bars" style="margin-bottom:14px;"></div>'
+    +'<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">'+Math.round(yKm)+' km · '+yRuns.length+' Läufe</div>';
   [1,2,3,4].forEach(q=>{const qR=yRuns.filter(r=>Math.floor(new Date(r.start_date_local).getMonth()/3)+1===q);
     if(qR.length) yHtml+='<div class="modal-stat"><span class="modal-stat-label">Q'+q+(q===curQ?' · aktuell':'')+' · '+qR.length+' Läufe</span><span class="modal-stat-value">'+(qMap[q]||0).toFixed(0)+' km</span></div>';});
 
@@ -1781,13 +1792,16 @@ function initPlanTab() {
     `).join('');
   }
 
-  // Slides rendern
+  // Slides rendern — px-basiert
+  const wrap2 = document.getElementById('plan-track-wrap');
+  const W = wrap2 ? wrap2.offsetWidth : window.innerWidth - 32;
   const track = document.getElementById('plan-track');
   if (track) {
+    track.style.width = (W * 7) + 'px';
     track.innerHTML = TAGE.map((t,i)=>{
       const isToday = i === todayIdx;
       const col = t.typ==='lauf'?'var(--orange)':t.typ==='long'?'var(--orange)':t.typ==='rest'?'var(--text3)':'#4FC3F7';
-      return `<div style="width:${100/7}%;flex-shrink:0;box-sizing:border-box;padding-right:0;">
+      return `<div style="width:${W}px;flex-shrink:0;box-sizing:border-box;">
         <div class="card" style="margin-bottom:10px;${isToday?'border:1.5px solid var(--orange);':''}">
           <div style="padding:16px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
@@ -1822,7 +1836,12 @@ function initPlanTab() {
     n = Math.max(0,Math.min(6,n));
     window._planCur = n;
     const track = document.getElementById('plan-track');
-    if(track) { track.style.transition='transform .3s ease'; track.style.transform='translateX(-'+(n*100/7)+'%)'; }
+    const wrap = document.getElementById('plan-track-wrap');
+    if(track && wrap) {
+      const W = wrap.offsetWidth;
+      track.style.transition='transform .3s ease';
+      track.style.transform='translateX(-'+(n*W)+'px)';
+    }
     TAGE.forEach((_,i)=>{
       const b=document.getElementById('plannav-'+i);
       if(b){b.style.background=i===n?'var(--orange)':'var(--bg3)';b.style.color=i===n?'#fff':'var(--text2)';}
@@ -1835,13 +1854,17 @@ function initPlanTab() {
   const wrap = document.getElementById('plan-track-wrap');
   if (!wrap) return;
   let startX=0, dragging=false;
-  wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;dragging=true;const t=document.getElementById('plan-track');if(t)t.style.transition='none';},{passive:true});
+  wrap.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX; dragging=true;
+    const t=document.getElementById('plan-track');
+    if(t) t.style.transition='none';
+  },{passive:true});
   wrap.addEventListener('touchmove',e=>{
     if(!dragging)return;
     const dx=e.touches[0].clientX-startX;
-    const pct=window._planCur*100/7-dx/wrap.offsetWidth*100/7;
+    const W=wrap.offsetWidth;
     const t=document.getElementById('plan-track');
-    if(t) t.style.transform='translateX(-'+Math.max(0,Math.min(600/7,pct))+'%)';
+    if(t) t.style.transform='translateX(-'+(window._planCur*W-dx)+'px)';
   },{passive:true});
   wrap.addEventListener('touchend',e=>{
     if(!dragging)return; dragging=false;
