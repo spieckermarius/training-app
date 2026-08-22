@@ -33,10 +33,20 @@ module.exports = async function(req, res) {
     }
 
     if (action === 'activities') {
-      const r = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=40', {
+      const perPage = Math.min(parseInt(body.per_page)||100, 100);
+      const r = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}`, {
         headers: { Authorization: 'Bearer ' + access_token },
       });
-      return res.status(200).json(await r.json());
+      const acts = await r.json();
+      // Normalize gear_id: Strava returns "g12345" format, strip the leading 'g'
+      if (Array.isArray(acts)) {
+        acts.forEach(a => {
+          if (a.gear_id && typeof a.gear_id === 'string' && a.gear_id.startsWith('g')) {
+            a.gear_id = a.gear_id.slice(1);
+          }
+        });
+      }
+      return res.status(200).json(acts);
     }
 
     if (action === 'athlete') {
