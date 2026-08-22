@@ -283,9 +283,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div class="vol-inner tappable" onclick="showWeekModal()">
             <div class="vol-top">
               <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Wochenvolumen</div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <button onclick="event.stopPropagation();showVolSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:1;" title="Ziele anpassen">⚙️</button>
-                <div class="prog-km" id="week-km" style="color:#fff;">0<small> / <span id="week-target-label">25</span> km</small></div>
+              <div style="display:flex;align-items:center;gap:8px;">                <div class="prog-km" id="week-km" style="color:#fff;">0<small> / <span id="week-target-label">25</span> km</small></div>
               </div>
             </div>
             <div class="prog-bar-track"><div class="prog-bar-fill" id="week-bar" style="width:0%"></div></div>
@@ -305,9 +303,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div class="vol-inner tappable" onclick="showWeekModal(1)">
             <div class="vol-top">
               <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Monatsvolumen</div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <button onclick="event.stopPropagation();showVolSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:1;" title="Ziele anpassen">⚙️</button>
-                <div class="prog-km" id="month-km" style="color:#fff;">0<small> / <span id="month-target-label">100</span> km</small></div>
+              <div style="display:flex;align-items:center;gap:8px;">                <div class="prog-km" id="month-km" style="color:#fff;">0<small> / <span id="month-target-label">100</span> km</small></div>
               </div>
             </div>
             <div class="prog-bar-track" style="position:relative;overflow:visible;">
@@ -322,9 +318,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div class="vol-inner tappable" onclick="showWeekModal(2)">
             <div class="vol-top">
               <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Jahresvolumen</div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <button onclick="event.stopPropagation();showVolSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:1;" title="Ziele anpassen">⚙️</button>
-                <div class="prog-km" id="year-km" style="color:#fff;">0<small> / <span id="year-target-label">1200</span> km</small></div>
+              <div style="display:flex;align-items:center;gap:8px;">                <div class="prog-km" id="year-km" style="color:#fff;">0<small> / <span id="year-target-label">1200</span> km</small></div>
               </div>
             </div>
             <div class="prog-bar-track"><div class="prog-bar-fill" id="year-bar" style="width:0%"></div></div>
@@ -518,7 +512,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
 
     <!-- Swipeable Tages-Slides -->
     <div style="overflow:hidden;width:100%;" id="plan-track-wrap">
-      <div id="plan-track" style="display:flex;width:700%;transition:transform .3s ease;">
+      <div id="plan-track" style="display:flex;transition:transform .3s ease;">
         <!-- Slides werden per JS gefüllt -->
       </div>
     </div>
@@ -1109,8 +1103,8 @@ function renderCustomZiele() {
         return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="background:var(--orange);border-radius:'+br+'">'
           +'<div style="font-size:18px;width:28px;text-align:center;">'+emoji+'</div>'
           +'<div style="flex:1;min-width:0;">'
-          +'<div class="step-title" style="color:#fff;">'+z.name+'</div>'
-          +'<div class="step-sub" style="color:rgba(255,255,255,.75);">'+z.kategorie+(z.datum?' · '+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'')+' '+countdown+'</div>'
+          +'<div class="step-title">'+z.name+'</div>'
+          +'<div class="step-sub">'+z.kategorie+(z.datum?' · '+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'')+' '+countdown+'</div>'
           +'</div>'
           +(z.zielzeit?'<div style="color:#fff;font-size:13px;font-weight:700;white-space:nowrap;">'+z.zielzeit+'</div>':'<div style="color:#fff;font-size:13px;">›</div>')
           +'</div>';
@@ -1414,8 +1408,10 @@ function showWeekModal(startTab) {
 
   const idx = startTab||0;
   const labels = ['Woche','Monat','Jahr'];
+  const gearBtn = '<button onclick="closeModal();setTimeout(showVolSettings,300)" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;line-height:1;font-size:16px;">⚙️</button>';
   const html =
-    '<div id="vol-modal-track-wrap" style="overflow:hidden;width:100%;margin-bottom:12px;">'
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:8px;">'+gearBtn+'</div>'
+    +'<div id="vol-modal-track-wrap" style="overflow:hidden;width:100%;margin-bottom:12px;">'
     +'<div id="vol-modal-track" style="display:flex;width:300%;transition:transform .3s ease;">'
     +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;">'+wHtml+'</div>'
     +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;">'+mHtml+'</div>'
@@ -1901,26 +1897,41 @@ function initPlanTab() {
 
   const wrap = document.getElementById('plan-track-wrap');
   if (!wrap) return;
-  let startX=0, dragging=false;
-  wrap.addEventListener('touchstart',e=>{
-    startX=e.touches[0].clientX; dragging=true;
-    const t=document.getElementById('plan-track');
-    if(t) t.style.transition='none';
-  },{passive:true});
-  wrap.addEventListener('touchmove',e=>{
-    if(!dragging)return;
-    const dx=e.touches[0].clientX-startX;
-    const W=wrap.offsetWidth;
-    const t=document.getElementById('plan-track');
-    if(t) t.style.transform='translateX(-'+(window._planCur*W-dx)+'px)';
-  },{passive:true});
-  wrap.addEventListener('touchend',e=>{
-    if(!dragging)return; dragging=false;
-    const dx=e.changedTouches[0].clientX-startX;
-    if(dx<-40&&window._planCur<6) planGoTo(window._planCur+1);
-    else if(dx>40&&window._planCur>0) planGoTo(window._planCur-1);
+  let startX=0, startY=0, slideW=0, isHoriz=null, dragging=false;
+
+  wrap.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    slideW = wrap.offsetWidth;
+    isHoriz = null;
+    dragging = true;
+    const t = document.getElementById('plan-track');
+    if (t) t.style.transition = 'none';
+  }, {passive:true});
+
+  wrap.addEventListener('touchmove', e => {
+    if (!dragging || !slideW) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (isHoriz === null) {
+      isHoriz = Math.abs(dx) > Math.abs(dy);
+    }
+    if (!isHoriz) return;
+    e.preventDefault();
+    const t = document.getElementById('plan-track');
+    const clamp = Math.max(-slideW, Math.min(slideW, dx));
+    if (t) t.style.transform = 'translateX(-' + (window._planCur * slideW - clamp) + 'px)';
+  }, {passive:false});
+
+  wrap.addEventListener('touchend', e => {
+    if (!dragging) return;
+    dragging = false;
+    if (!isHoriz) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (dx < -50 && window._planCur < 6) planGoTo(window._planCur + 1);
+    else if (dx > 50 && window._planCur > 0) planGoTo(window._planCur - 1);
     else planGoTo(window._planCur);
-  },{passive:true});
+  }, {passive:true});
 }
 
 // ── Nav Collapse beim Scrollen ──
