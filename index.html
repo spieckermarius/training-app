@@ -97,17 +97,17 @@ body { color:var(--text); font-family:'Inter',-apple-system,sans-serif; overscro
 .status-last-run strong { color:var(--text); font-size:14px; font-weight:700; }
 .streak-badge { background:linear-gradient(135deg,#FF6B35,#FF453A); border-radius:20px; padding:4px 10px; font-size:12px; font-weight:700; color:white; display:flex; align-items:center; gap:4px; }
 .week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:6px; }
-.day { background:var(--bg3); border-radius:10px; padding:8px 4px; text-align:center; min-height:70px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.day { background:var(--bg3); border-radius:10px; padding:10px 4px; text-align:center; min-height:76px; display:flex; flex-direction:column; align-items:center; gap:4px; }
 .day.run-day { border:1.5px solid var(--orange); }
 .day.long { background:var(--bg3); border:1.5px solid var(--orange); }
 .day.rest { background:var(--bg3); }
 .day.today { background:var(--orange) !important; border:none !important; opacity:1 !important; }
-.d-label { font-size:9px; font-weight:700; color:var(--text3); }
+.d-label { font-size:9px; font-weight:700; color:var(--text3); margin-bottom:2px; }
 .day.long .d-label { color:var(--orange); }
 .day.today .d-label { color:rgba(255,255,255,.8) !important; font-weight:800; }
-.d-name { font-size:9px; font-weight:700; color:var(--text); }
+.d-name { font-size:10px; font-weight:700; color:var(--text); }
 .day.today .d-name,.day.today .d-sub { color:white !important; }
-.d-sub { font-size:8px; color:var(--text3); }
+.d-sub { display:none; }
 .card { background:var(--bg2); border-radius:14px; margin-bottom:10px; overflow:hidden; }
 .tappable { cursor:pointer; transition:transform .08s,opacity .08s; }
 .tappable:active { transform:scale(.95); opacity:.85; }
@@ -263,13 +263,13 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
       <div style="padding:12px 14px 10px;">
         <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Wochenplan</div>
         <div class="week-grid">
-          <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div><div class="d-sub">Kraft</div></div>
-          <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div><div class="d-sub">Kraft</div></div>
-          <div class="day run-day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div><div class="d-sub">5–6km</div></div>
-          <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name">Push</div><div class="d-sub">Beine</div></div>
-          <div class="day run-day" id="day-5"><div class="d-label">FR</div><div class="d-name">Easy</div><div class="d-sub">8–10km</div></div>
+          <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div></div>
+          <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div></div>
+          <div class="day run-day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div></div>
+          <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name">Push</div></div>
+          <div class="day run-day" id="day-5"><div class="d-label">FR</div><div class="d-name">Easy</div></div>
           <div class="day rest" id="day-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
-          <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div><div class="d-sub">12–16km</div></div>
+          <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div></div>
         </div>
       </div>
     </div>
@@ -364,7 +364,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div style="font-size:28px;font-weight:800;color:#fff;line-height:1;" id="grundlage-hr-now">–</div>
           <div style="font-size:12px;color:var(--text2);">bpm</div>
           <div style="font-size:12px;font-weight:600;" id="grundlage-trend-inline">–</div>
-          <div style="font-size:10px;color:var(--text3);" id="grundlage-pace-label">· 6:00–7:30/km</div>
+          
         </div>
         <!-- Fortschrittsbalken von 160 → 135 -->
         <div style="position:relative;margin-bottom:6px;">
@@ -577,7 +577,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div style="font-size:28px;font-weight:800;color:#fff;" id="grundlage-hr-now-s">–</div>
           <div style="font-size:12px;color:var(--text2);">bpm</div>
           <div style="font-size:12px;font-weight:600;" id="grundlage-trend-inline-s">–</div>
-          <div style="font-size:10px;color:var(--text3);" id="grundlage-pace-label-s">· 6:00–7:30/km</div>
+          
         </div>
         <div style="position:relative;margin-bottom:6px;">
           <div style="background:var(--bg3);height:8px;border-radius:4px;overflow:hidden;">
@@ -852,42 +852,43 @@ function renderDashboard(activities) {
 
   // Grundlage + EF
   // Pace-Fenster: 6:00–7:30/km = 400–450s/km
-  const PACE_MIN = 360, PACE_MAX = 450; // s/km
+  const PACE_MIN = 330, PACE_MAX = 480; // s/km — 5:30 bis 8:00/km
   const HR_START = 160, HR_ZIEL = 135;
 
   _easyRuns = _runs.filter(r => {
-    if (!r.average_heartrate || r.distance < 5000) return false;
+    if (!r.average_heartrate || r.distance < 4000) return false;
     const pacePerKm = r.moving_time / (r.distance/1000);
     return pacePerKm >= PACE_MIN && pacePerKm <= PACE_MAX;
   }).sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
 
-  // Fallback: alle Easy Runs wenn Pace-Fenster leer
-  if (_easyRuns.length < 2) {
-    _easyRuns = _runs.filter(r=>r.distance>5000&&r.average_heartrate&&r.average_heartrate<160)
+  // Fallback: alle Läufe mit HR-Daten
+  if (_easyRuns.length < 1) {
+    _easyRuns = _runs.filter(r=>r.distance>3000&&r.average_heartrate)
       .sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
-    const lbl = document.getElementById('grundlage-pace-label');
-    if (lbl) lbl.textContent = 'Alle Easy Runs';
   }
 
-  if (_easyRuns.length >= 2) {
-    const prev=_easyRuns[_easyRuns.length-2], curr=_easyRuns[_easyRuns.length-1];
+  if (_easyRuns.length >= 1) {
+    const curr = _easyRuns[_easyRuns.length-1];
+    const prev = _easyRuns.length >= 2 ? _easyRuns[_easyRuns.length-2] : null;
 
     // HR hidden elements (für Modal)
     const hrNow = document.getElementById('hr-now');
-    if (hrNow) { hrNow.textContent=Math.round(curr.average_heartrate)+' bpm'; }
-    const hrPrevEl = document.getElementById('hr-prev');
-    if (hrPrevEl) hrPrevEl.textContent=Math.round(prev.average_heartrate);
-    const ef = r => (r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
-    const efCurr=ef(curr), efPrev=ef(prev), efDiff=(efCurr-efPrev).toFixed(2);
-    const efEl = document.getElementById('pace-curr-row');
-    if (efEl) { efEl.textContent='EF '+efCurr; efEl.style.color=efDiff>0?'var(--green)':efDiff<0?'var(--red)':'var(--text)'; }
-    const efPrevEl = document.getElementById('pace-prev-row');
-    if (efPrevEl) efPrevEl.textContent='Vorher EF '+efPrev;
+    if (hrNow) hrNow.textContent = Math.round(curr.average_heartrate)+' bpm';
+    if (prev) {
+      const hrPrevEl = document.getElementById('hr-prev');
+      if (hrPrevEl) hrPrevEl.textContent = Math.round(prev.average_heartrate);
+      const ef = r => (r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
+      const efCurr=ef(curr), efPrev=ef(prev);
+      const efEl = document.getElementById('pace-curr-row');
+      if (efEl) efEl.textContent = 'EF '+efCurr;
+      const efPrevEl = document.getElementById('pace-prev-row');
+      if (efPrevEl) efPrevEl.textContent = 'Vorher EF '+efPrev;
+    }
 
     // HR-Fortschrittsbalken
     const hrCurr = Math.round(curr.average_heartrate);
-    const hrPrev = Math.round(prev.average_heartrate);
-    const diff = hrPrev - hrCurr; // positiv = besser (HR gesunken)
+    const hrPrev = prev ? Math.round(prev.average_heartrate) : hrCurr;
+    const diff = hrPrev - hrCurr;
     const pct = Math.min(100, Math.max(0, (HR_START - hrCurr) / (HR_START - HR_ZIEL) * 100));
     const col = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text2)';
 
@@ -896,18 +897,14 @@ function renderDashboard(activities) {
     const trendInline = document.getElementById('grundlage-trend-inline');
     if (trendInline) {
       trendInline.style.color = col;
-      trendInline.textContent = diff > 0 ? '↓ −'+diff+' bpm' : diff < 0 ? '↑ +'+Math.abs(diff)+' bpm' : '→ stabil';
+      trendInline.textContent = !prev ? '– kein Vgl.' : diff > 0 ? '↓ −'+diff+' bpm' : diff < 0 ? '↑ +'+Math.abs(diff)+' bpm' : '→ stabil';
     }
     const bar = document.getElementById('grundlage-hr-bar');
     if (bar) bar.style.width = pct.toFixed(0)+'%';
     const marker = document.getElementById('grundlage-hr-marker');
     if (marker) { marker.style.display='block'; marker.style.left=pct.toFixed(0)+'%'; }
     const sub = document.getElementById('grundlage-trend-sub');
-    if (sub) {
-      const pace = fmtPace(curr.distance, curr.moving_time);
-      const trend = diff>0?'Verbessert':diff<0?'Gestiegen':'Stabil';
-      if (sub) sub.textContent = '';
-    }
+    if (sub) sub.textContent = '';
   }
 
   // Status Bar
@@ -1090,32 +1087,28 @@ function renderCustomZiele() {
     }
     if (em) em.style.display = 'none';
     el.innerHTML = ziele.map((z, i) => {
-      const date = new Date(z.datum);
-      const days = Math.ceil((date - now) / 86400000);
-      const months = Math.floor(days / 30);
-      const restDays = days % 30;
-      const countdown = days < 0 ? 'Vergangen' : days === 0 ? 'Heute!' : months > 0 ? months+'M '+restDays+'T' : days+' T';
+      const date = z.datum ? new Date(z.datum) : null;
+      const days = date ? Math.ceil((date - now) / 86400000) : null;
+      const months = days !== null ? Math.floor(Math.abs(days) / 30) : null;
+      const restDays = days !== null ? Math.abs(days) % 30 : null;
+      const countdown = days === null ? '' :
+        days < 0 ? 'Vergangen' :
+        days === 0 ? 'Heute!' :
+        months > 0 ? months+'M '+restDays+'T' :
+        days+' T';
       const isRace = ['Marathon','Halbmarathon','10km','5km','Ironman'].includes(z.kategorie);
       const emoji = z.kategorie==='Marathon'?'🏅':z.kategorie==='Halbmarathon'?'🏃':z.kategorie==='10km'?'⚡':z.kategorie==='5km'?'💨':z.kategorie==='Ironman'?'🦺':z.kategorie==='Trainingsziel'?'🎯':'📌';
       const lastItem = i === ziele.length - 1;
       const br = lastItem ? '0 0 14px 14px' : '0';
-      if (isRace && z.datum) {
-        return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="background:var(--orange);border-radius:'+br+'">'
-          +'<div style="font-size:18px;width:28px;text-align:center;">'+emoji+'</div>'
-          +'<div style="flex:1;min-width:0;">'
-          +'<div class="step-title">'+z.name+'</div>'
-          +'<div class="step-sub">'+z.kategorie+(z.datum?' · '+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'')+' '+countdown+'</div>'
-          +'</div>'
-          +(z.zielzeit?'<div style="color:#fff;font-size:13px;font-weight:700;white-space:nowrap;">'+z.zielzeit+'</div>':'<div style="color:#fff;font-size:13px;">›</div>')
-          +'</div>';
-      }
-      return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="border-radius:'+br+'">'
+      // Alle Ziele gleicher Stil — kein Orange mehr
+      const countdownColor = days !== null && days <= 30 ? 'var(--orange)' : 'var(--text3)';
+      return '<div class="step tappable" onclick="showCustomZielModal('+i+')" style="border-radius:'+br+';">'
         +'<div style="font-size:18px;width:28px;text-align:center;">'+emoji+'</div>'
         +'<div style="flex:1;min-width:0;">'
         +'<div class="step-title">'+z.name+'</div>'
-        +'<div class="step-sub">'+z.kategorie+(z.datum?' · '+new Date(z.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' · '+countdown:'')+'</div>'
+        +'<div class="step-sub">'+z.kategorie+(date?' · '+date.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'')+'</div>'
         +'</div>'
-        +'<div style="color:var(--text3);font-size:16px;">›</div>'
+        +(countdown ? '<div style="text-align:right;flex-shrink:0;"><div style="font-size:11px;font-weight:700;color:'+countdownColor+';">'+countdown+'</div>'+(isRace&&z.zielzeit?'<div style="font-size:10px;color:var(--text3);">'+z.zielzeit+'</div>':'')+'</div>' : '<div style="color:var(--text3);font-size:16px;">›</div>')
         +'</div>';
     }).join('');
   });
@@ -1381,11 +1374,11 @@ function showWeekModal(startTab) {
     +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
 
   const collapsible = (runs, id) => {
-    if (!runs.length) return '<div style="text-align:center;padding:12px;color:var(--text3)">Noch keine Läufe</div>';
-    let h = runs.slice(0,4).map(runRow).join('');
-    if (runs.length > 4) {
-      h += '<div id="'+id+'-more" style="display:none;">'+runs.slice(4).map(runRow).join('')+'</div>'
-        +'<div onclick="const e=document.getElementById(\''+id+'-more\');const b=document.getElementById(\''+id+'-btn\');if(e.style.display===\'none\'){e.style.display=\'block\';b.textContent=\'Weniger anzeigen\';}else{e.style.display=\'none\';b.textContent=\'+'+(runs.length-4)+' weitere\'}" id="'+id+'-btn" style="text-align:center;padding:10px;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer;">+'+(runs.length-4)+' weitere</div>';
+    if (!runs.length) return '<div style="text-align:center;padding:12px;color:var(--text3);font-size:13px;">Noch keine Läufe</div>';
+    let h = runs.slice(0,1).map(runRow).join('');
+    if (runs.length > 1) {
+      h += '<div id="'+id+'-more" style="display:none;">'+runs.slice(1).map(runRow).join('')+'</div>'
+        +'<div onclick="const e=document.getElementById(\''+id+'-more\');const b=document.getElementById(\''+id+'-btn\');if(e.style.display===\'none\'){e.style.display=\'block\';b.textContent=\'Weniger\';}else{e.style.display=\'none\';b.textContent=\'+'+(runs.length-1)+' weitere\';}" id="'+id+'-btn" style="text-align:center;padding:8px;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer;">+'+(runs.length-1)+' weitere</div>';
     }
     return h;
   };
