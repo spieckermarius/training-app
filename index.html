@@ -212,7 +212,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
 <body>
 
 <div id="login-screen">
-  <h1>TRAININGS<span style="color:var(--orange)">STAND.</span></h1>
+  <h1>ALLIN<span style="color:var(--orange)">DURE.</span></h1>
   <p>Verbinde dein Strava-Konto für Live-Trainingsdaten.</p>
   <a id="strava-login-btn" class="strava-btn" href="#">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
@@ -775,10 +775,10 @@ let _runs = [], _thisWeekRuns = [], _easyRuns = [];
 // ── Dashboard ──
 // Hilfsfunktion: HR aus Activity lesen (verschiedene API-Strukturen)
 function getHR(r) {
-  return getHR(r) || (r.summary && r.summary.avg_hr) || 0;
+  return r.average_heartrate || (r.summary && r.summary.avg_hr) || 0;
 }
 function getMaxHR(r) {
-  return getMaxHR(r) || (r.summary && r.summary.max_hr) || 0;
+  return r.max_heartrate || (r.summary && r.summary.max_hr) || 0;
 }
 
 function renderDashboard(activities) {
