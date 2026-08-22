@@ -421,13 +421,15 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
     </div>
 
     <div class="sort-card" data-id="laeufe">
-    <div class="card tappable" onclick="showAllRunsModal()">
-      <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Laufhistorie</div>
-          <div style="font-size:16px;font-weight:700;color:#fff;" id="runs-preview">– Läufe</div>
+    <div class="card">
+      <div style="padding:12px 14px 10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Laufhistorie</div>
+          <div style="font-size:11px;color:var(--text3);cursor:pointer;" onclick="showAllRunsModal()" id="runs-preview">–</div>
         </div>
-        <div style="font-size:24px;color:var(--orange);">→</div>
+        <div style="overflow:hidden;width:100%;" id="run-cards-wrap">
+          <div id="run-cards-track" style="display:flex;gap:8px;transition:transform .3s ease;"></div>
+        </div>
       </div>
     </div>
     </div>
@@ -972,10 +974,11 @@ function renderDashboard(activities) {
     const marker = document.getElementById('zone-marker');
     if (marker && lastHR > 0) { marker.style.display='block'; marker.style.left=markerPct+'%'; }
   }
-  // Runs Preview
+  // Runs Preview + Kacheln
   if (_runs.length) {
-    document.getElementById('runs-preview').textContent=
-      _runs.length+' Läufe · zuletzt '+fmtDate(_runs[0].start_date_local)+' · '+(_runs[0].distance/1000).toFixed(1)+' km';
+    const rp = document.getElementById('runs-preview');
+    if (rp) rp.textContent = _runs.length+' Läufe →';
+    setTimeout(renderRunCards, 150);
   }
 
   // Schuh-Kilometer — gear_id kann direkt oder in summary stecken
@@ -1355,6 +1358,18 @@ function showGrundlageModal() {
 
 function showWeekModal(startTab) {
   const now=new Date(), curKW=isoWeek(now), nm=now.getMonth(), ny=now.getFullYear();
+  const mnFull=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const mnKurz=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  // Konkrete Wochenlabels
+  const kwLabel = kw => {
+    // Finde Montag der KW
+    const d = new Date(now);
+    d.setDate(d.getDate() - ((d.getDay()+6)%7) + (kw - curKW)*7);
+    const von = pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.';
+    d.setDate(d.getDate()+6);
+    const bis = pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.';
+    return kw===curKW ? 'Diese Woche' : von+'–'+bis;
+  };
   const weekMap={};
   _runs.forEach(r=>{const k=isoWeek(r.start_date_local);weekMap[k]=(weekMap[k]||0)+r.distance/1000;});
   const kwKeys=[curKW-3,curKW-2,curKW-1,curKW];
@@ -1362,7 +1377,6 @@ function showWeekModal(startTab) {
     .sort((a,b)=>new Date(b.start_date_local)-new Date(a.start_date_local));
   const mKm=mRuns.reduce((s,r)=>s+r.distance/1000,0);
   const mMap=window._mMap||{};
-  const mn_s=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const last4m=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
   const qMap=window._qMap||{1:0,2:0,3:0,4:0}, curQ=window._curQ||1;
   const yRuns=_runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
@@ -1400,7 +1414,7 @@ function showWeekModal(startTab) {
     if(qR.length) yHtml+='<div class="modal-stat"><span class="modal-stat-label">Q'+q+(q===curQ?' · aktuell':'')+' · '+qR.length+' Läufe</span><span class="modal-stat-value">'+(qMap[q]||0).toFixed(0)+' km</span></div>';});
 
   const idx = startTab||0;
-  const labels = ['Woche','Monat','Jahr'];
+  const labels = [kwLabel(curKW), mnFull[nm]+' '+ny, 'Jahr '+ny];
   const gearBtn = '<button onclick="closeModal();setTimeout(showVolSettings,300)" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;line-height:1;font-size:16px;">⚙️</button>';
   const html =
     '<div style="display:flex;justify-content:flex-end;margin-bottom:8px;">'+gearBtn+'</div>'
@@ -1417,8 +1431,8 @@ function showWeekModal(startTab) {
   openModal(labels[idx], html);
 
   setTimeout(()=>{
-    renderHBars('vol-kw-bars', kwKeys.map(k=>({km:weekMap[k]||0,label:'KW'+k,current:k===curKW})));
-    renderHBars('vol-month-bars', last4m.map(m=>({km:mMap[m]||0,label:mn_s[m],current:m===nm})));
+    renderHBars('vol-kw-bars', kwKeys.map(k=>({km:weekMap[k]||0,label:k===curKW?'Jetzt':kwLabel(k).split('–')[0],current:k===curKW})));
+    renderHBars('vol-month-bars', last4m.map(m=>({km:mMap[m]||0,label:mnKurz[m],current:m===nm})));
     renderHBars('vol-year-bars', [1,2,3,4].map(q=>({km:qMap[q]||0,label:'Q'+q,current:q===curQ})));
 
     const wrap = document.getElementById('vol-modal-track-wrap');
@@ -1480,6 +1494,61 @@ function saveVolSettings() {
   localStorage.setItem('vol_targets', JSON.stringify({week:w,month:m,year:y}));
   closeModal();
   if(window._lastActivities) renderDashboard(window._lastActivities);
+}
+
+function renderRunCards() {
+  const wrap = document.getElementById('run-cards-wrap');
+  const track = document.getElementById('run-cards-track');
+  if (!track || !_runs.length) return;
+
+  // Kartenbreite = 1/3 der Kachel minus Gap
+  const W = wrap ? wrap.offsetWidth : 300;
+  const cardW = Math.floor((W - 16) / 3); // 3 Karten + 2 Gaps à 8px
+
+  track.innerHTML = _runs.map((r, i) => {
+    const km = (r.distance/1000).toFixed(1);
+    const pace = fmtPace(r.distance, r.moving_time);
+    const hr = r.average_heartrate ? Math.round(r.average_heartrate)+' bpm' : '–';
+    const d = new Date(r.start_date_local);
+    const datum = pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(2);
+    return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cardW+'px;background:var(--bg3);border-radius:10px;padding:10px 8px;cursor:pointer;box-sizing:border-box;">'
+      +'<div style="font-size:9px;color:var(--text3);font-weight:600;margin-bottom:4px;">'+datum+'</div>'
+      +'<div style="font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;">'+r.name+'</div>'
+      +'<div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;">'+km+' km</div>'
+      +'<div style="font-size:10px;color:var(--text2);margin-bottom:1px;">'+pace+'/km</div>'
+      +'<div style="font-size:10px;color:var(--text2);">'+hr+'</div>'
+      +'</div>';
+  }).join('');
+
+  // Swipe initialisieren
+  let startX=0, startY=0, isH=null, dragging=false, offset=0;
+  const maxOffset = Math.max(0, _runs.length * (cardW+8) - W);
+
+  wrap.addEventListener('touchstart', e=>{
+    startX=e.touches[0].clientX; startY=e.touches[0].clientY;
+    isH=null; dragging=true;
+    track.style.transition='none';
+  },{passive:true});
+  wrap.addEventListener('touchmove', e=>{
+    if(!dragging)return;
+    const dx=e.touches[0].clientX-startX;
+    const dy=e.touches[0].clientY-startY;
+    if(isH===null) isH=Math.abs(dx)>Math.abs(dy);
+    if(!isH)return;
+    e.preventDefault();
+    track.style.transform='translateX(-'+Math.max(0,Math.min(maxOffset, offset-dx))+'px)';
+  },{passive:false});
+  wrap.addEventListener('touchend', e=>{
+    if(!dragging)return; dragging=false;
+    if(!isH)return;
+    const dx=e.changedTouches[0].clientX-startX;
+    offset=Math.max(0,Math.min(maxOffset, offset-dx));
+    track.style.transition='transform .3s ease';
+    track.style.transform='translateX(-'+offset+'px)';
+  },{passive:true});
+
+  const rp = document.getElementById('runs-preview');
+  if (rp) rp.textContent = _runs.length+' Läufe →';
 }
 
 function showAllRunsModal() {
