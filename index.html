@@ -883,7 +883,7 @@ function renderDashboard(activities) {
 
     // HR hidden elements (für Modal)
     const hrNow = document.getElementById('hr-now');
-    if (hrNow) hrNow.textContent = Math.round(curgetHR(r))+' bpm';
+    if (hrNow) hrNow.textContent = Math.round(getHR(curr))+' bpm';
     if (prev) {
       const hrPrevEl = document.getElementById('hr-prev');
       if (hrPrevEl) hrPrevEl.textContent = Math.round(getHR(prev));
@@ -896,7 +896,7 @@ function renderDashboard(activities) {
     }
 
     // HR-Fortschrittsbalken
-    const hrCurr = Math.round(curgetHR(r));
+    const hrCurr = Math.round(getHR(curr));
     const hrPrev = prev ? Math.round(getHR(prev)) : hrCurr;
     const diff = hrPrev - hrCurr;
     const pct = Math.min(100, Math.max(0, (HR_START - hrCurr) / (HR_START - HR_ZIEL) * 100));
@@ -972,7 +972,7 @@ function renderDashboard(activities) {
   const labels = [Math.round(hm*0.5), Math.round(hm*0.6), Math.round(hm*0.7), Math.round(hm*0.8), Math.round(hm*0.9), hm];
   labels.forEach((v,i) => { const el=document.getElementById('zone-label-'+i); if(el) el.textContent = i===0?v+' bpm':i===5?v+' bpm':v; });
   if (_runs.length) {
-    const lastHR = Math.round(_getHR(runs[0])||0);
+    const lastHR = Math.round(getHR(runs[0])||0);
     const z = window._zones && window._zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
     if (z) document.getElementById('zone-last-run').innerHTML =
       'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
@@ -1795,7 +1795,7 @@ function updateStatsTab() {
   if (_easyRuns.length >= 2) {
     const curr = _easyRuns[_easyRuns.length-1];
     const prev = _easyRuns[_easyRuns.length-2];
-    const hrCurr = Math.round(curgetHR(r));
+    const hrCurr = Math.round(getHR(curr));
     const diff = Math.round(getHR(prev)) - hrCurr;
     const col = diff>0?'var(--green)':diff<0?'var(--red)':'var(--text2)';
     if (hrEl) hrEl.textContent = hrCurr;
@@ -1817,7 +1817,7 @@ function updateStatsTab() {
   }
   // Zonen last run + Marker
   if (_runs.length) {
-    const lastHR = Math.round(_getHR(runs[0])||0);
+    const lastHR = Math.round(getHR(runs[0])||0);
     const z = window._zones && window._zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
     const zlr = document.getElementById('zone-last-run-s');
     if (zlr && z) zlr.innerHTML = 'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
