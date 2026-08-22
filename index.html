@@ -146,7 +146,7 @@ body { color:var(--text); font-family:'Inter',-apple-system,sans-serif; overscro
 #ziele-container .step:last-child, #ziele-container #custom-ziele:last-child .step:last-child { border-radius:0 0 14px 14px; }
 .vol-slide { flex:0 0 100%; width:100%; min-width:100%; box-sizing:border-box; }
 .step { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--border); }
-.step:last-child { border-bottom:none; background:var(--orange); border-radius:0 0 14px 14px; }
+.step:last-child { border-bottom:none; border-radius:0 0 14px 14px; }
 .step.amber { background:rgba(255,107,53,.08); }
 .step-num { font-size:18px; font-weight:800; width:22px; flex-shrink:0; color:var(--text3); }
 .step:last-child .step-num { color:rgba(255,255,255,.7); }
@@ -428,7 +428,7 @@ footer { font-size:10px; color:var(--text3); text-align:center; margin-top:16px;
           <div style="font-size:11px;color:var(--text3);cursor:pointer;" onclick="showAllRunsModal()" id="runs-preview">–</div>
         </div>
         <div style="overflow:hidden;width:100%;" id="run-cards-wrap">
-          <div id="run-cards-track" style="display:flex;gap:8px;transition:transform .3s ease;"></div>
+          <div id="run-cards-track" style="display:flex;gap:8px;transition:transform .25s ease;"></div>
         </div>
       </div>
     </div>
@@ -773,6 +773,14 @@ function renderHBars(containerId, data) {
 let _runs = [], _thisWeekRuns = [], _easyRuns = [];
 
 // ── Dashboard ──
+// Hilfsfunktion: HR aus Activity lesen (verschiedene API-Strukturen)
+function getHR(r) {
+  return getHR(r) || (r.summary && r.summary.avg_hr) || 0;
+}
+function getMaxHR(r) {
+  return getMaxHR(r) || (r.summary && r.summary.max_hr) || 0;
+}
+
 function renderDashboard(activities) {
   _runs = activities.filter(a => a.sport_type==='Run' || a.type==='Run');
   const now = new Date(), nm = now.getMonth(), ny = now.getFullYear();
@@ -839,8 +847,8 @@ function renderDashboard(activities) {
   window._qMap = qMap; window._curQ = Math.floor(nm/3)+1;
 
   // PRs
-  const pr5k  = _runs.filter(r=>r.distance>=4800&&r.distance<=5500&&(r.average_heartrate||0)>155).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
-  const pr10k = _runs.filter(r=>r.distance>=9500&&r.distance<=11000&&(r.average_heartrate||0)>150).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
+  const pr5k  = _runs.filter(r=>r.distance>=4800&&r.distance<=5500&&(getHR(r)||0)>155).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
+  const pr10k = _runs.filter(r=>r.distance>=9500&&r.distance<=11000&&(getHR(r)||0)>150).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
   const prHM  = _runs.filter(r=>r.distance>=19000&&r.distance<=23000).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
   if (pr5k) {
     document.getElementById('pr-5k-time').innerHTML = fmtTime(pr5k.moving_time)+' <span class="pr-crown">♛</span>';
@@ -858,14 +866,14 @@ function renderDashboard(activities) {
   const HR_START = 160, HR_ZIEL = 135;
 
   _easyRuns = _runs.filter(r => {
-    if (!r.average_heartrate || r.distance < 4000) return false;
+    if (!getHR(r) || r.distance < 4000) return false;
     const pacePerKm = r.moving_time / (r.distance/1000);
     return pacePerKm >= PACE_MIN && pacePerKm <= PACE_MAX;
   }).sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
 
   // Fallback: alle Läufe mit HR-Daten
   if (_easyRuns.length < 1) {
-    _easyRuns = _runs.filter(r=>r.distance>3000&&r.average_heartrate)
+    _easyRuns = _runs.filter(r=>r.distance>3000&&getHR(r))
       .sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
   }
 
@@ -875,11 +883,11 @@ function renderDashboard(activities) {
 
     // HR hidden elements (für Modal)
     const hrNow = document.getElementById('hr-now');
-    if (hrNow) hrNow.textContent = Math.round(curr.average_heartrate)+' bpm';
+    if (hrNow) hrNow.textContent = Math.round(curgetHR(r))+' bpm';
     if (prev) {
       const hrPrevEl = document.getElementById('hr-prev');
-      if (hrPrevEl) hrPrevEl.textContent = Math.round(prev.average_heartrate);
-      const ef = r => (r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
+      if (hrPrevEl) hrPrevEl.textContent = Math.round(getHR(prev));
+      const ef = r => (r.distance/r.moving_time*60/getHR(r)).toFixed(2);
       const efCurr=ef(curr), efPrev=ef(prev);
       const efEl = document.getElementById('pace-curr-row');
       if (efEl) efEl.textContent = 'EF '+efCurr;
@@ -888,8 +896,8 @@ function renderDashboard(activities) {
     }
 
     // HR-Fortschrittsbalken
-    const hrCurr = Math.round(curr.average_heartrate);
-    const hrPrev = prev ? Math.round(prev.average_heartrate) : hrCurr;
+    const hrCurr = Math.round(curgetHR(r));
+    const hrPrev = prev ? Math.round(getHR(prev)) : hrCurr;
     const diff = hrPrev - hrCurr;
     const pct = Math.min(100, Math.max(0, (HR_START - hrCurr) / (HR_START - HR_ZIEL) * 100));
     const col = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text2)';
@@ -964,7 +972,7 @@ function renderDashboard(activities) {
   const labels = [Math.round(hm*0.5), Math.round(hm*0.6), Math.round(hm*0.7), Math.round(hm*0.8), Math.round(hm*0.9), hm];
   labels.forEach((v,i) => { const el=document.getElementById('zone-label-'+i); if(el) el.textContent = i===0?v+' bpm':i===5?v+' bpm':v; });
   if (_runs.length) {
-    const lastHR = Math.round(_runs[0].average_heartrate||0);
+    const lastHR = Math.round(_getHR(runs[0])||0);
     const z = window._zones && window._zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
     if (z) document.getElementById('zone-last-run').innerHTML =
       'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
@@ -1065,8 +1073,8 @@ function showRunDetail(idx) {
   const r=_runs[idx]; if(!r) return;
   const rows=[
     ['Distanz',(r.distance/1000).toFixed(1)+' km'],['Zeit',fmtTime(r.moving_time)],['Pace',fmtPace(r.distance,r.moving_time)+'/km'],
-    r.average_heartrate?['Ø HR',Math.round(r.average_heartrate)+' bpm']:null,
-    r.max_heartrate?['Max HR',Math.round(r.max_heartrate)+' bpm']:null,
+    getHR(r)?['Ø HR',Math.round(getHR(r))+' bpm']:null,
+    getMaxHR(r)?['Max HR',Math.round(getMaxHR(r))+' bpm']:null,
     r.total_elevation_gain?['Höhenmeter',Math.round(r.total_elevation_gain)+' m']:null,
     r.pr_count?['PRs','♛ '+r.pr_count+' neue Bestzeiten']:null,
   ].filter(Boolean).map(([l,v])=>'<div class="modal-stat"><span class="modal-stat-label">'+l+'</span><span class="modal-stat-value">'+v+'</span></div>').join('');
@@ -1310,7 +1318,7 @@ function showPRModal() {
       +'<div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;">'+label+'</div>'
       +'<div style="font-size:28px;font-weight:800;margin-bottom:4px;">'+fmtTime(run.moving_time)+'</div>'
       +'<div style="font-size:14px;font-weight:600;color:var(--orange);margin-bottom:4px;">'+fmtPace(run.distance,run.moving_time)+'/km</div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+fmtDate(run.start_date_local)+' · Ø '+(run.average_heartrate?Math.round(run.average_heartrate):'-')+' bpm</div></div>';
+      +'<div style="font-size:11px;color:var(--text2)">'+fmtDate(run.start_date_local)+' · Ø '+(getHR(run)?Math.round(getHR(run)):'-')+' bpm</div></div>';
   }
   openModal('Bestzeiten ♛', prRow('5 km',window._pr5k)+prRow('10 km',window._pr10k)+prRow('Halbmarathon',window._prHM));
 }
@@ -1325,8 +1333,8 @@ function showGrundlageModal() {
 
   let html='';
   if(runs.length>=2){
-    const diff=Math.round(runs[0].average_heartrate-runs[runs.length-1].average_heartrate);
-    const lastHR=Math.round(runs[runs.length-1].average_heartrate);
+    const diff=Math.round(getHR(runs[0])-getHR(runs[runs.length-1]));
+    const lastHR=Math.round(getHR(runs[runs.length-1]));
     const tc=lastHR<=135?'#30D158':lastHR<=140?'#7CD67C':lastHR<=150?'#FFD60A':'#FF453A';
     const txt=diff>0?'Deine Herzfrequenz sinkt — du arbeitest erfolgreich an deiner Grundlagenausdauer! Weiter so.':
               diff<0?'Deine Herzfrequenz steigt. Baue mehr lockere Läufe ein, um deine Grundlagenausdauer zu verbessern.':
@@ -1338,10 +1346,10 @@ function showGrundlageModal() {
   }
   html+='<div style="font-size:11px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Verlauf · Ø HR bei Easy Runs</div>';
   runs.forEach(r=>{
-    const hr=Math.round(r.average_heartrate);
+    const hr=Math.round(getHR(r));
     const zone=getZone(hr);
     const pct=Math.min(100,Math.max(0,(160-hr)/(160-120)*100));
-    const ef=(r.distance/r.moving_time*60/r.average_heartrate).toFixed(2);
+    const ef=(r.distance/r.moving_time*60/getHR(r)).toFixed(2);
     html+='<div style="margin-bottom:10px;background:var(--bg3);border-radius:8px;padding:8px 10px;">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
       +'<span style="font-size:11px;color:var(--text2)">'+fmtDate(r.start_date_local)+' · '+(r.distance/1000).toFixed(1)+'km · '+fmtPace(r.distance,r.moving_time)+'/km</span>'
@@ -1361,14 +1369,14 @@ function showWeekModal(startTab) {
   const mnFull=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
   const mnKurz=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   // Konkrete Wochenlabels
+  const kwWeekNames = ['erste','zweite','dritte','vierte','fünfte'];
   const kwLabel = kw => {
-    // Finde Montag der KW
     const d = new Date(now);
     d.setDate(d.getDate() - ((d.getDay()+6)%7) + (kw - curKW)*7);
-    const von = pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.';
-    d.setDate(d.getDate()+6);
-    const bis = pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.';
-    return kw===curKW ? 'Diese Woche' : von+'–'+bis;
+    const weekOfMonth = Math.ceil(d.getDate() / 7);
+    const mName = mnFull[d.getMonth()];
+    const label = (kwWeekNames[weekOfMonth-1]||weekOfMonth+'.')+' '+mName+'woche';
+    return kw===curKW ? label+' (aktuell)' : label;
   };
   const weekMap={};
   _runs.forEach(r=>{const k=isoWeek(r.start_date_local);weekMap[k]=(weekMap[k]||0)+r.distance/1000;});
@@ -1385,7 +1393,7 @@ function showWeekModal(startTab) {
   // Hilfsfunktion: Lauf-Row HTML
   const runRow = r => '<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
     +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-    +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
+    +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(getHR(r)?' · '+Math.round(getHR(r))+' bpm':'')+'</span></div>';
 
   const collapsible = (runs, id) => {
     if (!runs.length) return '<div style="text-align:center;padding:12px;color:var(--text3);font-size:13px;">Noch keine Läufe</div>';
@@ -1501,32 +1509,31 @@ function renderRunCards() {
   const track = document.getElementById('run-cards-track');
   if (!track || !_runs.length) return;
 
-  // Kartenbreite = 1/3 der Kachel minus Gap
   const W = wrap ? wrap.offsetWidth : 300;
-  const cardW = Math.floor((W - 16) / 3); // 3 Karten + 2 Gaps à 8px
+  const cardW = Math.floor((W - 16) / 3);
 
   track.innerHTML = _runs.map((r, i) => {
     const km = (r.distance/1000).toFixed(1);
     const pace = fmtPace(r.distance, r.moving_time);
-    const hr = r.average_heartrate ? Math.round(r.average_heartrate)+' bpm' : '–';
+    const hr = getHR(r) ? Math.round(getHR(r))+' bpm' : '–';
     const d = new Date(r.start_date_local);
     const datum = pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(2);
-    return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cardW+'px;background:var(--bg3);border-radius:10px;padding:10px 8px;cursor:pointer;box-sizing:border-box;">'
+    return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cardW+'px;background:var(--bg3);border-radius:10px;padding:12px 8px;cursor:pointer;box-sizing:border-box;min-height:110px;">'
       +'<div style="font-size:9px;color:var(--text3);font-weight:600;margin-bottom:4px;">'+datum+'</div>'
-      +'<div style="font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;">'+r.name+'</div>'
-      +'<div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;">'+km+' km</div>'
-      +'<div style="font-size:10px;color:var(--text2);margin-bottom:1px;">'+pace+'/km</div>'
-      +'<div style="font-size:10px;color:var(--text2);">'+hr+'</div>'
+      +'<div style="font-size:10px;font-weight:700;color:#fff;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:8px;line-height:1.3;">'+r.name+'</div>'
+      +'<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:3px;">'+km+' km</div>'
+      +'<div style="font-size:10px;color:var(--text2);margin-bottom:2px;">⚡ '+pace+'/km</div>'
+      +'<div style="font-size:10px;color:var(--text2);">❤️ '+hr+'</div>'
       +'</div>';
   }).join('');
 
-  // Swipe initialisieren
-  let startX=0, startY=0, isH=null, dragging=false, offset=0;
-  const maxOffset = Math.max(0, _runs.length * (cardW+8) - W);
+  let startX=0, startY=0, isH=null, dragging=false, offset=0, lastX=0, velocity=0;
+  const maxOffset = Math.max(0, _runs.length * (cardW+8) - W + 8);
+  const clamp = v => Math.max(0, Math.min(maxOffset, v));
 
   wrap.addEventListener('touchstart', e=>{
-    startX=e.touches[0].clientX; startY=e.touches[0].clientY;
-    isH=null; dragging=true;
+    startX=lastX=e.touches[0].clientX; startY=e.touches[0].clientY;
+    isH=null; dragging=true; velocity=0;
     track.style.transition='none';
   },{passive:true});
   wrap.addEventListener('touchmove', e=>{
@@ -1536,14 +1543,15 @@ function renderRunCards() {
     if(isH===null) isH=Math.abs(dx)>Math.abs(dy);
     if(!isH)return;
     e.preventDefault();
-    track.style.transform='translateX(-'+Math.max(0,Math.min(maxOffset, offset-dx))+'px)';
+    velocity=e.touches[0].clientX-lastX; lastX=e.touches[0].clientX;
+    track.style.transform='translateX(-'+clamp(offset-dx)+'px)';
   },{passive:false});
   wrap.addEventListener('touchend', e=>{
     if(!dragging)return; dragging=false;
     if(!isH)return;
     const dx=e.changedTouches[0].clientX-startX;
-    offset=Math.max(0,Math.min(maxOffset, offset-dx));
-    track.style.transition='transform .3s ease';
+    offset=clamp(offset-dx-velocity*3);
+    track.style.transition='transform .2s ease-out';
     track.style.transform='translateX(-'+offset+'px)';
   },{passive:true});
 
@@ -1556,7 +1564,7 @@ function showAllRunsModal() {
   _runs.forEach((r,i)=>{
     html+='<div class="modal-stat" style="flex-direction:column;align-items:flex-start;gap:3px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+i+'),300)">'
       +'<span class="modal-stat-value">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-      +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(r.average_heartrate?' · '+Math.round(r.average_heartrate)+' bpm':'')+'</span></div>';
+      +'<span class="modal-stat-label">'+(r.distance/1000).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(getHR(r)?' · '+Math.round(getHR(r))+' bpm':'')+'</span></div>';
   });
   openModal('Laufhistorie · '+_runs.length+' Läufe', html);
 }
@@ -1577,14 +1585,14 @@ async function openAnalyse() {
     '<div class="analyse-run-stat"><strong>'+dist+' km</strong>Distanz</div>'
     +'<div class="analyse-run-stat"><strong>'+time+'</strong>Zeit</div>'
     +'<div class="analyse-run-stat"><strong>'+pace+'/km</strong>Pace</div>'
-    +'<div class="analyse-run-stat"><strong>'+Math.round(run.average_heartrate||0)+' bpm</strong>Ø HR</div>'
+    +'<div class="analyse-run-stat"><strong>'+Math.round(getHR(run)||0)+' bpm</strong>Ø HR</div>'
     +(run.pr_count>0?'<div class="analyse-run-stat"><strong style="color:var(--yellow)">♛ '+run.pr_count+'</strong>PRs</div>':'');
   document.getElementById('analyse-body').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--text2);font-size:13px"><div class="spinner" style="width:20px;height:20px;border-width:2px"></div>Analysiere…</div>';
   document.getElementById('analyse-overlay').style.display='flex';
   document.body.style.overflow='hidden';
   enableSwipeDown(document.querySelector('#analyse-overlay .modal'), closeAnalyse);
   try {
-    const res=await callAPI({action:'analyse',run:{date:fmtDate(run.start_date_local),plannedType:getPlannedType(run),distance:dist,time,pace,avgHR:Math.round(run.average_heartrate||0),maxHR:Math.round(run.max_heartrate||0),daysSinceLast:days,prCount:run.pr_count||0}});
+    const res=await callAPI({action:'analyse',run:{date:fmtDate(run.start_date_local),plannedType:getPlannedType(run),distance:dist,time,pace,avgHR:Math.round(getHR(run)||0),maxHR:Math.round(getMaxHR(run)||0),daysSinceLast:days,prCount:run.pr_count||0}});
     document.getElementById('analyse-body').innerHTML=(res.analysis||'').split('\n').filter(l=>l.trim()).map(l=>'<div class="analyse-line">'+l+'</div>').join('');
   } catch(e) {
     document.getElementById('analyse-body').innerHTML='<div style="color:var(--red)">Fehler beim Laden</div>';
@@ -1787,8 +1795,8 @@ function updateStatsTab() {
   if (_easyRuns.length >= 2) {
     const curr = _easyRuns[_easyRuns.length-1];
     const prev = _easyRuns[_easyRuns.length-2];
-    const hrCurr = Math.round(curr.average_heartrate);
-    const diff = Math.round(prev.average_heartrate) - hrCurr;
+    const hrCurr = Math.round(curgetHR(r));
+    const diff = Math.round(getHR(prev)) - hrCurr;
     const col = diff>0?'var(--green)':diff<0?'var(--red)':'var(--text2)';
     if (hrEl) hrEl.textContent = hrCurr;
     if (trendEl) { trendEl.style.color=col; trendEl.textContent=diff>0?'↓ −'+diff+' bpm':diff<0?'↑ +'+Math.abs(diff)+' bpm':'→ stabil'; }
@@ -1809,7 +1817,7 @@ function updateStatsTab() {
   }
   // Zonen last run + Marker
   if (_runs.length) {
-    const lastHR = Math.round(_runs[0].average_heartrate||0);
+    const lastHR = Math.round(_getHR(runs[0])||0);
     const z = window._zones && window._zones.find(z=>lastHR>=z.lo&&lastHR<z.hi);
     const zlr = document.getElementById('zone-last-run-s');
     if (zlr && z) zlr.innerHTML = 'Letzter Lauf: Ø '+lastHR+' bpm → <span style="color:'+z.color+';font-weight:700">'+z.name+'</span>';
