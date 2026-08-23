@@ -130,7 +130,10 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
   <div class="wrap">
     <div class="app-header">
       <div class="app-title">ALLIN<span>DURE.</span></div>
-      <button class="logout-btn" onclick="logout()">Abmelden</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="showSettings()" style="background:var(--bg2);border:none;color:var(--text2);font-size:18px;padding:6px 10px;cursor:pointer;border-radius:8px;line-height:1">⚙️</button>
+        <button class="logout-btn" onclick="logout()">Abmelden</button>
+      </div>
     </div>
     <div class="divider"></div>
     <div id="sortable-cards">
@@ -378,7 +381,6 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
       <div style="padding:14px 16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Grundlagenausdauer</div>
-          <button onclick="event.stopPropagation();showGLSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:2px;line-height:1;font-size:14px">⚙️</button>
         </div>
         <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:14px">
           <div style="font-size:32px;font-weight:800;color:#fff" id="s-gl-hr">–</div>
@@ -790,7 +792,7 @@ function showVolModal(st){
   const wH='<div style="margin-bottom:14px">'+last4m.map(m=>bRow(mMap[m]||0,tW,MK[m]+(m===nm?' (aktuell)':''),m===nm)).join('')+'</div>'+coll(wR,'vw');
   const mH='<div style="font-size:11px;color:var(--text2);margin-bottom:12px">'+mR.length+' Läufe · '+(mR.reduce((s,r)=>s+r.distance/1e3,0)).toFixed(1)+' km</div>'+coll(mR,'vm');
   const yH=[1,2,3,4].map(q=>{const qR=yR.filter(r=>Math.floor(new Date(r.start_date_local).getMonth()/3)+1===q);return qR.length?bRow(qM[q]||0,tY/4,'Q'+q+(q===curQ?' (aktuell)':''),q===curQ):'';}).join('')+'<div style="font-size:11px;color:var(--text2);margin-top:8px">'+yR.length+' Läufe · '+Math.round(yR.reduce((s,r)=>s+r.distance/1e3,0))+' km</div>';
-  const gear='<button onclick="closeModal();setTimeout(showVolSettings,300)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">⚙️</button>';
+  const gear='';
   const tTabs=labels.map((l,i)=>'<div onclick="vGo('+i+')" id="vtb'+i+'" style="cursor:pointer;padding:4px 0;font-size:12px;font-weight:600;color:'+(i===st?'var(--orange)':'var(--text3)')+'">'+l+'</div>').join('');
   const dts=[0,1,2].map(i=>'<div id="vd'+i+'" onclick="vGo('+i+')" style="height:6px;border-radius:3px;cursor:pointer;transition:all .2s;width:'+(i===st?'20px':'6px')+';background:'+(i===st?'var(--orange)':'var(--bg3)')+'"></div>').join('');
   const content='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+tTabs+gear+'</div>'
@@ -825,13 +827,25 @@ function saveVol(){
 function showPRModal(){
   if(!_runs.length){openModal('Bestzeiten','Noch keine Läufe');return;}
   let h='';
-  if(_pr5k)h+='<div class="mstat"><span class="mstat-l">5 km</span><span class="mstat-v">'+fmtTime(_pr5k.moving_time)+' · '+fmtPace(_pr5k.distance,_pr5k.moving_time)+'/km</span></div>';
-  if(_prHM)h+='<div class="mstat"><span class="mstat-l">Halbmarathon</span><span class="mstat-v">'+fmtTime(_prHM.moving_time)+' · '+fmtPace(_prHM.distance,_prHM.moving_time)+'/km</span></div>';
-  if(!h)h='<div style="text-align:center;padding:16px;color:var(--text3)">Noch keine PRs erkannt</div>';
+  if(_pr5k){
+    h+='<div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px">'
+      +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">5 km</div>'
+      +'<div style="font-size:36px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px">'+fmtTime(_pr5k.moving_time)+' <span class="pr-crown">♛</span></div>'
+      +'<div style="font-size:13px;color:var(--text2)">'+fmtPace(_pr5k.distance,_pr5k.moving_time)+'/km · '+((_pr5k.distance)/1e3).toFixed(1)+' km · '+fmtDateFull(_pr5k.start_date_local)+'</div>'
+      +'</div>';
+  }
+  if(_prHM){
+    h+='<div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px">'
+      +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Halbmarathon</div>'
+      +'<div style="font-size:36px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px">'+fmtTime(_prHM.moving_time)+' <span class="pr-crown">♛</span></div>'
+      +'<div style="font-size:13px;color:var(--text2)">'+fmtPace(_prHM.distance,_prHM.moving_time)+'/km · '+((_prHM.distance)/1e3).toFixed(1)+' km · '+fmtDateFull(_prHM.start_date_local)+'</div>'
+      +'</div>';
+  }
+  if(!h)h='<div style="text-align:center;padding:20px;color:var(--text3)">Noch keine PRs erkannt.<br><span style="font-size:12px">5km: mind. 4,8 km · HM: 19–23 km</span></div>';
   openModal('Bestzeiten ♛',h);
 }
 function showGrundlageModal(){
-  if(!_glData){openGLModal('Grundlagenausdauer','<div style="text-align:center;padding:20px;color:var(--text3)">Noch keine Daten</div>');return;}
+  if(!_glData){openModal('Grundlagenausdauer','<div style="text-align:center;padding:20px;color:var(--text3)">Noch keine Daten</div>');return;}
   const d=_glData;
   const MN=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const pF=s=>Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);
@@ -874,16 +888,11 @@ function showGrundlageModal(){
     +'<div class="mstat" style="padding:6px 0"><span class="mstat-l">Pace-Filter</span><span class="mstat-v">'+pF(d.cfg.paceMin)+'–'+pF(d.cfg.paceMax)+'/km</span></div>'
     +'<div class="mstat" style="padding:6px 0;border:none"><span class="mstat-l">Max. Ø HR</span><span class="mstat-v">'+d.cfg.maxHR+' bpm · '+_easy.length+' Läufe</span></div>'
     +'</div>';
-  openGLModal('Grundlagenausdauer',h);
+  openModal('Grundlagenausdauer',h);
 }
 
 // Modal mit Zahnrad statt X
-function openGLModal(title,content){
-  openModal(title,content);
-  // Zahnrad statt X
-  const cb=$('modal-box').querySelector('.modal-close-btn');
-  if(cb){cb.textContent='\u2699\uFE0F';cb.onclick=function(){closeModal();setTimeout(showGLSettings,300);};}
-}
+// openGLModal merged into openModal
 
 function glPaceFmt(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);}
 function glUpdatePmin(v){set('gl-pmin-val',glPaceFmt(+v));}
@@ -927,38 +936,26 @@ function saveGLSettings(){
 }
 function showZonenModal(){
   const hm=_hrmax||199,lastHR=Math.round(getHR(_runs[0]||{})||0),zones=window._zones||[];
-  const slStyle='width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--bg3);outline:none;cursor:pointer;margin:10px 0 4px';
-  let h='<style>input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--orange);cursor:pointer;box-shadow:0 2px 8px rgba(255,107,53,.4)}</style>';
-  h+='<div style="background:var(--bg3);border-radius:12px;padding:14px 16px;margin-bottom:16px">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
-    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">HRmax anpassen</div>'
-    +'<div style="font-size:16px;font-weight:700;color:#fff" id="hrm-val">'+hm+' bpm</div></div>'
-    +'<input type="range" id="hrm-sl" min="160" max="220" value="'+hm+'" step="1" style="'+slStyle+'" oninput="hrSlUpdate(this.value)">'
-    +'<div style="display:flex;justify-content:space-between"><span style="font-size:9px;color:var(--text3)">160</span><span style="font-size:9px;color:var(--text3)">220</span></div>'
-    +'<button onclick="saveHRSlider()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:10px">Speichern</button>'
-    +'</div>';
-  if(lastHR)h+='<div class="mstat"><span class="mstat-l">Letzter Lauf</span><span class="mstat-v">'+lastHR+' bpm</span></div>';
-  h+='<div style="height:1px;background:var(--border);margin:8px 0"></div>';
+  let h='';
+  if(lastHR){
+    const z=zones.find(z=>lastHR>=z.lo&&lastHR<z.hi)||{};
+    h+='<div style="background:'+(z.col||'var(--bg3)')+';border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">'
+      +'<div><div style="font-size:11px;color:rgba(255,255,255,.8);margin-bottom:2px">Letzter Lauf</div>'
+      +'<div style="font-size:28px;font-weight:800;color:#fff;line-height:1">'+lastHR+' bpm</div>'
+      +'<div style="font-size:12px;color:rgba(255,255,255,.85);margin-top:3px">'+(z.name||'–')+'</div></div>'
+      +'</div>';
+  }
+  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Zonen (HRmax: '+hm+' bpm)</div>';
   zones.forEach(z=>{
     const il=lastHR&&lastHR>=z.lo&&lastHR<z.hi;
-    h+='<div style="margin-bottom:14px;padding:8px 0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">'
-      +'<span style="font-size:13px;font-weight:700;color:'+z.col+'">'+z.name+'</span>'
-      +(il?'<span style="font-size:9px;background:'+z.col+';color:'+(z.col==='#FFD60A'?'#000':'#fff')+';padding:3px 8px;border-radius:6px;font-weight:700">'+lastHR+' bpm</span>':'')
-      +'<span style="font-size:11px;color:var(--text3);margin-left:auto">'+z.lo+'--'+z.hi+' bpm</span></div>'
-      +'<div style="background:var(--bg3);height:6px;border-radius:3px"><div style="background:'+z.col+';height:6px;border-radius:3px;width:100%"></div></div></div>';
+    h+='<div style="margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
+      +'<span style="font-size:13px;font-weight:'+(il?700:600)+';color:'+z.col+'">'+z.name+(il?' ←':'')+'</span>'
+      +'<span style="font-size:11px;color:var(--text3)">'+z.lo+'–'+z.hi+' bpm</span></div>'
+      +'<div style="background:var(--bg3);height:7px;border-radius:4px">'
+      +'<div style="background:'+z.col+';height:7px;border-radius:4px;width:'+(il?'100%':'60%')+'"></div></div></div>';
   });
-  openZonenModal('Herzfrequenzzonen',h);
-}
-function hrSlUpdate(v){set('hrm-val',v+' bpm');}
-function saveHRSlider(){
-  const v=parseInt(($('hrm-sl')||{}).value);
-  if(v>=160&&v<=220){_hrmax=v;localStorage.setItem('hrmax_manual',v);closeModal();renderZonen();}
-}
-function openZonenModal(title,content){
-  openModal(title,content);
-  // Zahnrad statt X
-  const cb=$('modal-box').querySelector('.modal-close-btn');
-  if(cb){cb.textContent='\u2699\uFE0F';cb.onclick=function(){closeModal();};}
+  openModal('Herzfrequenzzonen',h);
 }
 function showRunDetail(idx){
   const r=_runs[idx];if(!r)return;
@@ -1081,6 +1078,76 @@ function initPTR(cb){
   document.addEventListener('touchmove',e=>{if(window.scrollY>0||!sY)return;const dy=e.touches[0].clientY-sY;if(dy>10){drag=true;ind.classList.add('active');txt.textContent='↓ Zum Aktualisieren ziehen';}},{passive:true});
   document.addEventListener('touchend',async()=>{if(!drag)return;drag=false;sY=0;sp.style.display='block';txt.textContent='Wird aktualisiert…';await cb();sp.style.display='none';ind.classList.remove('active');},{passive:true});
 }
+
+// ── Zentrale Einstellungen ──
+function pFmt(s){return Math.floor(s/60)+':'+(Math.floor(s%60)<10?'0':'')+Math.floor(s%60);}
+function sUpdPmin(v){set('sv-pmin',pFmt(+v));}
+function sUpdPmax(v){set('sv-pmax',pFmt(+v));}
+function sUpdHrgl(v){set('sv-hrgl',v+' bpm');}
+function sUpdHrmax(v){set('sv-hrmax',v+' bpm');}
+function sAutoZ2(){var z=Math.round(_hrmax*0.7);var el=$('s-hrgl');if(el)el.value=z;set('sv-hrgl',z+' bpm');}
+
+function showSettings(){
+  const vt=JSON.parse(localStorage.getItem('vol_targets')||'{"week":25,"month":100,"year":1200}');
+  const cfg=getGLSettings();
+  const hm=_hrmax||199;
+  const z2=Math.round(hm*0.7);
+  const slSt='width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--bg3);outline:none;cursor:pointer;margin:8px 0 3px';
+  const inSt='width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px;color:var(--text);font-size:16px;font-family:inherit;box-sizing:border-box';
+  const sec=t=>'<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 10px;padding-top:4px;border-top:1px solid var(--border)">'+t+'</div>';
+  const numRow=(lbl,id,v,unit)=>'<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--text2);margin-bottom:5px">'+lbl+'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px"><input id="'+id+'" type="number" value="'+v+'" style="'+inSt+'">'
+    +(unit?'<span style="color:var(--text2);font-size:13px">'+unit+'</span>':'')+'</div></div>';
+  const slRow=(lbl,id,min,max,val,dispVal,updateFn)=>'<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
+    +'<div style="font-size:11px;color:var(--text2)">'+lbl+'</div>'
+    +'<div style="font-size:14px;font-weight:700;color:#fff" id="sv-'+id+'">'+dispVal+'</div></div>'
+    +'<input type="range" id="s-'+id+'" min="'+min+'" max="'+max+'" value="'+val+'" step="5" style="'+slSt+'" oninput="'+updateFn+'(this.value)">'
+    +'<div style="display:flex;justify-content:space-between"><span style="font-size:9px;color:var(--text3)">'+pFmt(min)+'</span><span style="font-size:9px;color:var(--text3)">'+pFmt(max)+'</span></div></div>';
+  const hrRow=(lbl,id,min,max,val,updateFn)=>'<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
+    +'<div style="font-size:11px;color:var(--text2)">'+lbl+'</div>'
+    +'<div style="font-size:14px;font-weight:700;color:#fff" id="sv-'+id+'">'+val+' bpm</div></div>'
+    +'<input type="range" id="s-'+id+'" min="'+min+'" max="'+max+'" value="'+val+'" step="1" style="'+slSt+'" oninput="'+updateFn+'(this.value)">'
+    +'<div style="display:flex;justify-content:space-between"><span style="font-size:9px;color:var(--text3)">'+min+'</span><span style="font-size:9px;color:var(--text3)">'+max+'</span></div></div>';
+
+  let h='<style>input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--orange);cursor:pointer;box-shadow:0 2px 6px rgba(255,107,53,.4)}</style>';
+
+  // Volumen
+  h+=sec('Volumen-Ziele');
+  h+=numRow('Wochenziel','s-tw',vt.week||25,'km');
+  h+=numRow('Monatsziel','s-tm',vt.month||100,'km');
+  h+=numRow('Jahresziel','s-ty',vt.year||1200,'km');
+
+  // Grundlage
+  h+=sec('Grundlagenausdauer-Filter');
+  h+=slRow('Pace von (schnellste Easy-Pace)','pmin',240,540,cfg.paceMin,pFmt(cfg.paceMin),'sUpdPmin');
+  h+=slRow('Pace bis (langsamste Easy-Pace)','pmax',300,600,cfg.paceMax,pFmt(cfg.paceMax),'sUpdPmax');
+  h+=hrRow('Max. Ø HR (Z2-Grenze)','hrgl',120,175,cfg.maxHR,'sUpdHrgl');
+  h+='<button onclick="sAutoZ2()" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px">Auto Z2 = '+z2+' bpm</button>';
+
+  // HRmax
+  h+=sec('Herzfrequenzzonen');
+  h+=hrRow('HRmax','hrmax',160,220,hm,'sUpdHrmax');
+
+  h+='<button onclick="saveSettings()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px">Speichern</button>';
+  openModal('Einstellungen',h);
+}
+
+function saveSettings(){
+  const w=parseInt(($('s-tw')||{}).value)||25;
+  const m=parseInt(($('s-tm')||{}).value)||100;
+  const y=parseInt(($('s-ty')||{}).value)||1200;
+  localStorage.setItem('vol_targets',JSON.stringify({week:w,month:m,year:y}));
+  const pMin=parseInt(($('s-pmin')||{}).value)||330;
+  const pMax=parseInt(($('s-pmax')||{}).value)||510;
+  const maxHR=parseInt(($('s-hrgl')||{}).value)||140;
+  localStorage.setItem('gl_settings',JSON.stringify({paceMin:pMin,paceMax:pMax,maxHR}));
+  const hmV=parseInt(($('s-hrmax')||{}).value)||199;
+  if(hmV>=160&&hmV<=220){_hrmax=hmV;localStorage.setItem('hrmax_manual',hmV);}
+  closeModal();
+  if(_acts.length)renderDashboard(_acts);
+}
+
+
 
 // ── Init ──
 async function init(){
