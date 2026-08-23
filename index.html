@@ -927,12 +927,27 @@ function showGrundlageModal(){
   h+='<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:14px">'
     +'<span style="color:var(--green)">↓ Niedriger = fitter</span><span style="color:var(--red)">↑ Höher = weniger fit</span></div>';
 
-  // Filter-Info
-  h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 14px">'
+  // Filter-Info — klickbar → zeigt gefilterte Läufe
+  h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 14px;cursor:pointer" onclick="showEasyRunsList()">'
     +'<div class="mstat" style="padding:5px 0"><span class="mstat-l">Pace-Filter</span><span class="mstat-v">'+pF(d.cfg.paceMin)+'–'+pF(d.cfg.paceMax)+'/km</span></div>'
-    +'<div class="mstat" style="padding:5px 0;border:none"><span class="mstat-l">Max. Ø HR · Läufe</span><span class="mstat-v">'+d.cfg.maxHR+' bpm · '+_easy.length+'</span></div>'
+    +'<div class="mstat" style="padding:5px 0;border:none"><span class="mstat-l">Gefilterte Läufe</span><span class="mstat-v" style="color:var(--orange)">'+_easy.length+' Läufe anzeigen →</span></div>'
     +'</div>';
   openModal('Grundlagenausdauer',h);
+}
+
+function showEasyRunsList(){
+  if(!_easy.length){openModal('Gefilterte Läufe','<div style="text-align:center;padding:20px;color:var(--text3)">Keine Läufe mit aktuellem Filter</div>');return;}
+  const sorted=[..._easy].sort((a,b)=>new Date(b.start_date_local)-new Date(a.start_date_local));
+  let h='<div style="font-size:11px;color:var(--text3);margin-bottom:12px">'+sorted.length+' Läufe · Pace & HR innerhalb Filter</div>';
+  sorted.forEach(r=>{
+    const idx=_runs.indexOf(r);
+    const hr=Math.round(getHR(r));
+    h+='<div class="mstat" style="flex-direction:column;align-items:flex-start;gap:2px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+idx+'),300)">'
+      +'<span class="mstat-v">'+fmtDateFull(r.start_date_local)+' · '+r.name+'</span>'
+      +'<span class="mstat-l">'+(r.distance/1e3).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(hr?' · <span style="color:var(--orange)">'+hr+' bpm</span>':'')+'</span>'
+      +'</div>';
+  });
+  openModal('Gefilterte Läufe ('+sorted.length+')',h);
 }
 
 // Modal mit Zahnrad statt X
@@ -980,7 +995,7 @@ function saveGLSettings(){
 }
 const ZONE_INFO={'Z1 Erholung':'Aktive Erholung – sehr leicht. Laktat wird abgebaut, Körper regeneriert. Ideal nach harten Einheiten oder als Aufwärmen. Maximale Fettverbrennung bei minimalem Stress.','Z2 Grundlage':'Grundlagenausdauer – das Fundament. Du kannst dich noch unterhalten. Trainiert den aeroben Stoffwechsel, Mitochondrien wachsen. Basis für alle Wettkampfdistanzen.','Z3 Aerob':'Aerobe Zone – moderate Intensität. Bereits anstrengend, Atmung erhöht. Verbessert aerobe Kapazität, gut für mittlere Tempoläufe. Zu viel ohne Erholung erhöht Übertrainingsrisiko.','Z4 Schwelle':'Laktatschwelle – dein 1-Stunden-Tempo. Laktat akkumuliert schneller als abgebaut. Entscheidend für 5km–Halbmarathon-Leistung. Kernzone für Tempoentwicklung.','Z5 Maximal':'VO2max-Zone – maximale Sauerstoffaufnahme. Nur kurze Intervalle möglich (30–90 Sek.). Steigert die max. aerobe Kapazität. Nur mit solider Grundlage trainieren.'};
 function showZoneDetail(name,col,lo,hi){
-  const txtC=col==='#FFD60A'?'#111':'#fff';
+  const txtC='#fff';
   const info=ZONE_INFO[name]||'';
   const h='<div style="background:'+col+';border-radius:14px;padding:18px 20px;margin-bottom:16px;text-align:center">'
     +'<div style="font-size:24px;font-weight:800;color:'+txtC+';margin-bottom:4px">'+name+'</div>'
@@ -995,7 +1010,7 @@ function showZonenModal(){
   if(lastHR){
     const curZ=zones.find(z=>lastHR>=z.lo&&lastHR<z.hi)||{};
     const txtC=(curZ.col||'')==='#FFD60A'?'#111':'#fff';
-    h+='<div style="background:'+(curZ.col||'var(--bg3)')+';border-radius:10px;padding:10px 14px;margin-bottom:6px">'+
+    h+='<div style="background:'+(curZ.col||'var(--bg3)')+';border-radius:10px;padding:9px 14px;margin-bottom:6px">'+
       '<div style="font-size:10px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Letzter Lauf</div>'+
       '<div style="display:flex;align-items:baseline;gap:6px">'+
       '<div style="font-size:26px;font-weight:800;color:'+txtC+';line-height:1">'+lastHR+'</div>'+
@@ -1004,9 +1019,9 @@ function showZonenModal(){
   }
   zones.forEach(z=>{
     const il=lastHR&&lastHR>=z.lo&&lastHR<z.hi;
-    const txtC=z.col==='#FFD60A'?'#111':'#fff';
+    const txtC='#fff'; // Alle Zonen weiß
     const ring=il?'box-shadow:0 0 0 2.5px #fff;':'';    h+='<div onclick="showZoneDetail(\''+z.name+'\',\''+z.col+'\','+z.lo+','+z.hi+')" '+
-      'style="background:'+z.col+';border-radius:10px;padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;'+ring+'">'+
+      'style="background:'+z.col+';border-radius:10px;padding:5px 12px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;'+ring+'">'+
       '<div style="font-size:13px;font-weight:700;color:'+txtC+'">'+z.name+(il?' ◀':'')+'</div>'+
       '<div style="background:rgba(0,0,0,.2);border-radius:7px;padding:4px 10px;text-align:center">'+
       '<div style="font-size:12px;font-weight:800;color:'+txtC+'">'+z.lo+'–'+z.hi+'</div>'+
