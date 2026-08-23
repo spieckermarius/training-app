@@ -723,17 +723,12 @@ function renderRunCards(){
     const hr=getHR(r)?Math.round(getHR(r))+' bpm':'–';
     const d=new Date(r.start_date_local);
     const dt=pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(2);
-    return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cW+'px;background:var(--bg3);border-radius:10px;padding:12px 10px;cursor:pointer;box-sizing:border-box;min-height:175px;display:flex;flex-direction:column;gap:3px">'
-      // Name ganz oben, fett
-      +'<div style="font-size:11px;font-weight:800;color:#fff;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;margin-bottom:4px">'+r.name+'</div>'
-      // Datum
-      +'<div style="font-size:10px;color:var(--text3);font-weight:500">'+dt+'</div>'
-      // Km
-      +'<div style="font-size:16px;font-weight:800;color:#fff;margin-top:6px">'+km+'<span style="font-size:10px;font-weight:600;color:var(--text2)"> km</span></div>'
-      // Pace
-      +'<div style="font-size:13px;font-weight:700;color:var(--text2)">'+pace+'/km</div>'
-      // HR
-      +'<div style="font-size:13px;font-weight:700;color:var(--text2)">'+hr+'</div>'
+return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cW+'px;background:var(--bg3);border-radius:10px;padding:14px 12px;cursor:pointer;box-sizing:border-box;min-height:175px;display:flex;flex-direction:column;gap:0">'
+      +'<div style="font-size:14px;font-weight:800;color:#fff;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;margin-bottom:6px">'+r.name+'</div>'
+      +'<div style="font-size:12px;color:var(--text3);font-weight:600;margin-bottom:8px">'+dt+'</div>'
+      +'<div style="font-size:22px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px">'+km+'<span style="font-size:14px;font-weight:700;color:var(--text2)"> km</span></div>'
+      +'<div style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:2px">'+pace+'/km</div>'
+      +'<div style="font-size:16px;font-weight:700;color:var(--text2)">'+hr+'</div>'
       +'</div>';
   }).join('');
   set('runs-n',_runs.length+' Läufe →');
@@ -823,7 +818,7 @@ function showVolModal(st){
     +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+yR.length+' Läufe · '+Math.round(yKm)+' / '+tY+' km</div></div>';
 
   const tTabs=labels.map((l,i)=>'<div onclick="vGo('+i+')" id="vtb'+i+'" style="cursor:pointer;padding:4px 0;font-size:12px;font-weight:600;color:'+(i===st?'var(--orange)':'var(--text3)')+'">'+l+'</div>').join('');
-  const dts=[0,1,2].map(i=>'<div id="vd'+i+'" onclick="vGo('+i+')" style="height:6px;border-radius:3px;cursor:pointer;transition:all .2s;width:'+(i===st?'20px':'6px')+';background:'+(i===st?'var(--orange)':'var(--bg3)')+'"></div>').join('');
+  const dts=[0,1,2].map(i=>'<div id="vd'+i+'" onclick="vGo('+i+')" style="height:6px;border-radius:'+(i===st?'3px':'50%')+';cursor:pointer;transition:all .25s;width:'+(i===st?'18px':'6px')+';background:'+(i===st?'var(--orange)':'var(--bg3)')+'"></div>').join('');
   const content='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+tTabs+'</div>'
     +'<div style="overflow:hidden;width:100%;margin-bottom:10px" id="vm-wrap"><div id="vm-track" style="display:flex;width:300%;transition:transform .3s ease">'
     +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;padding-right:4px">'+wH+'</div>'
@@ -838,7 +833,7 @@ function showVolModal(st){
     set('modal-ttl',labels[n]);
     labels.forEach((_,i)=>{
       const e=$('vtb'+i);if(e)e.style.color=i===n?'var(--orange)':'var(--text3)';
-      const d=$('vd'+i);if(d){d.style.width=i===n?'20px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';d.style.borderRadius=i===n?'3px':'50%';}
+      const d=$('vd'+i);if(d){d.style.width=i===n?'18px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';d.style.borderRadius=i===n?'3px':'50%';}
     });
   };
   setTimeout(()=>{
@@ -902,7 +897,7 @@ function showPRModal(){
 function showGrundlageModal(){
   if(!_glData){openModal('Grundlagenausdauer','<div style="text-align:center;padding:20px;color:var(--text3)">Noch keine Daten</div>');return;}
   const d=_glData;
-  const MN=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
   const pF=s=>Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);
   // Trend: grün wenn HR gesunken, rot wenn gestiegen
   const trendCol=d.diff===null?'rgba(255,255,255,.7)':d.diff>0?'#30D158':d.diff<0?'#FF453A':'rgba(255,255,255,.7)';
@@ -923,14 +918,17 @@ function showGrundlageModal(){
   // 3-Monats horizontales Balkendiagramm (wie Volumen-Kachel)
   h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">3-Monats-Verlauf (Ø HR)</div>';
   const allHR=d.buckets.map(b=>b.avgHR).filter(Boolean);
-  const hrRef=allHR.length?Math.max(...allHR):160;// max HR = 100% Balken
+  // Gecropte Skalierung: Basis 15 bpm unter Min, Spanne begrenzt → Unterschiede stark sichtbar
+  const hrLow=allHR.length?Math.min(...allHR)-15:125;
+  const hrHigh=allHR.length?Math.max(...allHR)+5:165;
+  const hrSpan=Math.max(hrHigh-hrLow,1);
   d.buckets.forEach((b,i)=>{
     const isCur=i===2;
-    const pct=b.avgHR?Math.min(100,Math.max(5,b.avgHR/hrRef*100)):0;
-    const barCol=isCur?'var(--orange)':i===1?'rgba(255,107,53,.5)':'rgba(255,107,53,.25)';
+    const pct=b.avgHR?Math.min(100,Math.max(3,(b.avgHR-hrLow)/hrSpan*100)):0;
+    const barCol=isCur?'var(--orange)':'var(--bg3)';
     h+='<div style="margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">'
-      +'<span style="color:'+(isCur?'#fff':'var(--text3)')+';font-weight:'+(isCur?700:400)+'">'+MN[b.mo]+(isCur?' (aktuell)':'')+'</span>'
+      +'<span style="color:'+(isCur?'#fff':'var(--text3)')+';font-weight:'+(isCur?700:400)+'">'+MN[b.mo]+'</span>'
       +'<span style="color:'+(isCur?'#fff':'var(--text2)')+';font-weight:'+(isCur?600:400)+'">'+(b.avgHR?b.avgHR+' bpm':'–')+'</span></div>'
       +'<div style="background:var(--bg3);height:8px;border-radius:4px">'
       +'<div style="background:'+barCol+';height:8px;border-radius:4px;width:'+pct+'%;transition:width .6s ease"></div></div></div>';
@@ -1156,8 +1154,9 @@ function initSwipe(){
     track.style.transform='translateX(-'+(cur*100)+'%)';
     dots.forEach((d,i)=>{
       d.style.background=i===cur?'var(--orange)':'var(--bg3)';
-      d.style.width=i===cur?'14px':'5px';
+      d.style.width=i===cur?'16px':'5px';
       d.style.borderRadius=i===cur?'3px':'50%';
+      d.style.transition='all .25s ease';
     });
   };
   track.addEventListener('touchstart',e=>{
