@@ -918,14 +918,17 @@ function showGrundlageModal(){
   // 3-Monats horizontales Balkendiagramm (wie Volumen-Kachel)
   h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">3-Monats-Verlauf (Ø HR)</div>';
   const allHR=d.buckets.map(b=>b.avgHR).filter(Boolean);
-  // Gecropte Skalierung: Basis 15 bpm unter Min, Spanne begrenzt → Unterschiede stark sichtbar
-  const hrLow=allHR.length?Math.min(...allHR)-15:125;
-  const hrHigh=allHR.length?Math.max(...allHR)+5:165;
-  const hrSpan=Math.max(hrHigh-hrLow,1);
+  // Gecropte Skalierung mit Mindest-Spanne von 10 bpm damit Balken sichtbar bleiben
+  const rawMin=allHR.length?Math.min(...allHR):130;
+  const rawMax=allHR.length?Math.max(...allHR):160;
+  const hrLow=Math.max(0, rawMin-15);
+  const hrHigh=rawMax+5;
+  const hrSpan=Math.max(hrHigh-hrLow, 20); // mind. 20 bpm Spanne
   d.buckets.forEach((b,i)=>{
     const isCur=i===2;
-    const pct=b.avgHR?Math.min(100,Math.max(3,(b.avgHR-hrLow)/hrSpan*100)):0;
-    const barCol=isCur?'var(--orange)':'var(--bg3)';
+    // Balken: bei gleichen Werten alle gleich lang (80%), bei Unterschieden gecroppt
+    const pct=b.avgHR?Math.min(100,Math.max(20,(b.avgHR-hrLow)/hrSpan*100)):0;
+    const barCol=isCur?'var(--orange)':'#5A5A5C';
     h+='<div style="margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">'
       +'<span style="color:'+(isCur?'#fff':'var(--text3)')+';font-weight:'+(isCur?700:400)+'">'+MN[b.mo]+'</span>'
@@ -1147,12 +1150,12 @@ function initSwipe(){
   // touch-action:none direkt auf track setzen damit sort-card kein Conflict hat
   track.style.touchAction='none';
   let cur=0,sX=0,sY=0,isH=null,drag=false,dist=0;
-  const dots=card.querySelectorAll('.dot');
   const goTo=n=>{
     cur=Math.max(0,Math.min(2,n));
     track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
     track.style.transform='translateX(-'+(cur*100)+'%)';
-    dots.forEach((d,i)=>{
+    [0,1,2].forEach(i=>{
+      const d=$('dot-'+i);if(!d)return;
       d.style.background=i===cur?'var(--orange)':'var(--bg3)';
       d.style.width=i===cur?'16px':'5px';
       d.style.borderRadius=i===cur?'3px':'50%';
