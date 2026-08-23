@@ -233,24 +233,22 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     </div>
 
     <div class="sort-card" data-id="grundlage">
-    <div class="card tappable" onclick="showGrundlageModal()">
+    <div class="card" onclick="showGrundlageModal()" style="cursor:pointer">
       <div style="padding:14px 16px">
-        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Grundlagenausdauer</div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-          <div style="font-size:28px;font-weight:800;color:#fff;line-height:1" id="gl-hr">–</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Grundlagenausdauer</div>
+          <button onclick="event.stopPropagation();showGLSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:2px;line-height:1;font-size:14px">⚙️</button>
+        </div>
+        <!-- Aktuelle HR + Trend -->
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+          <div style="font-size:32px;font-weight:800;color:#fff;line-height:1" id="gl-hr">–</div>
           <div style="font-size:12px;color:var(--text2)">bpm</div>
           <div style="font-size:12px;font-weight:600" id="gl-trend">–</div>
         </div>
-        <div style="position:relative;margin-bottom:6px">
-          <div style="background:var(--bg3);height:8px;border-radius:4px;overflow:hidden">
-            <div id="gl-bar" style="height:8px;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange));width:0%;transition:width .8s ease"></div>
-          </div>
-          <div id="gl-marker" style="display:none;position:absolute;top:-3px;width:3px;height:14px;background:#fff;border-radius:2px;box-shadow:0 0 4px rgba(0,0,0,.5);transform:translateX(-50%)"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="font-size:9px;color:var(--text3)">Start 160 bpm</span>
-          <span style="font-size:9px;color:var(--green);font-weight:600">Ziel 135 bpm</span>
-        </div>
+        <!-- 3-Monats-Balken -->
+        <div style="display:flex;gap:8px;align-items:flex-end;height:52px;margin-bottom:8px" id="gl-bars"></div>
+        <!-- Filter-Info -->
+        <div style="font-size:9px;color:var(--text3)" id="gl-filter-info">–</div>
       </div>
     </div>
     </div>
@@ -386,21 +384,17 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     </div>
     <div class="card tappable" onclick="showGrundlageModal()" style="margin-bottom:10px">
       <div style="padding:14px 16px">
-        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Grundlagenausdauer</div>
-        <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-          <div style="font-size:28px;font-weight:800;color:#fff" id="s-gl-hr">–</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Grundlagenausdauer</div>
+          <button onclick="event.stopPropagation();showGLSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:2px;line-height:1;font-size:14px">⚙️</button>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+          <div style="font-size:32px;font-weight:800;color:#fff" id="s-gl-hr">–</div>
           <div style="font-size:12px;color:var(--text2)">bpm</div>
           <div style="font-size:12px;font-weight:600" id="s-gl-trend">–</div>
         </div>
-        <div style="position:relative;margin-bottom:6px">
-          <div style="background:var(--bg3);height:8px;border-radius:4px;overflow:hidden">
-            <div id="s-gl-bar" style="height:8px;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange));width:0%;transition:width .8s ease"></div>
-          </div>
-        </div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="font-size:9px;color:var(--text3)">Start 160 bpm</span>
-          <span style="font-size:9px;color:var(--green);font-weight:600">Ziel 135 bpm</span>
-        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;height:52px;margin-bottom:8px" id="s-gl-bars"></div>
+        <div style="font-size:9px;color:var(--text3)" id="s-gl-filter-info">–</div>
       </div>
     </div>
     <div class="card tappable" onclick="showZonenModal()" style="margin-bottom:10px">
@@ -627,20 +621,65 @@ function renderDashboard(acts){
   set('updated',new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
 }
 
+function getGLSettings(){
+  const def={paceMin:330,paceMax:510,maxHR:Math.round(_hrmax*0.7)};
+  return Object.assign(def,JSON.parse(localStorage.getItem('gl_settings')||'{}'));
+}
 function renderGrundlage(){
-  _easy=_runs.filter(r=>{if(!getHR(r)||r.distance<4e3)return false;const p=r.moving_time/(r.distance/1e3);return p>=330&&p<=480;}).sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
-  if(!_easy.length)_easy=_runs.filter(r=>r.distance>3e3&&getHR(r)).sort((a,b)=>new Date(a.start_date_local)-new Date(b.start_date_local));
-  if(!_easy.length)return;
-  const cur=_easy[_easy.length-1],prev=_easy.length>=2?_easy[_easy.length-2]:null;
-  const hrC=Math.round(getHR(cur)),hrP=prev?Math.round(getHR(prev)):hrC,diff=hrP-hrC;
-  const pct=Math.min(100,Math.max(0,(160-hrC)/(160-135)*100));
-  const col=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text2)';
-  const txt=!prev?'– kein Vgl.':diff>0?'↓ −'+diff+' bpm':diff<0?'↑ +'+Math.abs(diff)+' bpm':'→ stabil';
-  _glData={hrC,hrP,diff,pct,col,cur,prev};
-  ['gl-hr','s-gl-hr'].forEach(id=>set(id,hrC));
-  ['gl-trend','s-gl-trend'].forEach(id=>{const e=$(id);if(e){e.textContent=txt;e.style.color=col;}});
-  ['gl-bar','s-gl-bar'].forEach(id=>{const e=$(id);if(e)e.style.width=pct.toFixed(0)+'%';});
-  const gm=$('gl-marker');if(gm){gm.style.display='block';gm.style.left=pct.toFixed(0)+'%';}
+  const cfg=getGLSettings();
+  // Filter: Pace & HR
+  _easy=_runs.filter(r=>{
+    if(!getHR(r)||r.distance<4e3)return false;
+    const p=r.moving_time/(r.distance/1e3);
+    return p>=cfg.paceMin&&p<=cfg.paceMax&&getHR(r)<=cfg.maxHR;
+  });
+  if(!_easy.length)_easy=_runs.filter(r=>r.distance>3e3&&getHR(r)&&getHR(r)<=cfg.maxHR);
+
+  // 3-Monats-Buckets
+  const now=new Date(),months=[];
+  for(let i=2;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push({yr:d.getFullYear(),mo:d.getMonth(),label:['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][d.getMonth()]});
+  }
+  const buckets=months.map(m=>{
+    const runs=_easy.filter(r=>{const d=new Date(r.start_date_local);return d.getFullYear()===m.yr&&d.getMonth()===m.mo;});
+    const avgHR=runs.length?Math.round(runs.reduce((s,r)=>s+getHR(r),0)/runs.length):null;
+    return{...m,runs:runs.length,avgHR};
+  });
+
+  const cur=buckets[2],prev=buckets[1];
+  const hrC=cur.avgHR,hrP=prev.avgHR;
+  const diff=hrC&&hrP?hrP-hrC:null;
+  const col=diff===null?'var(--text3)':diff>0?'var(--green)':diff<0?'var(--red)':'var(--text2)';
+  const txt=diff===null?'kein Vgl.':diff>0?'↓ −'+diff+' bpm vs. Vormonat':diff<0?'↑ +'+Math.abs(diff)+' bpm vs. Vormonat':'→ stabil vs. Vormonat';
+
+  _glData={buckets,hrC,hrP,diff,col,cfg};
+
+  // HR anzeigen
+  ['gl-hr','s-gl-hr'].forEach(id=>set(id,hrC||'–'));
+  ['gl-trend','s-gl-trend'].forEach(id=>{const e=$(id);if(e){e.textContent=hrC?txt:'Keine Daten';e.style.color=col;}});
+
+  // 3-Monats-Balken
+  const HR_MAX=160,HR_MIN=135,BAR_H=52;
+  const barsHTML=buckets.map((b,i)=>{
+    const isCur=i===2;
+    if(!b.avgHR)return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
+      +'<div style="flex:1;width:100%;background:var(--bg3);border-radius:4px 4px 0 0;opacity:.3"></div>'
+      +'<div style="font-size:9px;color:var(--text3)">'+b.label+'</div></div>';
+    const fillPct=Math.min(100,Math.max(5,(HR_MAX-b.avgHR)/(HR_MAX-HR_MIN)*100));
+    const barCol=isCur?'var(--orange)':i===1?'rgba(255,107,53,.5)':'rgba(255,107,53,.25)';
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
+      +'<div style="font-size:9px;color:'+(isCur?'#fff':'var(--text3)')+(isCur?';font-weight:700':'')+'">'+b.avgHR+' bpm</div>'
+      +'<div style="flex:1;width:100%;background:var(--bg3);border-radius:4px 4px 0 0;position:relative;overflow:hidden">'
+      +'<div style="position:absolute;bottom:0;left:0;right:0;height:'+fillPct+'%;background:'+barCol+';border-radius:4px 4px 0 0;transition:height .6s ease"></div></div>'
+      +'<div style="font-size:9px;color:'+(isCur?'var(--orange)':'var(--text3)')+';font-weight:'+(isCur?700:400)+'">'+b.label+'</div></div>';
+  }).join('');
+  ['gl-bars','s-gl-bars'].forEach(id=>{const e=$(id);if(e)e.innerHTML=barsHTML;});
+
+  // Filter-Info
+  const pF=s=>Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);
+  const info=_easy.length+' Läufe · '+pF(cfg.paceMin)+'–'+pF(cfg.paceMax)+'/km · Ø HR <'+cfg.maxHR+' bpm';
+  ['gl-filter-info','s-gl-filter-info'].forEach(id=>set(id,info));
 }
 
 function renderZonen(){
@@ -802,18 +841,67 @@ function showPRModal(){
   openModal('Bestzeiten ♛',h);
 }
 function showGrundlageModal(){
-  if(!_glData){openModal('Grundlagenausdauer','Noch keine Easy Runs mit HR-Daten');return;}
+  if(!_glData){openModal('Grundlagenausdauer','Noch keine Daten mit aktuellem Filter');return;}
   const d=_glData;
+  const MN=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const pF=s=>Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);
   let h='<div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">'
-    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Ø HR bei Easy Runs (5:30–8:00/km)</div>'
-    +'<div style="font-size:36px;font-weight:800;color:#fff;margin-bottom:4px">'+d.hrC+' bpm</div>'
-    +'<div style="font-size:13px;font-weight:600;color:'+d.col+'">'+$('gl-trend').textContent+'</div></div>';
-  h+='<div class="mstat"><span class="mstat-l">Letzter Run</span><span class="mstat-v">'+fmtDateFull(d.cur.start_date_local)+'</span></div>';
-  h+='<div class="mstat"><span class="mstat-l">Pace</span><span class="mstat-v">'+fmtPace(d.cur.distance,d.cur.moving_time)+'/km</span></div>';
-  h+='<div class="mstat"><span class="mstat-l">Distanz</span><span class="mstat-v">'+(d.cur.distance/1e3).toFixed(1)+' km</span></div>';
-  if(d.prev)h+='<div class="mstat"><span class="mstat-l">Vorheriger HR</span><span class="mstat-v">'+d.hrP+' bpm</span></div>';
-  h+='<div class="mstat"><span class="mstat-l">Fortschritt zum Ziel</span><span class="mstat-v" style="color:var(--green)">'+d.pct.toFixed(0)+'% (Ziel: 135 bpm)</span></div>';
+    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Ø HR · Aktueller Monat</div>'
+    +'<div style="font-size:40px;font-weight:800;color:#fff;margin-bottom:6px">'+(d.hrC||'–')+' <span style="font-size:18px;color:var(--text2)">bpm</span></div>'
+    +'<div style="font-size:13px;font-weight:600;color:'+d.col+'">'+($('gl-trend').textContent||'–')+'</div></div>';
+  // Monats-Übersicht
+  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">3-Monats-Trend</div>';
+  d.buckets.forEach(b=>{
+    h+='<div class="mstat"><span class="mstat-l">'+MN[b.mo]+' '+b.yr+'<br><span style="font-size:9px;color:var(--text3)">'+b.runs+' Läufe</span></span>'
+      +'<span class="mstat-v">'+(b.avgHR?b.avgHR+' bpm':'–')+'</span></div>';
+  });
+  h+='<div style="height:1px;background:var(--border);margin:12px 0"></div>';
+  h+='<div class="mstat"><span class="mstat-l">Pace-Filter</span><span class="mstat-v">'+pF(d.cfg.paceMin)+'–'+pF(d.cfg.paceMax)+'/km</span></div>';
+  h+='<div class="mstat"><span class="mstat-l">Max. Ø HR</span><span class="mstat-v">'+d.cfg.maxHR+' bpm</span></div>';
+  h+='<div class="mstat"><span class="mstat-l">Läufe gesamt</span><span class="mstat-v">'+_easy.length+' Easy/Long Runs</span></div>';
+  h+='<div style="margin-top:14px"><button onclick="closeModal();setTimeout(showGLSettings,300)" style="width:100%;background:var(--bg3);color:var(--text);border:none;border-radius:10px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit">⚙️ Filter anpassen</button></div>';
   openModal('Grundlagenausdauer',h);
+}
+
+function glPaceFmt(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);}
+function glUpdatePmin(v){set('gl-pmin-val',glPaceFmt(+v));}
+function glUpdatePmax(v){set('gl-pmax-val',glPaceFmt(+v));}
+function glUpdateHR(v){set('gl-hr-val',v+' bpm');}
+function glAutoHR(){var z2=Math.round(_hrmax*0.7);var sl=$('gl-hr-sl');if(sl)sl.value=z2;set('gl-hr-val',z2+' bpm (Auto)');}
+
+function showGLSettings(){
+  const cfg=getGLSettings();
+  const z2hr=Math.round(_hrmax*0.7);
+  const slStyle='width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--bg3);outline:none;cursor:pointer;margin-top:6px';
+  const lbl=(t)=>'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">'+t+'</div>';
+  const val=(id,v)=>'<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px" id="'+id+'">'+v+'</div>';
+
+  let h='<style>input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--orange);cursor:pointer;box-shadow:0 2px 8px rgba(255,107,53,.4)}</style>';
+
+  h+='<div style="margin-bottom:22px">'+lbl('Pace von (schnellste Easy-Pace)')+val('gl-pmin-val',glPaceFmt(cfg.paceMin))+'/km'
+    +'<input type="range" id="gl-pmin" min="240" max="540" value="'+cfg.paceMin+'" step="5" style="'+slStyle+'" oninput="glUpdatePmin(this.value)">'
+    +'<div style="display:flex;justify-content:space-between;margin-top:3px"><span style="font-size:9px;color:var(--text3)">4:00</span><span style="font-size:9px;color:var(--text3)">9:00</span></div></div>';
+
+  h+='<div style="margin-bottom:22px">'+lbl('Pace bis (langsamste Easy-Pace)')+val('gl-pmax-val',glPaceFmt(cfg.paceMax))+'/km'
+    +'<input type="range" id="gl-pmax" min="300" max="600" value="'+cfg.paceMax+'" step="5" style="'+slStyle+'" oninput="glUpdatePmax(this.value)">'
+    +'<div style="display:flex;justify-content:space-between;margin-top:3px"><span style="font-size:9px;color:var(--text3)">5:00</span><span style="font-size:9px;color:var(--text3)">10:00</span></div></div>';
+
+  h+='<div style="margin-bottom:22px">'+lbl('Max. Ø HR')
+    +'<div style="display:flex;justify-content:space-between;align-items:center">'+val('gl-hr-val',cfg.maxHR+' bpm')
+    +'<button onclick="glAutoHR()" style="background:var(--orange);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Auto Z2 ('+z2hr+' bpm)</button></div>'
+    +'<input type="range" id="gl-hr-sl" min="120" max="175" value="'+cfg.maxHR+'" step="1" style="'+slStyle+'" oninput="glUpdateHR(this.value)">'
+    +'<div style="display:flex;justify-content:space-between;margin-top:3px"><span style="font-size:9px;color:var(--text3)">120</span><span style="font-size:9px;color:var(--text3)">175</span></div></div>';
+
+  h+='<button onclick="saveGLSettings()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit">Speichern & aktualisieren</button>';
+  openModal('Filter anpassen',h);
+}
+
+function saveGLSettings(){
+  const pMin=parseInt(($('gl-pmin')||{}).value)||330;
+  const pMax=parseInt(($('gl-pmax')||{}).value)||510;
+  const maxHR=parseInt(($('gl-hr-sl')||{}).value)||140;
+  localStorage.setItem('gl_settings',JSON.stringify({paceMin:pMin,paceMax:pMax,maxHR}));
+  closeModal();renderGrundlage();
 }
 function showZonenModal(){
   const hm=_hrmax||199,lastHR=Math.round(getHR(_runs[0]||{})||0),zones=window._zones||[];
