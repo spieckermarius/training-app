@@ -457,20 +457,14 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
   <!-- Modals -->
   <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
     <div class="modal" id="modal-box">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <div class="modal-title" id="modal-ttl">–</div>
-        <button class="modal-close-btn" onclick="closeModal()" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1">✕</button>
-      </div>
+      <div class="modal-title" id="modal-ttl" style="margin-bottom:16px">–</div>
       <div id="modal-body"></div>
     </div>
   </div>
 
   <div class="modal-overlay" id="analyse-modal" onclick="if(event.target===this)closeAnalyse()">
     <div class="modal" id="analyse-box">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <div class="modal-title">Laufanalyse</div>
-        <button onclick="closeAnalyse()" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1">✕</button>
-      </div>
+      <div class="modal-title" style="margin-bottom:16px">Laufanalyse</div>
       <div id="analyse-body"></div>
     </div>
   </div>
@@ -479,7 +473,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
 <script>
 'use strict';
 const API='/api/strava', CID='269194', RURI=location.origin+location.pathname;
-let _runs=[],_easy=[],_acts=[],_hrmax=199,_pr5k=null,_prHM=null,_glData=null,_editZ=-1;
+let _runs=[],_easy=[],_acts=[],_hrmax=199,_pr5k=null,_pr10k=null,_prHM=null,_prMarathon=null,_glData=null,_editZ=-1;
 let _sortMode=false,_dragEl=null,_longT=null,_planCur=0;
 
 // ── Helpers ──
@@ -601,7 +595,9 @@ function renderDashboard(acts){
 
   // PRs
   _pr5k=_runs.filter(r=>r.distance>=4800&&r.distance<=5500&&getHR(r)>155).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
+  _pr10k=_runs.filter(r=>r.distance>=9500&&r.distance<=11000).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
   _prHM=_runs.filter(r=>r.distance>=19000&&r.distance<=23000).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
+  _prMarathon=_runs.filter(r=>r.distance>=41000&&r.distance<=43500).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
   if(_pr5k){html('pr5k',fmtTime(_pr5k.moving_time)+' <span class="pr-crown">♛</span>');set('pr5k-p',fmtPace(_pr5k.distance,_pr5k.moving_time)+'/km');}
   if(_prHM){html('prhm',fmtTime(_prHM.moving_time)+' <span class="pr-crown">♛</span>');set('prhm-p',fmtPace(_prHM.distance,_prHM.moving_time)+'/km');}
 
@@ -765,40 +761,39 @@ function initPlan(){
 
 // ── Volumen Modal ──
 function showVolModal(st){
-  const now=new Date(),cKW=isoWeek(now),nm=now.getMonth(),ny=now.getFullYear();
+  const now=new Date(),nm=now.getMonth(),ny=now.getFullYear();
   const vt=JSON.parse(localStorage.getItem('vol_targets')||'{"week":25,"month":100,"year":1200}');
   const tW=vt.week||25,tM=vt.month||100,tY=vt.year||1200;
   const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
   const MK=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-  const WN=['ersten','zweiten','dritten','vierten','fünften'];
-  const ws=weekStart(now),wR=_runs.filter(r=>new Date(r.start_date_local)>=ws);
-  const mR=_runs.filter(r=>{const d=new Date(r.start_date_local);return d.getMonth()===nm&&d.getFullYear()===ny;}).sort((a,b)=>new Date(b.start_date_local)-new Date(a.start_date_local));
+  const ws=weekStart(now);
+  const wR=_runs.filter(r=>new Date(r.start_date_local)>=ws);
+  const mR=_runs.filter(r=>{const d=new Date(r.start_date_local);return d.getMonth()===nm&&d.getFullYear()===ny;});
   const yR=_runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
   const qM=window._qMap||{1:0,2:0,3:0,4:0},curQ=window._curQ||1,mMap=window._mMap||{};
   const last4m=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
-  const wkN=Math.ceil(ws.getDate()/7),wkL=WN[Math.min(wkN-1,4)]+' '+MN[nm]+'woche';
+  const wkN=Math.ceil(ws.getDate()/7);
+  const wkL=wkN+'. '+MN[nm]+'woche';
   const labels=[wkL,MN[nm]+' '+ny,'Jahr '+ny];
-  const rRow=r=>'<div class="mstat" style="flex-direction:column;align-items:flex-start;gap:2px;cursor:pointer" onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)">'
-    +'<span class="mstat-v">'+fmtDate(r.start_date_local)+' · '+r.name+'</span>'
-    +'<span class="mstat-l">'+(r.distance/1e3).toFixed(1)+' km · '+fmtPace(r.distance,r.moving_time)+'/km'+(getHR(r)?' · '+Math.round(getHR(r))+' bpm':'')+'</span></div>';
-  const coll=(runs,id)=>{
-    if(!runs.length)return '<div style="text-align:center;padding:12px;color:var(--text3)">Keine Läufe</div>';
-    let h=rRow(runs[0]);
-    if(runs.length>1)h+='<div id="'+id+'m" style="display:none">'+runs.slice(1).map(rRow).join('')+'</div>'
-      +'<div onclick="const e=$(\''+id+'m\'),b=$(\''+id+'b\'),s=e.style.display===\'none\';e.style.display=s?\'block\':\'none\';b.textContent=s?\'Weniger\':\'+'+(runs.length-1)+' weitere\'" id="'+id+'b" style="text-align:center;padding:8px;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer">+'+(runs.length-1)+' weitere</div>';
-    return h;
-  };
+
   const bRow=(km,max,lbl,cur)=>'<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:'+(cur?'#fff':'var(--text3)')+';font-weight:'+(cur?700:400)+'">'+lbl+'</span><span style="color:var(--text2)">'+Math.round(km)+' km</span></div><div style="background:var(--bg3);height:6px;border-radius:3px"><div style="background:'+(cur?'var(--orange)':'#5A5A5C')+';height:6px;border-radius:3px;width:'+Math.min(100,max?km/max*100:0)+'%"></div></div></div>';
-  const wH='<div style="margin-bottom:14px">'+last4m.map(m=>bRow(mMap[m]||0,tW,MK[m]+(m===nm?' (aktuell)':''),m===nm)).join('')+'</div>'+coll(wR,'vw');
-  const mH='<div style="font-size:11px;color:var(--text2);margin-bottom:12px">'+mR.length+' Läufe · '+(mR.reduce((s,r)=>s+r.distance/1e3,0)).toFixed(1)+' km</div>'+coll(mR,'vm');
-  const yH=[1,2,3,4].map(q=>{const qR=yR.filter(r=>Math.floor(new Date(r.start_date_local).getMonth()/3)+1===q);return qR.length?bRow(qM[q]||0,tY/4,'Q'+q+(q===curQ?' (aktuell)':''),q===curQ):'';}).join('')+'<div style="font-size:11px;color:var(--text2);margin-top:8px">'+yR.length+' Läufe · '+Math.round(yR.reduce((s,r)=>s+r.distance/1e3,0))+' km</div>';
-  const gear='';
+  const wKm=wR.reduce((s,r)=>s+r.distance/1e3,0);
+  const mKm=mR.reduce((s,r)=>s+r.distance/1e3,0);
+  const yKm=yR.reduce((s,r)=>s+r.distance/1e3,0);
+
+  const wH='<div>'+last4m.map(m=>bRow(mMap[m]||0,tW,MK[m]+(m===nm?' (aktuell)':''),m===nm)).join('')
+    +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+wR.length+' Läufe · '+wKm.toFixed(1)+' / '+tW+' km</div></div>';
+  const mH='<div>'+last4m.map(m=>bRow(mMap[m]||0,tM,MK[m]+(m===nm?' (aktuell)':''),m===nm)).join('')
+    +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+mR.length+' Läufe · '+mKm.toFixed(1)+' / '+tM+' km</div></div>';
+  const yH='<div>'+[1,2,3,4].map(q=>bRow(qM[q]||0,tY/4,'Q'+q+(q===curQ?' (aktuell)':''),q===curQ)).join('')
+    +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+yR.length+' Läufe · '+Math.round(yKm)+' / '+tY+' km</div></div>';
+
   const tTabs=labels.map((l,i)=>'<div onclick="vGo('+i+')" id="vtb'+i+'" style="cursor:pointer;padding:4px 0;font-size:12px;font-weight:600;color:'+(i===st?'var(--orange)':'var(--text3)')+'">'+l+'</div>').join('');
   const dts=[0,1,2].map(i=>'<div id="vd'+i+'" onclick="vGo('+i+')" style="height:6px;border-radius:3px;cursor:pointer;transition:all .2s;width:'+(i===st?'20px':'6px')+';background:'+(i===st?'var(--orange)':'var(--bg3)')+'"></div>').join('');
-  const content='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+tTabs+gear+'</div>'
-    +'<div style="overflow:hidden;width:100%;margin-bottom:8px" id="vm-wrap"><div id="vm-track" style="display:flex;width:300%;transition:transform .3s ease">'
-    +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box">'+wH+'</div>'
-    +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box">'+mH+'</div>'
+  const content='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+tTabs+'</div>'
+    +'<div style="overflow:hidden;width:100%;margin-bottom:10px" id="vm-wrap"><div id="vm-track" style="display:flex;width:300%;transition:transform .3s ease">'
+    +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;padding-right:4px">'+wH+'</div>'
+    +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;padding-right:4px">'+mH+'</div>'
     +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box">'+yH+'</div>'
     +'</div></div><div style="display:flex;justify-content:center;gap:8px" id="vdots">'+dts+'</div>';
   openModal(labels[st],content);
@@ -809,7 +804,7 @@ function showVolModal(st){
     set('modal-ttl',labels[n]);
     labels.forEach((_,i)=>{const e=$('vtb'+i);if(e)e.style.color=i===n?'var(--orange)':'var(--text3)';const d=$('vd'+i);if(d){d.style.width=i===n?'20px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';}});
   };
-  setTimeout(()=>window.vGo(st),50);
+  setTimeout(()=>{if(window.vGo)window.vGo(st);},100);
 }
 function showVolSettings(){
   const t=JSON.parse(localStorage.getItem('vol_targets')||'{"week":25,"month":100,"year":1200}');
@@ -826,22 +821,18 @@ function saveVol(){
 // ── Modals ──
 function showPRModal(){
   if(!_runs.length){openModal('Bestzeiten','Noch keine Läufe');return;}
-  let h='';
-  if(_pr5k){
-    h+='<div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px">'
-      +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">5 km</div>'
-      +'<div style="font-size:36px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px">'+fmtTime(_pr5k.moving_time)+' <span class="pr-crown">♛</span></div>'
-      +'<div style="font-size:13px;color:var(--text2)">'+fmtPace(_pr5k.distance,_pr5k.moving_time)+'/km · '+((_pr5k.distance)/1e3).toFixed(1)+' km · '+fmtDateFull(_pr5k.start_date_local)+'</div>'
+  const prCard=(dist,pr)=>{
+    const hasPR=!!pr;
+    return '<div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px">'
+      +'<div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">'+dist+'</div>'
+      +(hasPR
+        ? '<div style="font-size:34px;font-weight:800;color:#fff;line-height:1;margin-bottom:5px">'+fmtTime(pr.moving_time)+' <span class="pr-crown">♛</span></div>'
+          +'<div style="font-size:13px;color:var(--text2)">'+fmtPace(pr.distance,pr.moving_time)+'/km · '+(pr.distance/1e3).toFixed(1)+' km · '+fmtDateFull(pr.start_date_local)+'</div>'
+        : '<div style="font-size:28px;font-weight:700;color:var(--text3);line-height:1;margin-bottom:4px">–</div>'
+          +'<div style="font-size:12px;color:var(--text3)">Noch keine Zeit erfasst</div>')
       +'</div>';
-  }
-  if(_prHM){
-    h+='<div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px">'
-      +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Halbmarathon</div>'
-      +'<div style="font-size:36px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px">'+fmtTime(_prHM.moving_time)+' <span class="pr-crown">♛</span></div>'
-      +'<div style="font-size:13px;color:var(--text2)">'+fmtPace(_prHM.distance,_prHM.moving_time)+'/km · '+((_prHM.distance)/1e3).toFixed(1)+' km · '+fmtDateFull(_prHM.start_date_local)+'</div>'
-      +'</div>';
-  }
-  if(!h)h='<div style="text-align:center;padding:20px;color:var(--text3)">Noch keine PRs erkannt.<br><span style="font-size:12px">5km: mind. 4,8 km · HM: 19–23 km</span></div>';
+  };
+  const h=prCard('5 km',_pr5k)+prCard('10 km',_pr10k)+prCard('Halbmarathon',_prHM)+prCard('Marathon',_prMarathon);
   openModal('Bestzeiten ♛',h);
 }
 function showGrundlageModal(){
@@ -849,44 +840,51 @@ function showGrundlageModal(){
   const d=_glData;
   const MN=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const pF=s=>Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);
-  const trendTxt=$('gl-trend')?$('gl-trend').textContent:'–';
+  // Trend: grün wenn HR gesunken, rot wenn gestiegen
+  const trendCol=d.diff===null?'rgba(255,255,255,.7)':d.diff>0?'#30D158':d.diff<0?'#FF453A':'rgba(255,255,255,.7)';
+  const trendTxt=d.diff===null?'Kein Vgl.'
+    :d.diff>0?'↓ −'+d.diff+' bpm vs. Vormonat'
+    :d.diff<0?'↑ +'+Math.abs(d.diff)+' bpm vs. Vormonat'
+    :'→ Stabil vs. Vormonat';
 
-  // Oranges HR-Kästchen
+  // Oranges Kästchen
   let h='<div style="background:var(--orange);border-radius:14px;padding:18px 20px;margin-bottom:16px;text-align:center">'
     +'<div style="font-size:11px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ø HR · Aktueller Monat</div>'
     +'<div style="font-size:44px;font-weight:800;color:#fff;line-height:1;margin-bottom:6px">'+(d.hrC||'–')+'</div>'
     +'<div style="font-size:13px;color:rgba(255,255,255,.85)">bpm</div>'
-    +'<div style="font-size:14px;font-weight:700;color:#fff;margin-top:8px">'+trendTxt+'</div>'
+    +'<div style="font-size:15px;font-weight:700;color:'+trendCol+';margin-top:10px">'+trendTxt+'</div>'
     +'</div>';
 
-  // 3-Monats Visualisierung
-  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">3-Monats-Verlauf</div>';
-  const HR_MAX=160,HR_MIN=135,BAR_H=80;
-  h+='<div style="display:flex;gap:10px;align-items:flex-end;height:'+BAR_H+'px;margin-bottom:6px">';
+  // 3-Monats-Balkendiagramm (wie Volumen: Balken von unten, Höhe = HR-Wert)
+  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">3-Monats-Verlauf (Ø HR)</div>';
+  const allHR=d.buckets.map(b=>b.avgHR).filter(Boolean);
+  const hrMin=allHR.length?Math.min(...allHR)-5:130,hrMax=allHR.length?Math.max(...allHR)+5:165;
+  h+='<div style="display:flex;gap:10px;align-items:flex-end;height:90px;margin-bottom:8px">';
   d.buckets.forEach((b,i)=>{
     const isCur=i===2;
     if(!b.avgHR){
       h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">'
-        +'<div style="flex:1;width:100%;background:var(--bg3);border-radius:6px 6px 0 0;opacity:.3"></div>'
+        +'<div style="flex:1;width:100%;background:var(--bg3);border-radius:5px;opacity:.25"></div>'
         +'<div style="font-size:10px;color:var(--text3)">'+MN[b.mo]+'</div></div>';
       return;
     }
-    const fillPct=Math.min(100,Math.max(8,(HR_MAX-b.avgHR)/(HR_MAX-HR_MIN)*100));
-    const barCol=isCur?'var(--orange)':i===1?'rgba(255,107,53,.5)':'rgba(255,107,53,.25)';
+    // Balken von oben: höhere HR = größerer Balken (schlechter)
+    const pct=Math.min(100,Math.max(10,(b.avgHR-hrMin)/(hrMax-hrMin)*100));
+    const barCol=isCur?'var(--orange)':i===1?'rgba(255,107,53,.55)':'rgba(255,107,53,.3)';
     h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
-      +'<div style="font-size:10px;color:'+(isCur?'#fff':'var(--text2)')+';font-weight:'+(isCur?700:400)+'">'+b.avgHR+'</div>'
-      +'<div style="flex:1;width:100%;background:var(--bg3);border-radius:6px 6px 0 0;position:relative;overflow:hidden">'
-      +'<div style="position:absolute;bottom:0;left:0;right:0;height:'+fillPct+'%;background:'+barCol+';border-radius:6px 6px 0 0;transition:height .6s ease"></div></div>'
-      +'<div style="font-size:10px;color:'+(isCur?'var(--orange)':'var(--text3)')+';font-weight:'+(isCur?700:400)+'">'+MN[b.mo]+'</div></div>';
+      +'<div style="font-size:11px;font-weight:700;color:'+(isCur?'#fff':'var(--text2)')+'">'+b.avgHR+'</div>'
+      +'<div style="flex:1;width:100%;display:flex;align-items:flex-end">'
+      +'<div style="width:100%;height:'+pct+'%;background:'+barCol+';border-radius:5px;min-height:8px;transition:height .6s ease"></div></div>'
+      +'<div style="font-size:10px;font-weight:'+(isCur?700:400)+';color:'+(isCur?'var(--orange)':'var(--text3)')+'">'+MN[b.mo]+'</div></div>';
   });
   h+='</div>';
-  h+='<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:16px">'
-    +'<span>↑ höhere HR (weniger fit)</span><span>↓ niedrigere HR (fitter)</span></div>';
+  h+='<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:14px">'
+    +'<span style="color:var(--green)">Niedriger = besser</span><span style="color:var(--red)">Höher = weniger fit</span></div>';
 
   // Filter-Info
-  h+='<div style="background:var(--bg3);border-radius:10px;padding:12px 14px">'
-    +'<div class="mstat" style="padding:6px 0"><span class="mstat-l">Pace-Filter</span><span class="mstat-v">'+pF(d.cfg.paceMin)+'–'+pF(d.cfg.paceMax)+'/km</span></div>'
-    +'<div class="mstat" style="padding:6px 0;border:none"><span class="mstat-l">Max. Ø HR</span><span class="mstat-v">'+d.cfg.maxHR+' bpm · '+_easy.length+' Läufe</span></div>'
+  h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 14px">'
+    +'<div class="mstat" style="padding:5px 0"><span class="mstat-l">Pace-Filter</span><span class="mstat-v">'+pF(d.cfg.paceMin)+'–'+pF(d.cfg.paceMax)+'/km</span></div>'
+    +'<div class="mstat" style="padding:5px 0;border:none"><span class="mstat-l">Max. Ø HR · Läufe</span><span class="mstat-v">'+d.cfg.maxHR+' bpm · '+_easy.length+'</span></div>'
     +'</div>';
   openModal('Grundlagenausdauer',h);
 }
