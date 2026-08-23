@@ -276,8 +276,8 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
 
     <div class="sort-card" data-id="laeufe">
     <div class="card">
-      <div style="padding:16px 14px 16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="padding:14px 14px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Laufhistorie</div>
           <div style="font-size:11px;color:var(--text3);cursor:pointer" onclick="showAllRuns()" id="runs-n">–</div>
         </div>
@@ -716,14 +716,14 @@ function renderShoes(){
 function renderRunCards(){
   const wrap=$('rc-wrap'),track=$('rc-track');
   if(!track||!_runs.length)return;
-  const W=wrap?wrap.offsetWidth:300,cW=Math.floor((W-16)/3);
+  const W=wrap?wrap.offsetWidth:300,cW=Math.floor((W-8)/2);
   track.innerHTML=_runs.map((r,i)=>{
     const km=(r.distance/1e3).toFixed(1);
     const pace=fmtPace(r.distance,r.moving_time);
     const hr=getHR(r)?Math.round(getHR(r))+' bpm':'–';
     const d=new Date(r.start_date_local);
     const dt=pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(2);
-    return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cW+'px;background:var(--bg3);border-radius:10px;padding:12px 10px;cursor:pointer;box-sizing:border-box;min-height:185px;display:flex;flex-direction:column;gap:3px">'
+    return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cW+'px;background:var(--bg3);border-radius:10px;padding:12px 10px;cursor:pointer;box-sizing:border-box;min-height:175px;display:flex;flex-direction:column;gap:3px">'
       // Name ganz oben, fett
       +'<div style="font-size:11px;font-weight:800;color:#fff;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;margin-bottom:4px">'+r.name+'</div>'
       // Datum
@@ -815,11 +815,11 @@ function showVolModal(st){
   const mKm=mR.reduce((s,r)=>s+r.distance/1e3,0);
   const yKm=yR.reduce((s,r)=>s+r.distance/1e3,0);
 
-  const wH='<div>'+last4m.map(m=>bRow(mMap[m]||0,tW,MK[m]+(m===nm?' (aktuell)':''),m===nm)).join('')
+  const wH='<div>'+last4m.map(m=>bRow(mMap[m]||0,tW,m===nm?MN[m]:MK[m],m===nm)).join('')
     +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+wR.length+' Läufe · '+wKm.toFixed(1)+' / '+tW+' km</div></div>';
-  const mH='<div>'+last4m.map(m=>bRow(mMap[m]||0,tM,MK[m]+(m===nm?' (aktuell)':''),m===nm)).join('')
+  const mH='<div>'+last4m.map(m=>bRow(mMap[m]||0,tM,m===nm?MN[m]:MK[m],m===nm)).join('')
     +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+mR.length+' Läufe · '+mKm.toFixed(1)+' / '+tM+' km</div></div>';
-  const yH='<div>'+[1,2,3,4].map(q=>bRow(qM[q]||0,tY/4,'Q'+q+(q===curQ?' (aktuell)':''),q===curQ)).join('')
+  const yH='<div>'+[1,2,3,4].map(q=>bRow(qM[q]||0,tY/4,'Q'+q,q===curQ)).join('')
     +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+yR.length+' Läufe · '+Math.round(yKm)+' / '+tY+' km</div></div>';
 
   const tTabs=labels.map((l,i)=>'<div onclick="vGo('+i+')" id="vtb'+i+'" style="cursor:pointer;padding:4px 0;font-size:12px;font-weight:600;color:'+(i===st?'var(--orange)':'var(--text3)')+'">'+l+'</div>').join('');
@@ -836,7 +836,10 @@ function showVolModal(st){
     n=Math.max(0,Math.min(2,n));vCur=n;
     const t=$('vm-track');if(t){t.style.transition='transform .3s ease';t.style.transform='translateX(-'+(n*100/3)+'%)';}
     set('modal-ttl',labels[n]);
-    labels.forEach((_,i)=>{const e=$('vtb'+i);if(e)e.style.color=i===n?'var(--orange)':'var(--text3)';const d=$('vd'+i);if(d){d.style.width=i===n?'20px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';}});
+    labels.forEach((_,i)=>{
+      const e=$('vtb'+i);if(e)e.style.color=i===n?'var(--orange)':'var(--text3)';
+      const d=$('vd'+i);if(d){d.style.width=i===n?'20px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';d.style.borderRadius=i===n?'3px':'50%';}
+    });
   };
   setTimeout(()=>{
     if(window.vGo)window.vGo(st);
@@ -1001,7 +1004,7 @@ function saveGLSettings(){
   localStorage.setItem('gl_settings',JSON.stringify({paceMin:pMin,paceMax:pMax,maxHR}));
   closeModal();renderGrundlage();
 }
-const ZONE_INFO={'Z1 Erholung':'Aktive Erholung – sehr leicht. Laktat wird abgebaut, Körper regeneriert. Ideal nach harten Einheiten oder als Aufwärmen. Maximale Fettverbrennung bei minimalem Stress.','Z2 Grundlage':'Grundlagenausdauer – das Fundament. Du kannst dich noch unterhalten. Trainiert den aeroben Stoffwechsel, Mitochondrien wachsen. Basis für alle Wettkampfdistanzen.','Z3 Aerob':'Aerobe Zone – moderate Intensität. Bereits anstrengend, Atmung erhöht. Verbessert aerobe Kapazität, gut für mittlere Tempoläufe. Zu viel ohne Erholung erhöht Übertrainingsrisiko.','Z4 Schwelle':'Laktatschwelle – dein 1-Stunden-Tempo. Laktat akkumuliert schneller als abgebaut. Entscheidend für 5km–Halbmarathon-Leistung. Kernzone für Tempoentwicklung.','Z5 Maximal':'VO2max-Zone – maximale Sauerstoffaufnahme. Nur kurze Intervalle möglich (30–90 Sek.). Steigert die max. aerobe Kapazität. Nur mit solider Grundlage trainieren.'};
+const ZONE_INFO={'Z1 Erholung':'Aktive Erholung – sehr leicht. Laktat wird abgebaut, Körper regeneriert. Ideal nach harten Einheiten oder als Aufwärmen. Maximale Fettverbrennung bei minimalem Stress.','Z2 Grundlage':'Grundlagenausdauer – das Fundament. Du kannst dich noch unterhalten. Trainiert den aeroben Stoffwechsel, Mitochondrien wachsen. Basis für alle Wettkampfdistanzen.','Z3 Aerob':'Aerobe Zone – moderate Intensität. Bereits anstrengend, Atmung erhöht. Verbessert aerobe Kapazität, gut für mittlere Tempoläufe. Zu viel ohne Erholung erhöht Übertrainingsrisiko.','Z4 Schwelle':'Laktatschwelle – dein 1-Stunden-Tempo. Laktat akkumuliert schneller als abgebaut. Entscheidend für 5km–Halbmarathon-Leistung. Kernzone für Tempoentwicklung.','Z5 Maximal':'VO2max-Zone – maximale Sauerstoffaufnahme. Nur kurze Intervalle möglich (20–60 Sek.). Diese Zone ist die intensivste: Herzfrequenz an oder nahe Maximum, Atmung maximal. Steigert VO2max und die max. aerobe Kapazität erheblich. Nur für trainierte Läufer mit solider Grundlage – regelmäßig eingesetzt führt sie ohne ausreichend Erholung schnell zu Übertraining.'};
 function showZoneDetail(name,col,lo,hi){
   const txtC='#fff';
   const info=ZONE_INFO[name]||'';
@@ -1151,7 +1154,11 @@ function initSwipe(){
     cur=Math.max(0,Math.min(2,n));
     track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
     track.style.transform='translateX(-'+(cur*100)+'%)';
-    dots.forEach((d,i)=>{d.style.background=i===cur?'var(--orange)':'var(--bg3)';d.style.width=i===cur?'14px':'5px';d.style.borderRadius=i===cur?'3px':'50%';});
+    dots.forEach((d,i)=>{
+      d.style.background=i===cur?'var(--orange)':'var(--bg3)';
+      d.style.width=i===cur?'14px':'5px';
+      d.style.borderRadius=i===cur?'3px':'50%';
+    });
   };
   track.addEventListener('touchstart',e=>{
     sX=e.touches[0].clientX;sY=e.touches[0].clientY;
