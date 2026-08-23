@@ -816,7 +816,28 @@ function showVolModal(st){
     set('modal-ttl',labels[n]);
     labels.forEach((_,i)=>{const e=$('vtb'+i);if(e)e.style.color=i===n?'var(--orange)':'var(--text3)';const d=$('vd'+i);if(d){d.style.width=i===n?'20px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';}});
   };
-  setTimeout(()=>{if(window.vGo)window.vGo(st);},100);
+  setTimeout(()=>{
+    if(window.vGo)window.vGo(st);
+    // Swipe im Modal
+    const wrap=$('vm-wrap');const trk=$('vm-track');
+    if(!wrap||!trk)return;
+    let sx=0,sy=0,ih=null,dr=false,dx=0;
+    wrap.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;ih=null;dr=true;dx=0;trk.style.transition='none';},{passive:true});
+    wrap.addEventListener('touchmove',e=>{
+      if(!dr)return;
+      const cx=e.touches[0].clientX-sx,cy=e.touches[0].clientY-sy;
+      if(ih===null)ih=Math.abs(cx)>Math.abs(cy)+3;
+      if(!ih)return;
+      e.preventDefault();dx=cx;
+      trk.style.transform='translateX(calc(-'+(vCur*100/3)+'% + '+(cx/3)+'px))';
+    },{passive:false});
+    wrap.addEventListener('touchend',()=>{
+      if(!dr)return;dr=false;if(!ih)return;
+      if(dx<-40&&vCur<2)window.vGo(vCur+1);
+      else if(dx>40&&vCur>0)window.vGo(vCur-1);
+      else window.vGo(vCur);
+    },{passive:true});
+  },150);
 }
 function showVolSettings(){
   const t=JSON.parse(localStorage.getItem('vol_targets')||'{"week":25,"month":100,"year":1200}');
@@ -836,20 +857,21 @@ function showPRModal(){
   const prCard=(dist,pr)=>{
     const hasPR=!!pr;
     const idx=hasPR?_runs.indexOf(pr):-1;
-    const onclick=hasPR?'onclick="closeModal();setTimeout(()=>showRunDetail('+idx+'),300)" style="cursor:pointer"':'';
-    return '<div '+onclick+' style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px;'+(hasPR?'cursor:pointer':'')+'">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-      +'<div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em">'+dist+'</div>'
-      +(hasPR?'<div style="font-size:11px;color:var(--text3)">Details →</div>':'')
-      +'</div>'
+    const tap=hasPR?'onclick="closeModal();setTimeout(()=>showRunDetail('+idx+'),300)"':'';
+    return '<div '+tap+' style="background:var(--bg3);border-radius:12px;padding:14px 12px;'+(hasPR?'cursor:pointer;active:opacity:.7;':'')+'">'
+      +'<div style="font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+dist+'</div>'
       +(hasPR
-        ? '<div style="font-size:34px;font-weight:800;color:#fff;line-height:1;margin-bottom:5px">'+fmtTime(pr.moving_time)+' <span class="pr-crown">♛</span></div>'
-          +'<div style="font-size:13px;color:var(--text2)">'+fmtPace(pr.distance,pr.moving_time)+'/km · '+(pr.distance/1e3).toFixed(1)+' km · '+fmtDateFull(pr.start_date_local)+'</div>'
-        : '<div style="font-size:28px;font-weight:700;color:var(--text3);line-height:1;margin-bottom:4px">–</div>'
-          +'<div style="font-size:12px;color:var(--text3)">Noch keine Zeit erfasst</div>')
+        ? '<div style="font-size:26px;font-weight:800;color:#fff;line-height:1;margin-bottom:3px">'+fmtTime(pr.moving_time)+'</div>'
+          +'<div style="font-size:10px;color:var(--text2)">'+fmtPace(pr.distance,pr.moving_time)+'/km</div>'
+          +'<div style="font-size:9px;color:var(--text3);margin-top:2px">'+fmtDateFull(pr.start_date_local)+'</div>'
+        : '<div style="font-size:26px;font-weight:800;color:var(--text3);line-height:1">–</div>')
       +'</div>';
   };
-  const h=prCard('5 km',_pr5k)+prCard('10 km',_pr10k)+prCard('Halbmarathon',_prHM)+prCard('Marathon',_prMarathon);
+  // 2×2 Grid
+  const h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +prCard('5 km',_pr5k)+prCard('10 km',_pr10k)
+    +prCard('Halbmarathon',_prHM)+prCard('Marathon',_prMarathon)
+    +'</div>';
   openModal('Bestzeiten ♛',h);
 }
 function showGrundlageModal(){
@@ -945,23 +967,32 @@ function saveGLSettings(){
 function showZonenModal(){
   const hm=_hrmax||199,lastHR=Math.round(getHR(_runs[0]||{})||0),zones=window._zones||[];
   let h='';
+  // Letzter Lauf
   if(lastHR){
-    const z=zones.find(z=>lastHR>=z.lo&&lastHR<z.hi)||{};
-    h+='<div style="background:'+(z.col||'var(--bg3)')+';border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">'
-      +'<div><div style="font-size:11px;color:rgba(255,255,255,.8);margin-bottom:2px">Letzter Lauf</div>'
-      +'<div style="font-size:28px;font-weight:800;color:#fff;line-height:1">'+lastHR+' bpm</div>'
-      +'<div style="font-size:12px;color:rgba(255,255,255,.85);margin-top:3px">'+(z.name||'–')+'</div></div>'
+    const curZ=zones.find(z=>lastHR>=z.lo&&lastHR<z.hi)||{};
+    h+='<div style="background:'+(curZ.col||'var(--bg3)')+';border-radius:12px;padding:14px 16px;margin-bottom:14px">'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Letzter Lauf</div>'
+      +'<div style="display:flex;align-items:baseline;gap:6px">'
+      +'<div style="font-size:28px;font-weight:800;color:#fff;line-height:1">'+lastHR+'</div>'
+      +'<div style="font-size:13px;color:rgba(255,255,255,.85)"> bpm · '+(curZ.name||'–')+'</div></div>'
       +'</div>';
   }
-  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Zonen (HRmax: '+hm+' bpm)</div>';
+  // Jede Zone als voller farbiger Block
   zones.forEach(z=>{
     const il=lastHR&&lastHR>=z.lo&&lastHR<z.hi;
-    h+='<div style="margin-bottom:12px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
-      +'<span style="font-size:13px;font-weight:'+(il?700:600)+';color:'+z.col+'">'+z.name+(il?' ←':'')+'</span>'
-      +'<span style="font-size:11px;color:var(--text3)">'+z.lo+'–'+z.hi+' bpm</span></div>'
-      +'<div style="background:var(--bg3);height:7px;border-radius:4px">'
-      +'<div style="background:'+z.col+';height:7px;border-radius:4px;width:'+(il?'100%':'60%')+'"></div></div></div>';
+    const txtC=z.col==='#FFD60A'?'#111':'#fff';
+    const ring=il?'box-shadow:0 0 0 2.5px #fff;':'';
+    h+='<div style="background:'+z.col+';border-radius:12px;padding:13px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;'+ring+'">'
+      // Linke Seite: Zone + Bezeichnung
+      +'<div>'
+      +'<div style="font-size:13px;font-weight:700;color:'+txtC+'">'+z.name+'</div>'
+      +(il?'<div style="font-size:10px;color:'+txtC+';opacity:.8;margin-top:2px">'+lastHR+' bpm ← Letzter Lauf</div>':'')
+      +'</div>'
+      // Rechte Seite: BPM-Range in dunklerem Pill
+      +'<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:5px 11px;text-align:center">'
+      +'<div style="font-size:13px;font-weight:800;color:'+txtC+'">'+z.lo+'–'+z.hi+'</div>'
+      +'<div style="font-size:9px;color:'+txtC+';opacity:.75;font-weight:600">bpm</div>'
+      +'</div></div>';
   });
   openModal('Herzfrequenzzonen',h);
 }
