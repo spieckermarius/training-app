@@ -236,7 +236,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     </div>
 
     <div class="sort-card" data-id="grundlage">
-    <div class="card tappable" onclick="showGrundlageModal()" id="gl-card">
+    <div class="card tappable" onclick="showGrundlageModal()">
       <div style="padding:14px 16px;border-radius:14px;transition:background .4s ease">
         <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Grundlagenausdauer</div>
         <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
@@ -864,12 +864,13 @@ function showGrundlageModal(){
     :d.diff<0?'↑ +'+Math.abs(d.diff)+' bpm vs. Vormonat'
     :'→ Stabil vs. Vormonat';
 
-  // Oranges Kästchen
-  let h='<div style="background:var(--orange);border-radius:14px;padding:18px 20px;margin-bottom:16px;text-align:center">'
+  // Kästchen: grün wenn HR gesunken, rot wenn gestiegen, grau wenn kein Vgl.
+  const boxBg=d.diff===null?'var(--bg3)':d.diff>0?'var(--green)':'var(--red)';
+  let h='<div style="background:'+boxBg+';border-radius:14px;padding:18px 20px;margin-bottom:16px;text-align:center">'
     +'<div style="font-size:11px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ø HR · Aktueller Monat</div>'
     +'<div style="font-size:44px;font-weight:800;color:#fff;line-height:1;margin-bottom:6px">'+(d.hrC||'–')+'</div>'
     +'<div style="font-size:13px;color:rgba(255,255,255,.85)">bpm</div>'
-    +'<div style="font-size:15px;font-weight:700;color:'+trendCol+';margin-top:10px">'+trendTxt+'</div>'
+    +'<div style="font-size:15px;font-weight:700;color:#fff;margin-top:10px">'+trendTxt+'</div>'
     +'</div>';
 
   // 3-Monats horizontales Balkendiagramm (wie Volumen-Kachel)
@@ -1070,32 +1071,34 @@ function saveOrder(){localStorage.setItem('card_order',JSON.stringify([...$('sor
 // ── Volumen Swipe ──
 function initSwipe(){
   const card=$('vol-card');const track=$('swipe-track');if(!track||!card)return;
+  // touch-action:none direkt auf track setzen damit sort-card kein Conflict hat
+  track.style.touchAction='none';
   let cur=0,sX=0,sY=0,isH=null,drag=false,dist=0;
-  const slides=track.querySelectorAll('.swipe-slide');
+  const dots=card.querySelectorAll('.dot');
   const goTo=n=>{
-    cur=Math.max(0,Math.min(slides.length-1,n));
+    cur=Math.max(0,Math.min(2,n));
     track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
     track.style.transform='translateX(-'+(cur*100)+'%)';
-    card.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===cur?' active':'');});
+    dots.forEach((d,i)=>{d.className='dot'+(i===cur?' active':'');});
   };
-  card.addEventListener('touchstart',e=>{
+  track.addEventListener('touchstart',e=>{
     sX=e.touches[0].clientX;sY=e.touches[0].clientY;
     isH=null;drag=true;dist=0;
     track.style.transition='none';
-  },{passive:true});
-  card.addEventListener('touchmove',e=>{
+  },{passive:false});
+  track.addEventListener('touchmove',e=>{
     if(!drag)return;
     const dx=e.touches[0].clientX-sX,dy=e.touches[0].clientY-sY;
-    if(isH===null){isH=Math.abs(dx)>Math.abs(dy);}
+    if(isH===null)isH=Math.abs(dx)>Math.abs(dy)+3;
     if(!isH)return;
     e.preventDefault();
     dist=dx;
     track.style.transform='translateX(calc(-'+(cur*100)+'% + '+dx+'px))';
   },{passive:false});
-  card.addEventListener('touchend',e=>{
+  track.addEventListener('touchend',()=>{
     if(!drag)return;drag=false;
-    if(!isH)return;
-    if(Math.abs(dist)<40)goTo(cur);
+    if(isH===false)return;
+    if(Math.abs(dist)<30)goTo(cur);
     else if(dist<0)goTo(cur+1);else goTo(cur-1);
   },{passive:true});
 }
