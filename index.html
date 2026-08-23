@@ -161,8 +161,8 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
           <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div></div>
           <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div></div>
           <div class="day run-day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div></div>
-          <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name">Beine</div></div>
-          <div class="day run-day" id="day-5"><div class="d-label">FR</div><div class="d-name">Easy</div></div>
+          <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name" style="font-size:8px;line-height:1.3">Push<br>Beine</div></div>
+          <div class="day run-day" id="day-5"><div class="d-label">FR</div><div class="d-name" style="font-size:8px;line-height:1.3">Pull<br>Easy</div></div>
           <div class="day rest" id="day-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
           <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div></div>
         </div>
@@ -233,22 +233,14 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     </div>
 
     <div class="sort-card" data-id="grundlage">
-    <div class="card" onclick="showGrundlageModal()" style="cursor:pointer">
+    <div class="card tappable" onclick="showGrundlageModal()">
       <div style="padding:14px 16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Grundlagenausdauer</div>
-          <button onclick="event.stopPropagation();showGLSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:2px;line-height:1;font-size:14px">⚙️</button>
-        </div>
-        <!-- Aktuelle HR + Trend -->
-        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Grundlagenausdauer</div>
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
           <div style="font-size:32px;font-weight:800;color:#fff;line-height:1" id="gl-hr">–</div>
           <div style="font-size:12px;color:var(--text2)">bpm</div>
-          <div style="font-size:12px;font-weight:600" id="gl-trend">–</div>
+          <div style="font-size:13px;font-weight:600" id="gl-trend">–</div>
         </div>
-        <!-- 3-Monats-Balken -->
-        <div style="display:flex;gap:8px;align-items:flex-end;height:52px;margin-bottom:8px" id="gl-bars"></div>
-        <!-- Filter-Info -->
-        <div style="font-size:9px;color:var(--text3)" id="gl-filter-info">–</div>
       </div>
     </div>
     </div>
@@ -456,9 +448,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     </button>
   </nav>
 
-  <button class="fab" id="fab">
-    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </button>
+
 
   <div id="sort-bar" onclick="exitSort()">✓ Fertig</div>
 
@@ -467,7 +457,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     <div class="modal" id="modal-box">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div class="modal-title" id="modal-ttl">–</div>
-        <button onclick="closeModal()" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1">✕</button>
+        <button class="modal-close-btn" onclick="closeModal()" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1">✕</button>
       </div>
       <div id="modal-body"></div>
     </div>
@@ -841,26 +831,58 @@ function showPRModal(){
   openModal('Bestzeiten ♛',h);
 }
 function showGrundlageModal(){
-  if(!_glData){openModal('Grundlagenausdauer','Noch keine Daten mit aktuellem Filter');return;}
+  if(!_glData){openGLModal('Grundlagenausdauer','<div style="text-align:center;padding:20px;color:var(--text3)">Noch keine Daten</div>');return;}
   const d=_glData;
   const MN=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const pF=s=>Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);
-  let h='<div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">'
-    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Ø HR · Aktueller Monat</div>'
-    +'<div style="font-size:40px;font-weight:800;color:#fff;margin-bottom:6px">'+(d.hrC||'–')+' <span style="font-size:18px;color:var(--text2)">bpm</span></div>'
-    +'<div style="font-size:13px;font-weight:600;color:'+d.col+'">'+($('gl-trend').textContent||'–')+'</div></div>';
-  // Monats-Übersicht
-  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">3-Monats-Trend</div>';
-  d.buckets.forEach(b=>{
-    h+='<div class="mstat"><span class="mstat-l">'+MN[b.mo]+' '+b.yr+'<br><span style="font-size:9px;color:var(--text3)">'+b.runs+' Läufe</span></span>'
-      +'<span class="mstat-v">'+(b.avgHR?b.avgHR+' bpm':'–')+'</span></div>';
+  const trendTxt=$('gl-trend')?$('gl-trend').textContent:'–';
+
+  // Oranges HR-Kästchen
+  let h='<div style="background:var(--orange);border-radius:14px;padding:18px 20px;margin-bottom:16px;text-align:center">'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ø HR · Aktueller Monat</div>'
+    +'<div style="font-size:44px;font-weight:800;color:#fff;line-height:1;margin-bottom:6px">'+(d.hrC||'–')+'</div>'
+    +'<div style="font-size:13px;color:rgba(255,255,255,.85)">bpm</div>'
+    +'<div style="font-size:14px;font-weight:700;color:#fff;margin-top:8px">'+trendTxt+'</div>'
+    +'</div>';
+
+  // 3-Monats Visualisierung
+  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">3-Monats-Verlauf</div>';
+  const HR_MAX=160,HR_MIN=135,BAR_H=80;
+  h+='<div style="display:flex;gap:10px;align-items:flex-end;height:'+BAR_H+'px;margin-bottom:6px">';
+  d.buckets.forEach((b,i)=>{
+    const isCur=i===2;
+    if(!b.avgHR){
+      h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">'
+        +'<div style="flex:1;width:100%;background:var(--bg3);border-radius:6px 6px 0 0;opacity:.3"></div>'
+        +'<div style="font-size:10px;color:var(--text3)">'+MN[b.mo]+'</div></div>';
+      return;
+    }
+    const fillPct=Math.min(100,Math.max(8,(HR_MAX-b.avgHR)/(HR_MAX-HR_MIN)*100));
+    const barCol=isCur?'var(--orange)':i===1?'rgba(255,107,53,.5)':'rgba(255,107,53,.25)';
+    h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
+      +'<div style="font-size:10px;color:'+(isCur?'#fff':'var(--text2)')+';font-weight:'+(isCur?700:400)+'">'+b.avgHR+'</div>'
+      +'<div style="flex:1;width:100%;background:var(--bg3);border-radius:6px 6px 0 0;position:relative;overflow:hidden">'
+      +'<div style="position:absolute;bottom:0;left:0;right:0;height:'+fillPct+'%;background:'+barCol+';border-radius:6px 6px 0 0;transition:height .6s ease"></div></div>'
+      +'<div style="font-size:10px;color:'+(isCur?'var(--orange)':'var(--text3)')+';font-weight:'+(isCur?700:400)+'">'+MN[b.mo]+'</div></div>';
   });
-  h+='<div style="height:1px;background:var(--border);margin:12px 0"></div>';
-  h+='<div class="mstat"><span class="mstat-l">Pace-Filter</span><span class="mstat-v">'+pF(d.cfg.paceMin)+'–'+pF(d.cfg.paceMax)+'/km</span></div>';
-  h+='<div class="mstat"><span class="mstat-l">Max. Ø HR</span><span class="mstat-v">'+d.cfg.maxHR+' bpm</span></div>';
-  h+='<div class="mstat"><span class="mstat-l">Läufe gesamt</span><span class="mstat-v">'+_easy.length+' Easy/Long Runs</span></div>';
-  h+='<div style="margin-top:14px"><button onclick="closeModal();setTimeout(showGLSettings,300)" style="width:100%;background:var(--bg3);color:var(--text);border:none;border-radius:10px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit">⚙️ Filter anpassen</button></div>';
-  openModal('Grundlagenausdauer',h);
+  h+='</div>';
+  h+='<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:16px">'
+    +'<span>↑ höhere HR (weniger fit)</span><span>↓ niedrigere HR (fitter)</span></div>';
+
+  // Filter-Info
+  h+='<div style="background:var(--bg3);border-radius:10px;padding:12px 14px">'
+    +'<div class="mstat" style="padding:6px 0"><span class="mstat-l">Pace-Filter</span><span class="mstat-v">'+pF(d.cfg.paceMin)+'–'+pF(d.cfg.paceMax)+'/km</span></div>'
+    +'<div class="mstat" style="padding:6px 0;border:none"><span class="mstat-l">Max. Ø HR</span><span class="mstat-v">'+d.cfg.maxHR+' bpm · '+_easy.length+' Läufe</span></div>'
+    +'</div>';
+  openGLModal('Grundlagenausdauer',h);
+}
+
+// Modal mit Zahnrad statt X
+function openGLModal(title,content){
+  openModal(title,content);
+  // Zahnrad statt X
+  const cb=$('modal-box').querySelector('.modal-close-btn');
+  if(cb){cb.textContent='\u2699\uFE0F';cb.onclick=function(){closeModal();setTimeout(showGLSettings,300);};}
 }
 
 function glPaceFmt(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+Math.floor(s%60);}
@@ -905,26 +927,39 @@ function saveGLSettings(){
 }
 function showZonenModal(){
   const hm=_hrmax||199,lastHR=Math.round(getHR(_runs[0]||{})||0),zones=window._zones||[];
-  let h='<div class="mstat"><span class="mstat-l">HRmax</span><span class="mstat-v">'+hm+' bpm</span></div>';
-  if(lastHR)h+='<div class="mstat"><span class="mstat-l">Letzter Lauf</span><span class="mstat-v">Ø '+lastHR+' bpm</span></div>';
+  const slStyle='width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--bg3);outline:none;cursor:pointer;margin:10px 0 4px';
+  let h='<style>input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--orange);cursor:pointer;box-shadow:0 2px 8px rgba(255,107,53,.4)}</style>';
+  h+='<div style="background:var(--bg3);border-radius:12px;padding:14px 16px;margin-bottom:16px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
+    +'<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">HRmax anpassen</div>'
+    +'<div style="font-size:16px;font-weight:700;color:#fff" id="hrm-val">'+hm+' bpm</div></div>'
+    +'<input type="range" id="hrm-sl" min="160" max="220" value="'+hm+'" step="1" style="'+slStyle+'" oninput="hrSlUpdate(this.value)">'
+    +'<div style="display:flex;justify-content:space-between"><span style="font-size:9px;color:var(--text3)">160</span><span style="font-size:9px;color:var(--text3)">220</span></div>'
+    +'<button onclick="saveHRSlider()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:10px">Speichern</button>'
+    +'</div>';
+  if(lastHR)h+='<div class="mstat"><span class="mstat-l">Letzter Lauf</span><span class="mstat-v">'+lastHR+' bpm</span></div>';
   h+='<div style="height:1px;background:var(--border);margin:8px 0"></div>';
   zones.forEach(z=>{
     const il=lastHR&&lastHR>=z.lo&&lastHR<z.hi;
     h+='<div style="margin-bottom:14px;padding:8px 0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">'
       +'<span style="font-size:13px;font-weight:700;color:'+z.col+'">'+z.name+'</span>'
-      +(il?'<span style="font-size:9px;background:'+z.col+';color:'+(z.col==='#FFD60A'?'#000':'#fff')+';padding:3px 8px;border-radius:6px;font-weight:700">Letzter Lauf · '+lastHR+' bpm</span>':'')
-      +'<span style="font-size:11px;color:var(--text3);margin-left:auto">'+z.lo+'–'+z.hi+' bpm</span></div>'
+      +(il?'<span style="font-size:9px;background:'+z.col+';color:'+(z.col==='#FFD60A'?'#000':'#fff')+';padding:3px 8px;border-radius:6px;font-weight:700">'+lastHR+' bpm</span>':'')
+      +'<span style="font-size:11px;color:var(--text3);margin-left:auto">'+z.lo+'--'+z.hi+' bpm</span></div>'
       +'<div style="background:var(--bg3);height:6px;border-radius:3px"><div style="background:'+z.col+';height:6px;border-radius:3px;width:100%"></div></div></div>';
   });
-  h+='<button onclick="showHRSettings()" style="width:100%;background:var(--bg3);color:var(--text);border:none;border-radius:10px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;margin-top:8px">HRmax anpassen</button>';
-  openModal('Herzfrequenzzonen',h);
+  openZonenModal('Herzfrequenzzonen',h);
 }
-function showHRSettings(){
-  const s='width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:16px;font-family:inherit;box-sizing:border-box';
-  openModal('HRmax anpassen','<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">HRmax (bpm)</div><input id="hrm-in" type="number" value="'+(_hrmax||199)+'" style="'+s+'"></div>'
-    +'<button onclick="saveHR()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit">Speichern</button>');
+function hrSlUpdate(v){set('hrm-val',v+' bpm');}
+function saveHRSlider(){
+  const v=parseInt(($('hrm-sl')||{}).value);
+  if(v>=160&&v<=220){_hrmax=v;localStorage.setItem('hrmax_manual',v);closeModal();renderZonen();}
 }
-function saveHR(){const v=parseInt(($('hrm-in')||{}).value);if(v>=140&&v<=230){_hrmax=v;localStorage.setItem('hrmax_manual',v);closeModal();renderZonen();}}
+function openZonenModal(title,content){
+  openModal(title,content);
+  // Zahnrad statt X
+  const cb=$('modal-box').querySelector('.modal-close-btn');
+  if(cb){cb.textContent='\u2699\uFE0F';cb.onclick=function(){closeModal();};}
+}
 function showRunDetail(idx){
   const r=_runs[idx];if(!r)return;
   const hr=getHR(r),mhr=getMaxHR(r);
@@ -1072,7 +1107,7 @@ async function init(){
     initSwipe();
     initNavCollapse();
     initPTR(async()=>{const t=await getToken();if(t){const a=await api({action:'activities',access_token:t,per_page:100});if(Array.isArray(a))renderDashboard(a);}});
-    const fab=$('fab');fab.classList.add('visible');fab.onclick=e=>{e.stopPropagation();openAnalyse();};
+
     const hrS=localStorage.getItem('hrmax_manual');if(hrS)_hrmax=parseInt(hrS);
     document.querySelectorAll('.tappable').forEach(el=>el.addEventListener('touchstart',()=>{if(navigator.vibrate)navigator.vibrate(8);},{passive:true}));
   }catch(err){
