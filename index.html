@@ -271,7 +271,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
 
     <div class="sort-card" data-id="laeufe">
     <div class="card">
-      <div style="padding:14px 14px 14px">
+      <div style="padding:16px 14px 16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Laufhistorie</div>
           <div style="font-size:11px;color:var(--text3);cursor:pointer" onclick="showAllRuns()" id="runs-n">–</div>
@@ -655,7 +655,7 @@ function renderGrundlage(){
 
   // HR anzeigen
   ['gl-hr','s-gl-hr'].forEach(id=>set(id,hrC||'–'));
-  const glt=$('gl-trend');if(glt){glt.textContent=hrC?trendTxtCard:'Keine Daten';glt.style.color='#fff';}
+  const glt=$('gl-trend');if(glt){glt.textContent=hrC?trendTxtCard:'Keine Daten';glt.style.color=diff===null?'var(--text2)':diff>0?'var(--green)':'var(--red)';}
   const sglt=$('s-gl-trend');if(sglt){sglt.textContent=hrC?trendTxtCard:'Keine Daten';sglt.style.color=col;}
 
   // 3-Monats-Balken
@@ -858,20 +858,20 @@ function showPRModal(){
     const hasPR=!!pr;
     const idx=hasPR?_runs.indexOf(pr):-1;
     const tap=hasPR?'onclick="closeModal();setTimeout(()=>showRunDetail('+idx+'),300)"':'';
-    return '<div '+tap+' style="background:var(--bg3);border-radius:12px;padding:14px 12px;'+(hasPR?'cursor:pointer;active:opacity:.7;':'')+'">'
-      +'<div style="font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+dist+'</div>'
-      +(hasPR
-        ? '<div style="font-size:26px;font-weight:800;color:#fff;line-height:1;margin-bottom:3px">'+fmtTime(pr.moving_time)+'</div>'
-          +'<div style="font-size:10px;color:var(--text2)">'+fmtPace(pr.distance,pr.moving_time)+'/km</div>'
-          +'<div style="font-size:9px;color:var(--text3);margin-top:2px">'+fmtDateFull(pr.start_date_local)+'</div>'
-        : '<div style="font-size:26px;font-weight:800;color:var(--text3);line-height:1">–</div>')
+    return '<div '+tap+' style="background:var(--bg3);border-radius:12px;padding:14px 12px;'+(hasPR?'cursor:pointer;':'')+'">'+
+      '<div style="font-size:13px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">'+dist+'</div>'+
+      (hasPR
+        ? '<div style="font-size:24px;font-weight:800;color:#fff;line-height:1;margin-bottom:5px">'+fmtTime(pr.moving_time)+'</div>'+
+          '<div style="font-size:12px;font-weight:700;color:var(--orange)">'+fmtPace(pr.distance,pr.moving_time)+' /km</div>'+
+          '<div style="font-size:9px;color:var(--text3);margin-top:3px">'+fmtDateFull(pr.start_date_local)+'</div>'
+        : '<div style="font-size:24px;font-weight:800;color:var(--text3);line-height:1;margin-bottom:4px">–</div>'+
+          '<div style="font-size:10px;color:var(--text3)">Noch keine Zeit</div>')
       +'</div>';
   };
-  // 2×2 Grid
-  const h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +prCard('5 km',_pr5k)+prCard('10 km',_pr10k)
-    +prCard('Halbmarathon',_prHM)+prCard('Marathon',_prMarathon)
-    +'</div>';
+  const h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+    prCard('5 km',_pr5k)+prCard('10 km',_pr10k)+
+    prCard('Halbmarathon',_prHM)+prCard('Marathon',_prMarathon)+
+    '</div>';
   openModal('Bestzeiten ♛',h);
 }
 function showGrundlageModal(){
@@ -964,35 +964,39 @@ function saveGLSettings(){
   localStorage.setItem('gl_settings',JSON.stringify({paceMin:pMin,paceMax:pMax,maxHR}));
   closeModal();renderGrundlage();
 }
+const ZONE_INFO={'Z1 Erholung':'Aktive Erholung – sehr leicht. Laktat wird abgebaut, Körper regeneriert. Ideal nach harten Einheiten oder als Aufwärmen. Maximale Fettverbrennung bei minimalem Stress.','Z2 Grundlage':'Grundlagenausdauer – das Fundament. Du kannst dich noch unterhalten. Trainiert den aeroben Stoffwechsel, Mitochondrien wachsen. Basis für alle Wettkampfdistanzen.','Z3 Aerob':'Aerobe Zone – moderate Intensität. Bereits anstrengend, Atmung erhöht. Verbessert aerobe Kapazität, gut für mittlere Tempoläufe. Zu viel ohne Erholung erhöht Übertrainingsrisiko.','Z4 Schwelle':'Laktatschwelle – dein 1-Stunden-Tempo. Laktat akkumuliert schneller als abgebaut. Entscheidend für 5km–Halbmarathon-Leistung. Kernzone für Tempoentwicklung.','Z5 Maximal':'VO2max-Zone – maximale Sauerstoffaufnahme. Nur kurze Intervalle möglich (30–90 Sek.). Steigert die max. aerobe Kapazität. Nur mit solider Grundlage trainieren.'};
+function showZoneDetail(name,col,lo,hi){
+  const txtC=col==='#FFD60A'?'#111':'#fff';
+  const info=ZONE_INFO[name]||'';
+  const h='<div style="background:'+col+';border-radius:14px;padding:18px 20px;margin-bottom:16px;text-align:center">'
+    +'<div style="font-size:24px;font-weight:800;color:'+txtC+';margin-bottom:4px">'+name+'</div>'
+    +'<div style="font-size:18px;font-weight:700;color:'+txtC+';opacity:.9">'+lo+'–'+hi+' bpm</div>'
+    +'</div>'
+    +'<div style="font-size:14px;color:var(--text);line-height:1.65;padding:4px 0">'+info+'</div>';
+  openModal(name,h);
+}
 function showZonenModal(){
   const hm=_hrmax||199,lastHR=Math.round(getHR(_runs[0]||{})||0),zones=window._zones||[];
   let h='';
-  // Letzter Lauf
   if(lastHR){
     const curZ=zones.find(z=>lastHR>=z.lo&&lastHR<z.hi)||{};
-    h+='<div style="background:'+(curZ.col||'var(--bg3)')+';border-radius:12px;padding:14px 16px;margin-bottom:14px">'
-      +'<div style="font-size:10px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Letzter Lauf</div>'
-      +'<div style="display:flex;align-items:baseline;gap:6px">'
-      +'<div style="font-size:28px;font-weight:800;color:#fff;line-height:1">'+lastHR+'</div>'
-      +'<div style="font-size:13px;color:rgba(255,255,255,.85)"> bpm · '+(curZ.name||'–')+'</div></div>'
-      +'</div>';
+    const txtC=(curZ.col||'')==='#FFD60A'?'#111':'#fff';
+    h+='<div style="background:'+(curZ.col||'var(--bg3)')+';border-radius:12px;padding:12px 16px;margin-bottom:6px">'+
+      '<div style="font-size:10px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Letzter Lauf</div>'+
+      '<div style="display:flex;align-items:baseline;gap:6px">'+
+      '<div style="font-size:26px;font-weight:800;color:'+txtC+';line-height:1">'+lastHR+'</div>'+
+      '<div style="font-size:13px;color:'+txtC+';opacity:.85"> bpm · '+(curZ.name||'–')+'</div></div></div>';
+    h+='<div style="height:1px;background:var(--border);margin:10px 0 10px"></div>';
   }
-  // Jede Zone als voller farbiger Block
   zones.forEach(z=>{
     const il=lastHR&&lastHR>=z.lo&&lastHR<z.hi;
     const txtC=z.col==='#FFD60A'?'#111':'#fff';
-    const ring=il?'box-shadow:0 0 0 2.5px #fff;':'';
-    h+='<div style="background:'+z.col+';border-radius:12px;padding:13px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;'+ring+'">'
-      // Linke Seite: Zone + Bezeichnung
-      +'<div>'
-      +'<div style="font-size:13px;font-weight:700;color:'+txtC+'">'+z.name+'</div>'
-      +(il?'<div style="font-size:10px;color:'+txtC+';opacity:.8;margin-top:2px">'+lastHR+' bpm ← Letzter Lauf</div>':'')
-      +'</div>'
-      // Rechte Seite: BPM-Range in dunklerem Pill
-      +'<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:5px 11px;text-align:center">'
-      +'<div style="font-size:13px;font-weight:800;color:'+txtC+'">'+z.lo+'–'+z.hi+'</div>'
-      +'<div style="font-size:9px;color:'+txtC+';opacity:.75;font-weight:600">bpm</div>'
-      +'</div></div>';
+    const ring=il?'box-shadow:0 0 0 2.5px #fff;':'';    h+='<div onclick="showZoneDetail(\''+z.name+'\',\''+z.col+'\','+z.lo+','+z.hi+')" '+
+      'style="background:'+z.col+';border-radius:10px;padding:10px 14px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;'+ring+'">'+
+      '<div style="font-size:13px;font-weight:700;color:'+txtC+'">'+z.name+(il?' ◀':'')+'</div>'+
+      '<div style="background:rgba(0,0,0,.2);border-radius:7px;padding:4px 10px;text-align:center">'+
+      '<div style="font-size:12px;font-weight:800;color:'+txtC+'">'+z.lo+'–'+z.hi+'</div>'+
+      '<div style="font-size:8px;color:'+txtC+';opacity:.75;font-weight:600">bpm</div></div></div>';
   });
   openModal('Herzfrequenzzonen',h);
 }
