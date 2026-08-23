@@ -66,7 +66,7 @@ input,select,textarea{font-size:16px!important}
 .sessions-bar{display:flex;gap:3px;margin-top:6px;height:6px}
 .sessions-seg{flex:1;border-radius:3px;background:var(--bg3);transition:background .3s}
 .sessions-seg.done{background:var(--green)}
-.swipe-card{overflow:hidden;touch-action:pan-y}
+.swipe-card{overflow:hidden;touch-action:none}
 .swipe-track{display:flex;transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
 .swipe-slide{min-width:100%;flex-shrink:0}
 .swipe-dots{display:flex;justify-content:center;gap:6px;padding:10px 0 12px}
@@ -176,7 +176,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     <div class="sort-card" data-id="volumen">
     <div class="card swipe-card" id="vol-card">
       <div class="swipe-track" id="swipe-track">
-        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-0">
+        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-0" onclick="showVolModal(0)" style="cursor:pointer">
           <div class="vol-top">
             <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Wochenvolumen</div>
             <div class="prog-km" id="w-km">0<small> / <span id="tgt-w">25</span> km</small></div>
@@ -188,7 +188,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
             <div style="font-size:10px;font-weight:600" id="w-vs"></div>
           </div>
         </div></div>
-        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-1">
+        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-1" onclick="showVolModal(1)" style="cursor:pointer">
           <div class="vol-top">
             <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Monatsvolumen</div>
             <div class="prog-km" id="m-km">0<small> / <span id="tgt-m">100</span> km</small></div>
@@ -198,7 +198,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
             <div id="m-marks" style="position:absolute;top:0;left:0;right:0;height:9px;pointer-events:none"></div>
           </div>
         </div></div>
-        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-2">
+        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-2" onclick="showVolModal(2)" style="cursor:pointer">
           <div class="vol-top">
             <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Jahresvolumen</div>
             <div class="prog-km" id="y-km">0<small> / <span id="tgt-y">1200</span> km</small></div>
@@ -271,8 +271,8 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
 
     <div class="sort-card" data-id="laeufe">
     <div class="card">
-      <div style="padding:12px 14px 10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="padding:14px 14px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Laufhistorie</div>
           <div style="font-size:11px;color:var(--text3);cursor:pointer" onclick="showAllRuns()" id="runs-n">–</div>
         </div>
@@ -377,7 +377,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
         </div>
       </div>
     </div>
-    <div class="card tappable" onclick="showGrundlageModal()" style="margin-bottom:10px">
+    <div class="card tappable" onclick="showGrundlageModal()" style="margin-bottom:10px" id="s-grundlage-card">
       <div style="padding:14px 16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Grundlagenausdauer</div>
@@ -1069,26 +1069,34 @@ function saveOrder(){localStorage.setItem('card_order',JSON.stringify([...$('sor
 
 // ── Volumen Swipe ──
 function initSwipe(){
-  const track=$('swipe-track');if(!track)return;
-  let cur=0,sX=0,sY=0,isH=null,drag=false,moved=false;
+  const card=$('vol-card');const track=$('swipe-track');if(!track||!card)return;
+  let cur=0,sX=0,sY=0,isH=null,drag=false,dist=0;
   const slides=track.querySelectorAll('.swipe-slide');
-  const goTo=n=>{cur=Math.max(0,Math.min(slides.length-1,n));track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';track.style.transform='translateX(-'+(cur*100)+'%)';[...$('vol-card').querySelectorAll('.dot')].forEach((d,i)=>{d.className='dot'+(i===cur?' active':'');});};
-  track.addEventListener('touchstart',e=>{sX=e.touches[0].clientX;sY=e.touches[0].clientY;isH=null;drag=true;moved=false;track.style.transition='none';},{passive:true});
-  track.addEventListener('touchmove',e=>{
+  const goTo=n=>{
+    cur=Math.max(0,Math.min(slides.length-1,n));
+    track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
+    track.style.transform='translateX(-'+(cur*100)+'%)';
+    card.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===cur?' active':'');});
+  };
+  card.addEventListener('touchstart',e=>{
+    sX=e.touches[0].clientX;sY=e.touches[0].clientY;
+    isH=null;drag=true;dist=0;
+    track.style.transition='none';
+  },{passive:true});
+  card.addEventListener('touchmove',e=>{
     if(!drag)return;
     const dx=e.touches[0].clientX-sX,dy=e.touches[0].clientY-sY;
-    if(isH===null)isH=Math.abs(dx)>Math.abs(dy);
+    if(isH===null){isH=Math.abs(dx)>Math.abs(dy);}
     if(!isH)return;
-    if(Math.abs(dx)>5)moved=true;
     e.preventDefault();
+    dist=dx;
     track.style.transform='translateX(calc(-'+(cur*100)+'% + '+dx+'px))';
   },{passive:false});
-  track.addEventListener('touchend',e=>{
+  card.addEventListener('touchend',e=>{
     if(!drag)return;drag=false;
-    const dx=e.changedTouches[0].clientX-sX;
-    if(!moved){showVolModal(cur);return;}// Tap erkannt → Modal öffnen
     if(!isH)return;
-    if(dx<-40)goTo(cur+1);else if(dx>40)goTo(cur-1);else goTo(cur);
+    if(Math.abs(dist)<40)goTo(cur);
+    else if(dist<0)goTo(cur+1);else goTo(cur-1);
   },{passive:true});
 }
 
