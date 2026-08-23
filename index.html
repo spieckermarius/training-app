@@ -176,7 +176,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     <div class="sort-card" data-id="volumen">
     <div class="card swipe-card" id="vol-card">
       <div class="swipe-track" id="swipe-track">
-        <div class="swipe-slide"><div class="vol-inner tappable" onclick="showVolModal(0)">
+        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-0">
           <div class="vol-top">
             <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Wochenvolumen</div>
             <div class="prog-km" id="w-km">0<small> / <span id="tgt-w">25</span> km</small></div>
@@ -188,7 +188,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
             <div style="font-size:10px;font-weight:600" id="w-vs"></div>
           </div>
         </div></div>
-        <div class="swipe-slide"><div class="vol-inner tappable" onclick="showVolModal(1)">
+        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-1">
           <div class="vol-top">
             <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Monatsvolumen</div>
             <div class="prog-km" id="m-km">0<small> / <span id="tgt-m">100</span> km</small></div>
@@ -198,7 +198,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
             <div id="m-marks" style="position:absolute;top:0;left:0;right:0;height:9px;pointer-events:none"></div>
           </div>
         </div></div>
-        <div class="swipe-slide"><div class="vol-inner tappable" onclick="showVolModal(2)">
+        <div class="swipe-slide"><div class="vol-inner" id="vol-slide-2">
           <div class="vol-top">
             <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Jahresvolumen</div>
             <div class="prog-km" id="y-km">0<small> / <span id="tgt-y">1200</span> km</small></div>
@@ -236,13 +236,13 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     </div>
 
     <div class="sort-card" data-id="grundlage">
-    <div class="card tappable" onclick="showGrundlageModal()">
-      <div style="padding:14px 16px">
+    <div class="card tappable" onclick="showGrundlageModal()" id="gl-card">
+      <div style="padding:14px 16px;border-radius:14px;transition:background .4s ease">
         <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Grundlagenausdauer</div>
         <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
           <div style="font-size:32px;font-weight:800;color:#fff;line-height:1" id="gl-hr">–</div>
-          <div style="font-size:12px;color:var(--text2)">bpm</div>
-          <div style="font-size:13px;font-weight:600" id="gl-trend">–</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.75)">bpm</div>
+          <div style="font-size:13px;font-weight:600;color:#fff" id="gl-trend">–</div>
         </div>
       </div>
     </div>
@@ -276,7 +276,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
           <div style="font-size:11px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Laufhistorie</div>
           <div style="font-size:11px;color:var(--text3);cursor:pointer" onclick="showAllRuns()" id="runs-n">–</div>
         </div>
-        <div style="overflow:hidden;width:100%" id="rc-wrap">
+        <div style="overflow:hidden;width:100%;min-height:130px" id="rc-wrap">
           <div id="rc-track" style="display:flex;gap:8px;transition:transform .2s ease"></div>
         </div>
       </div>
@@ -643,9 +643,20 @@ function renderGrundlage(){
 
   _glData={buckets,hrC,hrP,diff,col,cfg};
 
+  // Kachel einfärben: grün wenn HR gesunken, rot wenn gestiegen
+  const card=$('gl-card');
+  if(card){
+    if(diff===null||diff===0)card.style.background='var(--bg2)';
+    else if(diff>0)card.style.background='rgba(48,209,88,.18)';// grün: HR gesunken
+    else card.style.background='rgba(255,69,58,.18)';// rot: HR gestiegen
+  }
+  // Trend-Text (immer weiß auf farbigem Hintergrund)
+  const trendTxtCard=diff===null?'kein Vgl.':diff>0?'↓ −'+diff+' bpm vs. Vormonat':diff<0?'↑ +'+Math.abs(diff)+' bpm vs. Vormonat':'→ stabil';
+
   // HR anzeigen
   ['gl-hr','s-gl-hr'].forEach(id=>set(id,hrC||'–'));
-  ['gl-trend','s-gl-trend'].forEach(id=>{const e=$(id);if(e){e.textContent=hrC?txt:'Keine Daten';e.style.color=col;}});
+  const glt=$('gl-trend');if(glt){glt.textContent=hrC?trendTxtCard:'Keine Daten';glt.style.color='#fff';}
+  const sglt=$('s-gl-trend');if(sglt){sglt.textContent=hrC?trendTxtCard:'Keine Daten';sglt.style.color=col;}
 
   // 3-Monats-Balken
   const HR_MAX=160,HR_MIN=135,BAR_H=52;
@@ -692,6 +703,7 @@ function renderRunCards(){
   const wrap=$('rc-wrap'),track=$('rc-track');
   if(!track||!_runs.length)return;
   const W=wrap?wrap.offsetWidth:300,cW=Math.floor((W-16)/3);
+  if(wrap)wrap.style.height='140px';
   track.innerHTML=_runs.map((r,i)=>{
     const km=(r.distance/1e3).toFixed(1),pace=fmtPace(r.distance,r.moving_time),hr=getHR(r)?Math.round(getHR(r))+' bpm':'–';
     const d=new Date(r.start_date_local),dt=pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(2);
@@ -823,8 +835,13 @@ function showPRModal(){
   if(!_runs.length){openModal('Bestzeiten','Noch keine Läufe');return;}
   const prCard=(dist,pr)=>{
     const hasPR=!!pr;
-    return '<div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px">'
-      +'<div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">'+dist+'</div>'
+    const idx=hasPR?_runs.indexOf(pr):-1;
+    const onclick=hasPR?'onclick="closeModal();setTimeout(()=>showRunDetail('+idx+'),300)" style="cursor:pointer"':'';
+    return '<div '+onclick+' style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px;'+(hasPR?'cursor:pointer':'')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      +'<div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em">'+dist+'</div>'
+      +(hasPR?'<div style="font-size:11px;color:var(--text3)">Details →</div>':'')
+      +'</div>'
       +(hasPR
         ? '<div style="font-size:34px;font-weight:800;color:#fff;line-height:1;margin-bottom:5px">'+fmtTime(pr.moving_time)+' <span class="pr-crown">♛</span></div>'
           +'<div style="font-size:13px;color:var(--text2)">'+fmtPace(pr.distance,pr.moving_time)+'/km · '+(pr.distance/1e3).toFixed(1)+' km · '+fmtDateFull(pr.start_date_local)+'</div>'
@@ -855,31 +872,23 @@ function showGrundlageModal(){
     +'<div style="font-size:15px;font-weight:700;color:'+trendCol+';margin-top:10px">'+trendTxt+'</div>'
     +'</div>';
 
-  // 3-Monats-Balkendiagramm (wie Volumen: Balken von unten, Höhe = HR-Wert)
-  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">3-Monats-Verlauf (Ø HR)</div>';
+  // 3-Monats horizontales Balkendiagramm (wie Volumen-Kachel)
+  h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">3-Monats-Verlauf (Ø HR)</div>';
   const allHR=d.buckets.map(b=>b.avgHR).filter(Boolean);
-  const hrMin=allHR.length?Math.min(...allHR)-5:130,hrMax=allHR.length?Math.max(...allHR)+5:165;
-  h+='<div style="display:flex;gap:10px;align-items:flex-end;height:90px;margin-bottom:8px">';
+  const hrRef=allHR.length?Math.max(...allHR):160;// max HR = 100% Balken
   d.buckets.forEach((b,i)=>{
     const isCur=i===2;
-    if(!b.avgHR){
-      h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">'
-        +'<div style="flex:1;width:100%;background:var(--bg3);border-radius:5px;opacity:.25"></div>'
-        +'<div style="font-size:10px;color:var(--text3)">'+MN[b.mo]+'</div></div>';
-      return;
-    }
-    // Balken von oben: höhere HR = größerer Balken (schlechter)
-    const pct=Math.min(100,Math.max(10,(b.avgHR-hrMin)/(hrMax-hrMin)*100));
-    const barCol=isCur?'var(--orange)':i===1?'rgba(255,107,53,.55)':'rgba(255,107,53,.3)';
-    h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
-      +'<div style="font-size:11px;font-weight:700;color:'+(isCur?'#fff':'var(--text2)')+'">'+b.avgHR+'</div>'
-      +'<div style="flex:1;width:100%;display:flex;align-items:flex-end">'
-      +'<div style="width:100%;height:'+pct+'%;background:'+barCol+';border-radius:5px;min-height:8px;transition:height .6s ease"></div></div>'
-      +'<div style="font-size:10px;font-weight:'+(isCur?700:400)+';color:'+(isCur?'var(--orange)':'var(--text3)')+'">'+MN[b.mo]+'</div></div>';
+    const pct=b.avgHR?Math.min(100,Math.max(5,b.avgHR/hrRef*100)):0;
+    const barCol=isCur?'var(--orange)':i===1?'rgba(255,107,53,.5)':'rgba(255,107,53,.25)';
+    h+='<div style="margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">'
+      +'<span style="color:'+(isCur?'#fff':'var(--text3)')+';font-weight:'+(isCur?700:400)+'">'+MN[b.mo]+(isCur?' (aktuell)':'')+'</span>'
+      +'<span style="color:'+(isCur?'#fff':'var(--text2)')+';font-weight:'+(isCur?600:400)+'">'+(b.avgHR?b.avgHR+' bpm':'–')+'</span></div>'
+      +'<div style="background:var(--bg3);height:8px;border-radius:4px">'
+      +'<div style="background:'+barCol+';height:8px;border-radius:4px;width:'+pct+'%;transition:width .6s ease"></div></div></div>';
   });
-  h+='</div>';
-  h+='<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:14px">'
-    +'<span style="color:var(--green)">Niedriger = besser</span><span style="color:var(--red)">Höher = weniger fit</span></div>';
+  h+='<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:14px">'
+    +'<span style="color:var(--green)">↓ Niedriger = fitter</span><span style="color:var(--red)">↑ Höher = weniger fit</span></div>';
 
   // Filter-Info
   h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 14px">'
@@ -1061,12 +1070,26 @@ function saveOrder(){localStorage.setItem('card_order',JSON.stringify([...$('sor
 // ── Volumen Swipe ──
 function initSwipe(){
   const track=$('swipe-track');if(!track)return;
-  let cur=0,sX=0,sY=0,isH=null,drag=false;
+  let cur=0,sX=0,sY=0,isH=null,drag=false,moved=false;
   const slides=track.querySelectorAll('.swipe-slide');
-  const goTo=n=>{cur=Math.max(0,Math.min(slides.length-1,n));track.style.transform='translateX(-'+(cur*100)+'%)';[...$('vol-card').querySelectorAll('.dot')].forEach((d,i)=>{d.className='dot'+(i===cur?' active':'');});};
-  track.addEventListener('touchstart',e=>{sX=e.touches[0].clientX;sY=e.touches[0].clientY;isH=null;drag=true;track.style.transition='none';},{passive:true});
-  track.addEventListener('touchmove',e=>{if(!drag)return;const dx=e.touches[0].clientX-sX,dy=e.touches[0].clientY-sY;if(isH===null)isH=Math.abs(dx)>Math.abs(dy);if(!isH)return;e.preventDefault();track.style.transform='translateX(calc(-'+(cur*100)+'% + '+dx+'px))';},{passive:false});
-  track.addEventListener('touchend',e=>{if(!drag)return;drag=false;if(!isH)return;const dx=e.changedTouches[0].clientX-sX;track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';if(dx<-40)goTo(cur+1);else if(dx>40)goTo(cur-1);else goTo(cur);},{passive:true});
+  const goTo=n=>{cur=Math.max(0,Math.min(slides.length-1,n));track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';track.style.transform='translateX(-'+(cur*100)+'%)';[...$('vol-card').querySelectorAll('.dot')].forEach((d,i)=>{d.className='dot'+(i===cur?' active':'');});};
+  track.addEventListener('touchstart',e=>{sX=e.touches[0].clientX;sY=e.touches[0].clientY;isH=null;drag=true;moved=false;track.style.transition='none';},{passive:true});
+  track.addEventListener('touchmove',e=>{
+    if(!drag)return;
+    const dx=e.touches[0].clientX-sX,dy=e.touches[0].clientY-sY;
+    if(isH===null)isH=Math.abs(dx)>Math.abs(dy);
+    if(!isH)return;
+    if(Math.abs(dx)>5)moved=true;
+    e.preventDefault();
+    track.style.transform='translateX(calc(-'+(cur*100)+'% + '+dx+'px))';
+  },{passive:false});
+  track.addEventListener('touchend',e=>{
+    if(!drag)return;drag=false;
+    const dx=e.changedTouches[0].clientX-sX;
+    if(!moved){showVolModal(cur);return;}// Tap erkannt → Modal öffnen
+    if(!isH)return;
+    if(dx<-40)goTo(cur+1);else if(dx>40)goTo(cur-1);else goTo(cur);
+  },{passive:true});
 }
 
 // ── PTR ──
