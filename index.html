@@ -211,10 +211,10 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
           <div class="prog-bar-track"><div class="prog-bar-fill" id="y-bar" style="width:0%"></div></div>
         </div></div>
       </div>
-      <div class="swipe-dots">
-        <div class="dot active" id="dot-0"></div>
-        <div class="dot" id="dot-1"></div>
-        <div class="dot" id="dot-2"></div>
+      <div style="display:flex;justify-content:center;gap:5px;padding:7px 0 10px">
+        <div id="dot-0" style="width:5px;height:5px;border-radius:50%;background:var(--orange);transition:all .2s"></div>
+        <div id="dot-1" style="width:5px;height:5px;border-radius:50%;background:var(--bg3);transition:all .2s"></div>
+        <div id="dot-2" style="width:5px;height:5px;border-radius:50%;background:var(--bg3);transition:all .2s"></div>
       </div>
     </div>
     </div>
@@ -652,7 +652,7 @@ function renderGrundlage(){
   const cur=buckets[2],prev=buckets[1];
   const hrC=cur.avgHR,hrP=prev.avgHR;
   const diff=hrC&&hrP?hrP-hrC:null;
-  const col=diff===null?'var(--text3)':diff>0?'var(--green)':diff<0?'var(--red)':'var(--text2)';
+  const col=diff===null?'var(--text2)':diff>0?'var(--green)':diff<0?'var(--red)':'var(--orange)';
   const txt=diff===null?'kein Vgl.':diff>0?'↓ −'+diff+' bpm vs. Vormonat':diff<0?'↑ +'+Math.abs(diff)+' bpm vs. Vormonat':'→ stabil vs. Vormonat';
 
   _glData={buckets,hrC,hrP,diff,col,cfg};
@@ -669,7 +669,7 @@ function renderGrundlage(){
 
   // HR anzeigen
   ['gl-hr','s-gl-hr'].forEach(id=>set(id,hrC||'–'));
-  const glt=$('gl-trend');if(glt){glt.textContent=hrC?trendTxtCard:'Keine Daten';glt.style.color=diff===null?'var(--text2)':diff>0?'var(--green)':'var(--red)';}
+  const glt=$('gl-trend');if(glt){glt.textContent=hrC?trendTxtCard:'Keine Daten';glt.style.color=diff===null?'var(--text2)':diff>0?'var(--green)':diff<0?'var(--red)':'#fff';}
   const sglt=$('s-gl-trend');if(sglt){sglt.textContent=hrC?trendTxtCard:'Keine Daten';sglt.style.color=col;}
 
   // 3-Monats-Balken
@@ -717,16 +717,24 @@ function renderRunCards(){
   const wrap=$('rc-wrap'),track=$('rc-track');
   if(!track||!_runs.length)return;
   const W=wrap?wrap.offsetWidth:300,cW=Math.floor((W-16)/3);
-  if(wrap)wrap.style.height='140px';
   track.innerHTML=_runs.map((r,i)=>{
-    const km=(r.distance/1e3).toFixed(1),pace=fmtPace(r.distance,r.moving_time),hr=getHR(r)?Math.round(getHR(r))+' bpm':'–';
-    const d=new Date(r.start_date_local),dt=pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(2);
-    return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cW+'px;background:var(--bg3);border-radius:10px;padding:12px 8px;cursor:pointer;box-sizing:border-box;min-height:110px">'
-      +'<div style="font-size:9px;color:var(--text3);font-weight:600;margin-bottom:4px">'+dt+'</div>'
-      +'<div style="font-size:10px;font-weight:700;color:#fff;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:8px;line-height:1.3">'+r.name+'</div>'
-      +'<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:3px">'+km+' km</div>'
-      +'<div style="font-size:10px;color:var(--text2);margin-bottom:2px">⚡ '+pace+'/km</div>'
-      +'<div style="font-size:10px;color:var(--text2)">❤️ '+hr+'</div></div>';
+    const km=(r.distance/1e3).toFixed(1);
+    const pace=fmtPace(r.distance,r.moving_time);
+    const hr=getHR(r)?Math.round(getHR(r))+' bpm':'–';
+    const d=new Date(r.start_date_local);
+    const dt=pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(2);
+    return '<div onclick="showRunDetail('+i+')" style="flex-shrink:0;width:'+cW+'px;background:var(--bg3);border-radius:10px;padding:12px 10px;cursor:pointer;box-sizing:border-box;min-height:185px;display:flex;flex-direction:column;gap:3px">'
+      // Name ganz oben, fett
+      +'<div style="font-size:11px;font-weight:800;color:#fff;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;margin-bottom:4px">'+r.name+'</div>'
+      // Datum
+      +'<div style="font-size:10px;color:var(--text3);font-weight:500">'+dt+'</div>'
+      // Km
+      +'<div style="font-size:16px;font-weight:800;color:#fff;margin-top:6px">'+km+'<span style="font-size:10px;font-weight:600;color:var(--text2)"> km</span></div>'
+      // Pace
+      +'<div style="font-size:13px;font-weight:700;color:var(--text2)">'+pace+'/km</div>'
+      // HR
+      +'<div style="font-size:13px;font-weight:700;color:var(--text2)">'+hr+'</div>'
+      +'</div>';
   }).join('');
   set('runs-n',_runs.length+' Läufe →');
   let sX=0,sY=0,isH=null,drag=false,off=0,lX=0,vel=0;
@@ -901,7 +909,7 @@ function showGrundlageModal(){
     :'→ Stabil vs. Vormonat';
 
   // Kästchen: grün wenn HR gesunken, rot wenn gestiegen, grau wenn kein Vgl.
-  const boxBg=d.diff===null?'var(--bg3)':d.diff>0?'var(--green)':'var(--red)';
+  const boxBg=d.diff===null?'var(--bg3)':d.diff>0?'var(--green)':d.diff<0?'var(--red)':'var(--orange)';
   let h='<div style="background:'+boxBg+';border-radius:14px;padding:18px 20px;margin-bottom:16px;text-align:center">'
     +'<div style="font-size:11px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ø HR · Aktueller Monat</div>'
     +'<div style="font-size:44px;font-weight:800;color:#fff;line-height:1;margin-bottom:6px">'+(d.hrC||'–')+'</div>'
@@ -930,7 +938,7 @@ function showGrundlageModal(){
   // Filter-Info — klickbar → zeigt gefilterte Läufe
   h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 14px;cursor:pointer" onclick="showEasyRunsList()">'
     +'<div class="mstat" style="padding:5px 0"><span class="mstat-l">Pace-Filter</span><span class="mstat-v">'+pF(d.cfg.paceMin)+'–'+pF(d.cfg.paceMax)+'/km</span></div>'
-    +'<div class="mstat" style="padding:5px 0;border:none"><span class="mstat-l">Gefilterte Läufe</span><span class="mstat-v" style="color:var(--orange)">'+_easy.length+' Läufe anzeigen →</span></div>'
+    +'<div class="mstat" style="padding:5px 0"><span class="mstat-l">Max. Ø HR</span><span class="mstat-v">'+d.cfg.maxHR+' bpm</span></div>'    +'<div class="mstat" style="padding:5px 0;border:none"><span class="mstat-l">Gefilterte Läufe</span><span class="mstat-v" style="color:var(--orange)">'+_easy.length+' anzeigen →</span></div>'
     +'</div>';
   openModal('Grundlagenausdauer',h);
 }
@@ -1143,7 +1151,7 @@ function initSwipe(){
     cur=Math.max(0,Math.min(2,n));
     track.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)';
     track.style.transform='translateX(-'+(cur*100)+'%)';
-    dots.forEach((d,i)=>{d.className='dot'+(i===cur?' active':'');});
+    dots.forEach((d,i)=>{d.style.background=i===cur?'var(--orange)':'var(--bg3)';d.style.width=i===cur?'14px':'5px';d.style.borderRadius=i===cur?'3px':'50%';});
   };
   track.addEventListener('touchstart',e=>{
     sX=e.touches[0].clientX;sY=e.touches[0].clientY;
