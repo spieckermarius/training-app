@@ -82,6 +82,8 @@ input,select,textarea{font-size:16px!important}
 .modal{background:var(--bg2);width:100%;max-width:500px;border-radius:20px;padding:20px 20px 36px;max-height:85vh;overflow-y:auto;animation:modalIn .25s cubic-bezier(.34,1.56,.64,1)}
 @keyframes modalIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 .modal-title{font-size:17px;font-weight:700;margin-bottom:16px}
+.modal-overlay.wide{padding:6px}
+.modal.wide{max-width:680px;padding:24px 18px 40px}
 .mstat{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px}
 .mstat:last-child{border-bottom:none}
 .mstat-l{color:var(--text2)}
@@ -138,37 +140,14 @@ footer{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
     <div class="divider"></div>
     <div id="sortable-cards">
 
-    <div class="sort-card" data-id="status">
-    <div class="status-bar">
-      <div class="tappable" onclick="if(_runs.length)showRunDetail(0)" style="flex:1">
-        <div style="font-size:10px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Letzter Lauf</div>
-        <div style="font-size:14px;font-weight:700;color:#fff" id="last-name">–</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:1px" id="last-days">–</div>
-      </div>
-      <div class="streak-badge" id="streak">🔥 <span id="streak-n">0</span> Wochen ≥25km</div>
-    </div>
-    </div>
-
-    <div class="sort-card" data-id="today">
-    <div id="today-bar" style="display:none;background:var(--orange);border-radius:12px;padding:10px 14px">
-      <div style="font-size:10px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Heute trainieren</div>
-      <div style="font-size:14px;font-weight:700;color:#fff" id="today-txt">–</div>
-    </div>
-    </div>
-
-    <div class="sort-card" data-id="wochenplan">
+    <div class="sort-card" data-id="tag">
     <div class="card tappable" onclick="switchTab('wochenplan')">
-      <div style="padding:12px 14px 10px">
-        <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Wochenplan</div>
-        <div class="week-grid">
-          <div class="day" id="day-1"><div class="d-label">MO</div><div class="d-name">Push</div></div>
-          <div class="day" id="day-2"><div class="d-label">DI</div><div class="d-name">Pull</div></div>
-          <div class="day run-day" id="day-3"><div class="d-label">MI</div><div class="d-name">Tempo</div></div>
-          <div class="day" id="day-4"><div class="d-label">DO</div><div class="d-name" style="font-size:8px;line-height:1.3">Push<br>Beine</div></div>
-          <div class="day run-day" id="day-5"><div class="d-label">FR</div><div class="d-name" style="font-size:8px;line-height:1.3">Pull<br>Easy</div></div>
-          <div class="day rest" id="day-6"><div class="d-label">SA</div><div class="d-name">Rest</div></div>
-          <div class="day long" id="day-0"><div class="d-label">SO</div><div class="d-name">Long Run</div></div>
+      <div style="padding:16px 18px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px" id="tag-datum">–</div>
+          <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.1" id="tag-plan">–</div>
         </div>
+        <div style="font-size:24px;color:var(--orange)">→</div>
       </div>
     </div>
     </div>
@@ -513,7 +492,7 @@ async function getToken(){
 }
 
 // ── Modal ──
-function openModal(title,content){set('modal-ttl',title);html('modal-body',content);$('modal').style.display='flex';document.body.style.overflow='hidden';swipeClose($('modal-box'),closeModal);}
+function openModal(title,content,opts){set('modal-ttl',title);html('modal-body',content);const wd=!!(opts&&opts.wide);$('modal').classList.toggle('wide',wd);$('modal-box').classList.toggle('wide',wd);$('modal').style.display='flex';document.body.style.overflow='hidden';swipeClose($('modal-box'),closeModal);}
 function closeModal(){$('modal').style.display='none';document.body.style.overflow='';}
 function swipeClose(el,fn){
   let sY=0,sT=0,d=false;
@@ -536,6 +515,15 @@ function initNavCollapse(){
 }
 
 // ── Dashboard ──
+// ── Tageskachel ──
+const WTAG=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const TAG_PLAN={0:'Long Run',1:'Push',2:'Pull',3:'Intervalle',4:'Push · Beine',5:'Pull · Easy Run',6:'Rest Day'};
+function renderTag(){
+  const n=new Date();
+  set('tag-datum',WTAG[n.getDay()]+', '+n.getDate()+'.'+(n.getMonth()+1)+'.');
+  set('tag-plan',TAG_PLAN[n.getDay()]);
+}
+
 function renderDashboard(acts){
   _acts=acts;
   _runs=acts.filter(a=>a.sport_type==='Run'||a.type==='Run');
@@ -583,29 +571,7 @@ function renderDashboard(acts){
   const qM={1:0,2:0,3:0,4:0};yR.forEach(r=>{const q=Math.floor(new Date(r.start_date_local).getMonth()/3)+1;qM[q]+=r.distance/1e3;});
   window._qMap=qM;window._curQ=Math.floor(nm/3)+1;
 
-  // Status
-  if(_runs.length){
-    const last=_runs[0],days=Math.round((now-new Date(last.start_date_local))/864e5);
-    set('last-name',last.name);set('last-days',days===0?'Heute':days===1?'Gestern':'vor '+days+' Tagen');
-  }
-
-  // Streak
-  let streak=0;let cd=new Date(now);
-  for(let w=0;w<52;w++){
-    const ws2=weekStart(new Date(cd)),we=new Date(ws2);we.setDate(we.getDate()+7);
-    const wk=_runs.filter(r=>{const d=new Date(r.start_date_local);return d>=ws2&&d<we;}).reduce((s,r)=>s+r.distance/1e3,0);
-    if(w===0&&wk<tW){cd.setDate(cd.getDate()-7);continue;}
-    if(wk>=tW){streak++;cd.setDate(cd.getDate()-7);}else break;
-  }
-  set('streak-n',streak);
-  $('streak').style.background=streak>=4?'linear-gradient(135deg,#FFD60A,#FF6B35)':streak===0?'var(--bg3)':'linear-gradient(135deg,#FF6B35,#FF453A)';
-
-  // Heute
-  const msgs={0:'Long Run · 12–16 km locker 🏃',1:'Push · Krafttraining 💪',2:'Pull · Krafttraining 💪',3:'Tempolauf · 5–6 km ⚡',4:'Push + Beine 💪',5:'Easy Run · 8–10 km 🚶',6:'Rest · Erholung 😴'};
-  const isRunDay=[0,3,5].includes(now.getDay());
-  $('today-bar').style.display=isRunDay?'block':'none';
-  if(isRunDay)set('today-txt',msgs[now.getDay()]);
-  const de=$('day-'+now.getDay());if(de)de.classList.add('today');
+  renderTag();
 
   // PRs
   _pr5k=_runs.filter(r=>r.distance>=4800&&r.distance<=5500&&getHR(r)>155).reduce((a,b)=>!a||(b.distance/b.moving_time)>(a.distance/a.moving_time)?b:a,null);
@@ -801,31 +767,51 @@ function showVolModal(st){
   const yR=_runs.filter(r=>new Date(r.start_date_local).getFullYear()===ny);
   const qM=window._qMap||{1:0,2:0,3:0,4:0},curQ=window._curQ||1,mMap=window._mMap||{};
   const last4m=[...Array(4)].map((_,i)=>(nm-3+i+12)%12);
-  const wkN=Math.ceil(ws.getDate()/7);
-  const wkL=wkN+'. '+MN[nm]+'woche';
+  // Wochenlabel nach Donnerstag der Woche (wie ISO) → Monat und Wochennummer stimmen auch an Monatswechseln
+  const th=new Date(ws);th.setDate(th.getDate()+3);
+  const wkN=Math.ceil(th.getDate()/7);
+  const wkL=wkN+'. '+MN[th.getMonth()]+'woche';
   const labels=[wkL,MN[nm]+' '+ny,'Jahr '+ny];
 
-  const bRow=(km,max,lbl,cur)=>'<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:'+(cur?'#fff':'var(--text3)')+';font-weight:'+(cur?700:400)+'">'+lbl+'</span><span style="color:var(--text2)">'+Math.round(km)+' km</span></div><div style="background:var(--bg3);height:6px;border-radius:3px"><div style="background:'+(cur?'var(--orange)':'#5A5A5C')+';height:6px;border-radius:3px;width:'+Math.min(100,max?km/max*100:0)+'%"></div></div></div>';
+  const bRow=(km,max,lbl,cur)=>'<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span style="color:'+(cur?'#fff':'var(--text3)')+';font-weight:'+(cur?700:500)+'">'+lbl+'</span><span style="color:var(--text2);font-weight:600">'+Math.round(km)+' km</span></div><div style="background:var(--bg3);height:12px;border-radius:6px"><div style="background:'+(cur?'var(--orange)':'#5A5A5C')+';height:12px;border-radius:6px;width:'+Math.min(100,max?km/max*100:0)+'%"></div></div></div>';
   const wKm=wR.reduce((s,r)=>s+r.distance/1e3,0);
   const mKm=mR.reduce((s,r)=>s+r.distance/1e3,0);
   const yKm=yR.reduce((s,r)=>s+r.distance/1e3,0);
 
-  const wH='<div>'+last4m.map(m=>bRow(mMap[m]||0,tW,m===nm?MN[m]:MK[m],m===nm)).join('')
-    +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+wR.length+' Läufe · '+wKm.toFixed(1)+' / '+tW+' km</div></div>';
+  // Wochen-Tab: Mo–So mit den Läufen des jeweiligen Tages
+  const WK=['Mo','Di','Mi','Do','Fr','Sa','So'];
+  const dayData=WK.map((_,i)=>{
+    const d=new Date(ws);d.setDate(d.getDate()+i);
+    const runs=wR.filter(r=>{const rd=new Date(r.start_date_local);return rd.getFullYear()===d.getFullYear()&&rd.getMonth()===d.getMonth()&&rd.getDate()===d.getDate();});
+    return {d,runs,km:runs.reduce((s,r)=>s+r.distance/1e3,0)};
+  });
+  const dMax=Math.max(16,...dayData.map(x=>x.km));
+  const dayRow=(x,i)=>{
+    const has=x.runs.length>0,isT=x.d.toDateString()===now.toDateString();
+    return '<div style="margin-bottom:16px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:14px">'
+      +'<span style="color:'+(has||isT?'#fff':'var(--text3)')+';font-weight:'+(has||isT?700:500)+'">'+WK[i]+' <span style="font-size:12px;font-weight:500;color:var(--text3)">'+pad(x.d.getDate())+'.'+pad(x.d.getMonth()+1)+'.</span></span>'
+      +'<span style="color:#fff;font-weight:700">'+(has?x.km.toFixed(1)+' km':'')+'</span></div>'
+      +'<div style="background:var(--bg3);height:12px;border-radius:6px"><div style="background:var(--orange);height:12px;border-radius:6px;width:'+(has?Math.max(4,x.km/dMax*100):0)+'%"></div></div>'
+      +x.runs.map(r=>{const hr=Math.round(getHR(r));return '<div onclick="closeModal();setTimeout(()=>showRunDetail('+_runs.indexOf(r)+'),300)" style="display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--text2);margin-top:6px;cursor:pointer"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.name+'</span><span style="white-space:nowrap">'+fmtPace(r.distance,r.moving_time)+'/km'+(hr?' · '+hr+' bpm':'')+'</span></div>';}).join('')
+      +'</div>';
+  };
+  const wH='<div>'+dayData.map(dayRow).join('')
+    +'<div style="font-size:13px;color:var(--text2);margin-top:4px">'+wR.length+' Läufe · '+wKm.toFixed(1)+' / '+tW+' km</div></div>';
   const mH='<div>'+last4m.map(m=>bRow(mMap[m]||0,tM,m===nm?MN[m]:MK[m],m===nm)).join('')
-    +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+mR.length+' Läufe · '+mKm.toFixed(1)+' / '+tM+' km</div></div>';
+    +'<div style="font-size:13px;color:var(--text2);margin-top:4px">'+mR.length+' Läufe · '+mKm.toFixed(1)+' / '+tM+' km</div></div>';
   const yH='<div>'+[1,2,3,4].map(q=>bRow(qM[q]||0,tY/4,'Q'+q,q===curQ)).join('')
-    +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+yR.length+' Läufe · '+Math.round(yKm)+' / '+tY+' km</div></div>';
+    +'<div style="font-size:13px;color:var(--text2);margin-top:4px">'+yR.length+' Läufe · '+Math.round(yKm)+' / '+tY+' km</div></div>';
 
-  const tTabs=labels.map((l,i)=>'<div onclick="vGo('+i+')" id="vtb'+i+'" style="cursor:pointer;padding:4px 0;font-size:12px;font-weight:600;color:'+(i===st?'var(--orange)':'var(--text3)')+'">'+l+'</div>').join('');
-  const dts=[0,1,2].map(i=>'<div id="vd'+i+'" onclick="vGo('+i+')" style="height:6px;border-radius:'+(i===st?'3px':'50%')+';cursor:pointer;transition:all .25s;width:'+(i===st?'18px':'6px')+';background:'+(i===st?'var(--orange)':'var(--bg3)')+'"></div>').join('');
+  const tTabs=labels.map((l,i)=>'<div onclick="vGo('+i+')" id="vtb'+i+'" style="cursor:pointer;padding:4px 0;font-size:13px;font-weight:600;color:'+(i===st?'var(--orange)':'var(--text3)')+'">'+l+'</div>').join('');
+  const dts=[0,1,2].map(i=>'<div id="vd'+i+'" onclick="vGo('+i+')" style="height:7px;border-radius:'+(i===st?'4px':'50%')+';cursor:pointer;transition:all .25s;width:'+(i===st?'22px':'7px')+';background:'+(i===st?'var(--orange)':'var(--bg3)')+'"></div>').join('');
   const content='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+tTabs+'</div>'
     +'<div style="overflow:hidden;width:100%;margin-bottom:10px" id="vm-wrap"><div id="vm-track" style="display:flex;width:300%;transition:transform .3s ease">'
     +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;padding-right:4px">'+wH+'</div>'
     +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box;padding-right:4px">'+mH+'</div>'
     +'<div style="width:33.333%;flex-shrink:0;box-sizing:border-box">'+yH+'</div>'
     +'</div></div><div style="display:flex;justify-content:center;gap:8px" id="vdots">'+dts+'</div>';
-  openModal(labels[st],content);
+  openModal(labels[st],content,{wide:true});
   let vCur=st;
   window.vGo=n=>{
     n=Math.max(0,Math.min(2,n));vCur=n;
@@ -833,7 +819,7 @@ function showVolModal(st){
     set('modal-ttl',labels[n]);
     labels.forEach((_,i)=>{
       const e=$('vtb'+i);if(e)e.style.color=i===n?'var(--orange)':'var(--text3)';
-      const d=$('vd'+i);if(d){d.style.width=i===n?'18px':'6px';d.style.background=i===n?'var(--orange)':'var(--bg3)';d.style.borderRadius=i===n?'3px':'50%';}
+      const d=$('vd'+i);if(d){d.style.width=i===n?'22px':'7px';d.style.background=i===n?'var(--orange)':'var(--bg3)';d.style.borderRadius=i===n?'4px':'50%';}
     });
   };
   setTimeout(()=>{
@@ -1296,6 +1282,7 @@ async function init(){
     show('login-screen');
   }
 }
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('tag-plan'))renderTag();});
 init();
 </script>
 </body>
